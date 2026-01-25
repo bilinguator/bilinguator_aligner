@@ -1,0 +1,15 @@
+{% from 'blocks/panel_button.html' import panel_button %}
+
+<div class="{{ panel_class }} {{ additional_panel_class }}">
+    {% for i in range(buttons_list|length) %}
+        <div class="subpanel">
+        {% for j in range(buttons_list[i]|length) %}
+            {% if buttons_list[i][j].startswith("template:") %}
+                {{ page_config[buttons_list[i][j].split(":")[1]] | safe }}
+            {% else %}
+                {{ panel_button(buttons_list[i][j], buttons_titles[i][j]) }}
+            {% endif %} 
+        {% endfor %}
+        </div>
+    {% endfor %}
+</div>

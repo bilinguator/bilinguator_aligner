@@ -1,0 +1,28 @@
+{% from 'blocks/languages_dropdown_list.html' import languages_dropdown_list %}
+
+{% macro book_panel(side, text_path, lang, text, languages) %}
+<div class="book-panel-container">
+    <div class="book-panel">
+        <div class="book-panel-row">
+            <label class="book-address-label" for="book-address-{{ side }}">
+                📚 Book {{ 1 if side == 'left' else 2 }}
+            </label>
+        </div>
+        <div class="book-panel-row">
+            <input type="text" value="{{ text_path }}" class="book-address" id="book-address-{{ side }}" name="book-{{ side }}" disabled>
+            <button class="book-panel-button browse-button browse-button-{{ side }}">
+                Browse…
+            </button>
+            <button class="book-panel-button close-book-button" id="close-book-button-{{ side }}">
+                ×
+            </button>
+        </div>
+        <div class="book-panel-row">
+            {{ languages_dropdown_list(side, text, languages, lang) }}
+            <button class="book-panel-button save-book-panel-button" id="save-book-panel-button-{{ side }}">
+                Save changes
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro %}

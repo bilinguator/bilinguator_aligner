@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html>
+    {% include 'blocks/head.html' %}
+    <body>
+        {% include 'blocks/header.html' %}
+        <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }}">
+            {% if mode == '0' %}
+                {% include 'blocks/home_screen.html' %}
+            {% endif %}
+            {{ paragraphs }}
+            {{ footer | safe }}
+        </div>
+    </body>
+</html>
+<script type="text/javascript">
+    // Put this script to file to avoid errors!
+    delimiter = '<delimiter>';
+    changesNotSavedMessage = 'Changes you made may not be saved! Are you sure to procede?';
+
+    sessionStorage.text1 = {{ text1 | tojson }};
+    sessionStorage.text2 = {{ text2 | tojson }};
+
+    rootFolder = {{ root_folder | tojson }};
+
+    {% if mode == '0' %}
+        sessionStorage.leftFileFound = 'false';
+        sessionStorage.rightFileFound = 'false';
+    {% elif mode == '2' %}
+        sessionStorage.leftFileFound = 'true';
+        sessionStorage.rightFileFound = 'true';
+    {% endif %}
+
+
+    function makeProgressFunctional () {
+        const percentProgress = document.querySelector('.percent');
+    
+        {% if mode == '1' %}
+            const paragraph = document.querySelector('.monolingual-paragraph');
+            
+            paragraph.addEventListener('scroll', () => {
+                const scrollTop = paragraph.scrollTop;
+                const scrollHeight = paragraph.scrollHeight - paragraph.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+                const value = 100 * progress;
+    
+                percentProgress.textContent = Math.round(value) + '%';
+            });
+        {% elif mode == '2' %}
+            document.addEventListener('scroll', () => {
+    
+                const minPercent = parseFloat(percentProgress.getAttribute('min'));
+                const maxPercent = parseFloat(percentProgress.getAttribute('max'));
+    
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+    
+                const value = minPercent + (maxPercent - minPercent) * progress;
+    
+                percentProgress.textContent = Math.round(value) + '%';
+            });
+        {% endif %}
+    }
+
+    makeProgressFunctional();
+
+    
+    function rerenderByDictionary(dictionary) {
+        for (key in dictionary) {
+            let rerenderedElement = document.querySelector('.'+key);
+            rerenderedElement.outerHTML = dictionary[key];
+        }
+    }
+
+
+    function makeScrollToTopArrowFunctional () {
+        let scrollToTopArrow = document.querySelector('#panel-button-scroll_to_top_arrow');
+    
+        if (scrollToTopArrow) {
+            document.querySelector('#panel-button-scroll_to_top_arrow').addEventListener('click', () => {
+                window.scrollTo(0, 0)
+            });
+        }
+    }
+
+    makeScrollToTopArrowFunctional();
+
+
+    function getFolderByAbsolutePath (path) {
+        let pathWithReplacedSlashes = path.replaceAll('\\', '/');
+        const sameSlashes = path === pathWithReplacedSlashes;
+        pathWithReplacedSlashes = pathWithReplacedSlashes.slice(0, pathWithReplacedSlashes.lastIndexOf('/'))
+
+        return sameSlashes ? pathWithReplacedSlashes : pathWithReplacedSlashes.replaceAll('/', '\\');
+    }
+
+
+    function closeExplorer (side='both') {
+        
+        const explorerClass = side == 'both' ? '.explorer' : '.explorer-' + side;
+        
+        document.querySelectorAll(explorerClass).forEach((element) => {
+            element.remove();
+        });
+    }
+
+
+    function openExplorer (path = null, isFolder = true, side='left') {
+
+        if (document.querySelector('.explorer')) {
+            console.log('Explorer open!');
+            closeExplorer('both');
+        }
+
+        const bookAddress = document.querySelector('#book-address-' + side);
+        
+        if (path === null) {
+            path = bookAddress.value;
+        }
+
+        const originalPath = sessionStorage[side + 'FileFound'] ? bookAddress.value : path;
+
+        $.ajax({
+            url: '/open_explorer',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                path: path,
+                is_folder: isFolder,
+                side: side,
+                original_path: originalPath,
+            }),
+            success: function (response) {
+                const mainArea = document.querySelector('.main-area');
+                mainArea.insertAdjacentHTML('afterbegin', response['template']);
+                makeFilePathFieldScrollable();
+
+                if (getMode() == 0) {
+                    document.querySelector('.explorer').classList.add('full-height-explorer');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function openBook (path, side) {
+        const hasFileChanged = isAnyFileChanged();
+        
+        if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+            const bookAddress = document.querySelector('#book-address-' + side);
+            bookAddress.value = path;
+    
+            const leftFileFound = side === 'left' ? 'true' : sessionStorage['leftFileFound'];
+            const rightFileFound = side === 'right' ? 'true' : sessionStorage['rightFileFound'];
+    
+            rerenderAllByPaths(leftFileFound, rightFileFound, null);
+        }
+    }
+
+
+    browseButtons = document.querySelectorAll('.browse-button');
+    browseButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const side = button.classList.contains('browse-button-left') ? 'left' : 'right';
+
+            if (document.querySelector('.explorer')) {
+                closeExplorer('both');
+            } else {
+                const isFolder = !sessionStorage[side + 'FileFound'];
+                openExplorer(null, isFolder, side);
+            }
+        });
+    });
+
+    
+    function makeCloseBookButtonsFunctional () {
+        
+        const closeBookButtons = document.querySelectorAll('.close-book-button');
+
+        closeBookButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                closeExplorer('both');
+
+                const hasFileChanged = isAnyFileChanged();
+        
+                if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+                    const side = button.id.endsWith('left') ? 'left' : 'right';
+                    
+                    if (sessionStorage[side + 'FileFound'] !== 'false') {
+                        const bookAddressOld = document.querySelector('#book-address-' + side);
+        
+                        bookAddressOld.value = null;
+                        
+                        sessionStorage[side + 'FileFound'] = 'false';
+        
+                        const leftFileFound = side === 'left' ? 'false' : sessionStorage['leftFileFound'];
+                        const rightFileFound = side === 'right' ? 'false' : sessionStorage['rightFileFound'];
+        
+                        rerenderAllByPaths(leftFileFound, rightFileFound, null);
+                        reviveScripts();
+                    }
+                }
+
+            });
+        });
+    }
+
+    makeCloseBookButtonsFunctional();
+
+
+    function fillEmptyFileAddresses() {
+        const bookAddresses = document.querySelectorAll('.book-address');
+        
+        bookAddresses.forEach((bookAddress) => {
+            if (!bookAddress.value) {
+                bookAddress.value = rootFolder;
+            }
+        });
+    }
+
+    fillEmptyFileAddresses();
+
+    function setUrlParam(paramName, paramValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(paramName, paramValue);
+        window.history.replaceState({}, '', url);
+    }
+
+
+    function makeFilePathFieldScrollable () {
+        const filePathFields = document.querySelectorAll('.file-path-field');
+        let isDragging = false;
+        let startX;
+        let scrollLeft;
+        let scrollTop;
+    
+        filePathFields.forEach((element) => {
+            element.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                element.classList.add('dragging');
+                startX = e.pageX - element.offsetLeft;
+                scrollLeft = element.scrollLeft;
+            });
+        });
+    
+        filePathFields.forEach((element) => {
+            element.addEventListener('mouseleave', () => {
+                isDragging = false;
+                element.classList.remove('dragging');
+            });
+        });
+    
+        filePathFields.forEach((element) => {
+            element.addEventListener('mouseup', () => {
+                isDragging = false;
+                element.classList.remove('dragging');
+            });
+        });
+    
+        filePathFields.forEach((element) => {
+            element.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - element.offsetLeft;
+                const walkX = (x - startX);
+                element.scrollLeft = scrollLeft - walkX;
+            });
+        });
+    }
+    
+
+    function reviveScripts (selector = 'script') {
+        const scripts = document.querySelectorAll(selector);
+
+        scripts.forEach(oldScript => {
+            if (oldScript.dataset.revived === '1' || oldScript.getAttribute('data-no-revive') === 'true') {
+                return;
+            }
+
+            const newScript = document.createElement('script');
+
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+
+            for (let attr of oldScript.attributes) {
+                newScript.setAttribute(attr.name, attr.value);
+            }
+
+            newScript.setAttribute('data-revived', '1');
+            oldScript.replaceWith(newScript);
+        });
+    }
+
+
+    function rerenderAllByPaths (leftFileFound = 'false', rightFileFound = 'false', queryParameters = null) {
+
+        if (!queryParameters) {
+            queryParameters = {
+                text1_path: document.querySelector('#book-address-left').value,
+                text2_path: document.querySelector('#book-address-right').value,
+                lang1: document.querySelector('#languages-dropdown-list-left').value,
+                lang2: document.querySelector('#languages-dropdown-list-right').value,
+                page: 1,
+           }
+        }
+
+        for (const paramName in queryParameters) {
+            setUrlParam(paramName, queryParameters[paramName]);
+        }
+
+        queryParameters = $.param(queryParameters);
+
+        url = `/?${queryParameters}`;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            success: function (response) {
+                document.documentElement.innerHTML = response;
+
+                if (leftFileFound === 'true') {
+                    sessionStorage.leftFileFound = leftFileFound;
+                }
+
+                if (rightFileFound === 'true') {
+                    sessionStorage.rightFileFound = rightFileFound;
+                }
+                
+                sessionStorage.leftFileChanged = 'false';
+                sessionStorage.rightFileChanged = 'false';
+                reviveScripts();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function rerenderAllByTexts (queryParameters = null) {
+        if (!queryParameters) {
+            const mode = getMode();
+            queryParameters = {
+                text1: sessionStorage['text1'],
+                text2: sessionStorage['text2'],
+                text1_path: document.querySelector('#book-address-left').value,
+                text2_path: document.querySelector('#book-address-right').value,
+                lang1: document.querySelector('#languages-dropdown-list-left').value,
+                lang2: document.querySelector('#languages-dropdown-list-right').value,
+                page: page = mode === 2 ? document.querySelector('.page-number').value : 1,
+                // text1_changed: sessionStorage['leftFileChanged'],
+                // text2_changed: sessionStorage['rightFileChanged'],
+           }
+        }
+
+        $.ajax({
+            url: '/',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(queryParameters),
+            success: function (response) {
+                document.documentElement.innerHTML = response;
+                reviveScripts();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+    
+    function getTextBySide (side) {
+        let text = '';
+        const mode = getMode();
+
+        if (mode === 1 && sessionStorage[side + 'FileFound'] === 'true') {
+            return document.querySelector('.monolingual-paragraph').value;
+        } else if (mode === 2) {
+            return getFullTextFromBilingualMode(side);
+        } else {
+            return;
+        }
+    }
+
+
+    function saveBook (side) {
+        
+        if (side === 'both') {
+            saveBook('left');
+            saveBook('right');
+            return;
+        }
+
+        const text = getTextBySide(side);
+
+        if (text === undefined) {
+            return;
+        }
+
+        const bookAddress = document.querySelector('#book-address-' + side).value;
+
+        $.ajax({
+            url: '/save_book',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                bookAddress: bookAddress,
+                text: text,
+            }),
+            success: function (response) {
+                console.log('Book has been successfully saved to the file:\n' + bookAddress);
+                sessionStorage[side + 'FileChanged'] = 'false';
+                disableSaveButtons(side);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function isAnyFileChanged () {
+        return sessionStorage.leftFileChanged === 'true' || sessionStorage.rightFileChanged === 'true';
+    }
+
+
+    function getCurrentPage () {
+        const pageNumberTextarea = document.querySelector('.page-number');
+        
+        if (pageNumberTextarea) {
+            return parseInt(pageNumberTextarea.attributes.page.value);
+        } else {
+            return 1;
+        }
+    }
+
+
+    function swapTexts () {
+        const hasFileChanged = isAnyFileChanged();
+        
+        if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+            const bookAddressLeft = document.querySelector('#book-address-left');
+            const bookAddressRight = document.querySelector('#book-address-right');
+    
+            queryParameters = {
+                text1_path: bookAddressRight.value,
+                text2_path: bookAddressLeft.value,
+                lang1: document.querySelector('#languages-dropdown-list-right').value,
+                lang2: document.querySelector('#languages-dropdown-list-left').value,
+                page: getCurrentPage(),
+            }
+    
+            rerenderAllByPaths(sessionStorage.rightFileFound, sessionStorage.leftFileFound, queryParameters = queryParameters);
+
+            const rightFileFound = sessionStorage.rightFileFound;
+            sessionStorage.rightFileFound = sessionStorage.leftFileFound;
+            sessionStorage.leftFileFound = rightFileFound;
+
+            setSaveBookButtonsStates();
+        }
+    }
+
+
+    if (document.querySelector('.paragraph')) {
+        function activateSwapButton () {
+            const swapButton = document.querySelector('#panel-button-swap');
+            swapButton.addEventListener('click', swapTexts);
+        }
+    
+        activateSwapButton();
+    }
+
+
+    function enableSaveButtons (side = 'both') {
+        if (side === 'both') {
+            enableSaveButtons('left');
+            enableSaveButtons('right');
+            return;
+        }
+
+        const bookPanelSaveButton = document.querySelector('#save-book-panel-button-' + side);
+        
+        if (bookPanelSaveButton.classList.contains('book-panel-button-disabled')) {
+            bookPanelSaveButton.classList.remove('book-panel-button-disabled')
+        }
+
+        const footerSaveButton = document.querySelector('#panel-button-save');
+
+        if (footerSaveButton && footerSaveButton.classList.contains('panel-button-disabled')) {
+            footerSaveButton.classList.remove('panel-button-disabled');
+        }
+    }
+
+
+    function disableSaveButtons (side = 'both') {
+        if (side === 'both') {
+            disableSaveButtons('left');
+            disableSaveButtons('right');
+            return;
+        }
+
+        const bookPanelSaveButton = document.querySelector('#save-book-panel-button-' + side);
+        
+        if (!bookPanelSaveButton.classList.contains('book-panel-button-disabled')) {
+            bookPanelSaveButton.classList.add('book-panel-button-disabled')
+        }
+
+        const footerSaveButton = document.querySelector('#panel-button-save');
+
+        const isNoAnyChangedFile = sessionStorage['leftFileChanged'] !== 'true' && sessionStorage['rightFileChanged'] !== 'true'
+        const isFooterSaveButtonEnabled = footerSaveButton && !footerSaveButton.classList.contains('panel-button-disabled')
+
+        if (isNoAnyChangedFile && isFooterSaveButtonEnabled) {
+            footerSaveButton.classList.add('panel-button-disabled');
+        }
+    }
+
+
+    function makeSessionStorageFunctional () {
+        ['left', 'right'].forEach((side) => {
+            if (!sessionStorage[side + 'FileChanged']) {
+                sessionStorage[side + 'FileChanged'] = 'false';
+            }
+            
+            if (sessionStorage[side + 'FileChanged'] === 'false') {
+                disableSaveButtons('both');
+            }
+        });
+    
+    
+        document.querySelectorAll('.paragraph').forEach((paragraph) => {
+            paragraph.addEventListener('input', () => {
+                if (paragraph.classList.contains('monolingual-paragraph')) {
+                    const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
+                    sessionStorage[side + 'FileChanged'] = 'true';
+                    updateTextsInSessionStorage(side);
+                    enableSaveButtons(side);
+                } else {
+                    const side = paragraph.classList.contains('paragraph-left') ? 'left' : 'right';    
+                    sessionStorage[side + 'FileChanged'] = 'true';
+                    updateTextsInSessionStorage(side);
+                    enableSaveButtons(side);
+                }
+            });
+        });
+    }
+
+    makeSessionStorageFunctional();
+
+
+    function makeSaveBookButtonsFunctional () {
+        document.querySelectorAll('.save-book-panel-button').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (!button.classList.contains('book-panel-button-disabled')) {
+                    const side = button.id == 'save-book-panel-button-left' ? 'left' : 'right';
+                    saveBook(side);
+                }
+            });
+        });
+        
+        if (document.querySelector('#panel-button-save')) {
+            document.querySelector('#panel-button-save').addEventListener('click', () => {
+                saveBook('both');
+            });
+        }
+    
+        ['left', 'right'].forEach((side) => {
+            if (sessionStorage[side + 'FileChanged'] === 'true') {
+                enableSaveButtons(side);
+            }
+        });
+    }
+
+    makeSaveBookButtonsFunctional();
+
+
+    function setSaveBookButtonsStates () {
+        ['left', 'right'].forEach((side) => {
+            if (sessionStorage[side + 'FileFound'] !== 'true') {
+                let closeBookButton = document.querySelector('#close-book-button-' + side);
+
+                if (!closeBookButton.classList.contains('book-panel-button-disabled')) {
+                    closeBookButton.classList.add('book-panel-button-disabled');
+                }
+            }
+        });
+    }
+
+    setSaveBookButtonsStates();
+
+
+    window.addEventListener('beforeunload', function (e) {
+        const hasFileChanged = isAnyFileChanged();
+
+        if (!hasFileChanged) return;
+
+        e.preventDefault();
+        e.returnValue = changesNotSavedMessage;
+        
+        sessionStorage.leftFileChanged = 'false';
+        sessionStorage.rightFileChanged = 'false';
+
+        return changesNotSavedMessage;
+    });
+
+
+    function setLanguageForParagraphs (side, lang = null) {
+        const paragraphs = document.querySelectorAll('.paragraph-' + side);
+        const monolingualParagraph = document.querySelector('.monolingual-paragraph');
+
+        if (!lang) {
+            lang = document.querySelector('#languages-dropdown-list-' + side).value;
+        }
+
+        if (paragraphs.length !== 0) {
+            paragraphs.forEach((paragraph) => {
+                paragraph.lang = lang;
+            });
+        } else if (monolingualParagraph) {
+            if (sessionStorage[side + 'FileFound'] === 'true') {
+                monolingualParagraph.lang = lang;
+            }
+        }
+    }
+
+    setLanguageForParagraphs('left');
+    setLanguageForParagraphs('right');
+
+
+    function getMode () {
+        if (document.querySelector('.paragraph-left')) {
+            return 2;
+        } else if (document.querySelector('.monolingual-paragraph')) {
+            return 1;
+        }
+        
+        return 0
+    }
+
+
+    function makeLanguagesDropdownListsFunctional () {
+        ['left', 'right'].forEach((side) => {
+            const languagesDropdownList = document.querySelector('#languages-dropdown-list-' + side);
+            languagesDropdownList.addEventListener('change', () => {
+                setLanguageForParagraphs(side);
+                const langParamName = 'lang' + (side === 'left' ? '1' : '2');
+                setUrlParam(langParamName, languagesDropdownList.value);
+
+                if (getMode() === 2) {
+                    fixTextAreas();
+                }
+            });
+        });
+    }
+
+    makeLanguagesDropdownListsFunctional();
+
+
+    function getSideByParagraph (paragraph) {
+        const mode = getMode();
+
+        if (mode === 1) {
+            return sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
+        } else if (mode === 2) {
+            return paragraph.classList.contains('paragraph-left') ? 'left' : 'right';
+        }
+    }
+    
+    
+    function addTagsToParagraph (tag1, tag2, paragraph) {
+        if (paragraph.classList.contains('paragraph')) {
+            const start = paragraph.selectionStart;
+            const end = paragraph.selectionEnd;
+            
+            // if (start === end) {
+            //     return;
+            // }
+
+            const paragraphValue = paragraph.value;
+            let taggedParagraphValue = paragraphValue.substring(0, start) + tag1;
+            taggedParagraphValue += paragraphValue.substring(start, end) + tag2;
+            taggedParagraphValue += paragraphValue.substring(end);
+            paragraph.value = taggedParagraphValue;
+            
+            paragraph.selectionStart = end + tag1.length + tag2.length;
+            paragraph.selectionEnd = end + tag1.length + tag2.length;
+            paragraph.focus();
+
+            const side = getSideByParagraph(paragraph);
+            
+            sessionStorage[side + 'FileChanged'] = 'true'
+            updateTextsInSessionStorage(side);
+            enableSaveButtons(side);
+
+            if (getMode() === 2) {
+                fixTextAreas();
+            }
+        }
+    }
+
+
+    // function insertTextToParagraph (text, paragraph, isSubstituted = true) {
+        
+    //     if (paragraph.classList.contains('paragraph') && text !== '') {
+    //         let start = paragraph.selectionStart;
+    //         let end = isSubstituted ? paragraph.selectionEnd : start;
+    //         let paragraphValue = paragraph.value;
+            
+    //         let part1 = paragraphValue.substring(0, start);
+    //         let part3 = paragraphValue.substring(end);
+            
+    //         paragraph.value = part1 + text + part3;
+            
+    //         activeParagraph.paragraph = paragraph;
+    //         activeParagraph.start = isSubstituted ? start : start + text.length;
+    //         activeParagraph.end = start + text.length;
+            
+    //         fixTextArea();
+    //         alignSiblingTextareas();
+    //         document.querySelectorAll('.panel-button').forEach((button) => {
+    //             button.classList.remove('save-not-needed');
+    //         });
+    //     } else {
+    //         return false;
+    //     }
+    // }
+
+    function insertTextToParagraph (text, paragraph, isSubstituted = true) {
+            
+        if (!paragraph.classList.contains('paragraph') || text === '') {
+            return;
+        }
+
+        if (!isSubstituted && (paragraph.selectionStart !== paragraph.selectionEnd)) {
+            return;
+        }
+
+        const start = paragraph.selectionStart;
+        const end = isSubstituted ? paragraph.selectionEnd : start;
+        
+        const paragraphValue = paragraph.value;
+
+        const part1 = paragraphValue.substring(0, start);
+        const part3 = paragraphValue.substring(end);
+        
+        paragraph.value = part1 + text + part3;
+
+        paragraph.selectionStart = isSubstituted ? start : end + text.length;
+        paragraph.selectionEnd = isSubstituted ? end : end + text.length;
+        paragraph.focus();
+
+        const side = getSideByParagraph(paragraph);
+            
+        sessionStorage[side + 'FileChanged'] = 'true'
+        updateTextsInSessionStorage(side);
+        enableSaveButtons(side);
+
+        if (getMode() === 2) {
+            fixTextAreas();
+        }
+    }
+
+
+    function updateTextsInSessionStorage (side = 'both') {
+        if (side === 'both') {
+            updateTextsInSessionStorage('left');
+            updateTextsInSessionStorage('right');
+        }
+        
+        const text = getTextBySide(side); 
+        
+        if (text === undefined) {
+            return;
+        }
+
+        const textNumber = side === 'left' ? '1' : '2';
+        sessionStorage['text' + textNumber] = text;
+    }
+
+
+    function switchCase (text) {
+        let textLowered = text.toLowerCase();
+        let textUppered = text.toUpperCase();
+        
+        if (text === textUppered) {
+            return textLowered;
+        } else {
+            return textUppered;
+        }
+    }
+
+
+    function getSelectedText () {
+        if (document.activeElement.classList.contains('paragraph')) {
+            let paragraph = document.activeElement;
+            let start = paragraph.selectionStart;
+            let end = paragraph.selectionEnd;
+            let paragraphContent = paragraph.value;
+            return paragraphContent.substring(start, end);
+        } else {
+            return false;
+        }
+    }
+    
+
+    function makePanelButtonsFunctional () {
+
+        const panelButtonH = document.querySelector('#panel-button-h');
+        if (panelButtonH) {
+            panelButtonH.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+            });
+        }
+        
+        const panelButtonB = document.querySelector('#panel-button-b');
+        if (panelButtonB) {
+            panelButtonB.addEventListener('mousedown', () => {
+                event.preventDefault();
+                addTagsToParagraph('<b>', '</b>', document.activeElement);
+            });
+        }
+        
+        const panelButtonI = document.querySelector('#panel-button-i');
+        if (panelButtonI) {
+            panelButtonI.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                addTagsToParagraph('<i>', '</i>', document.activeElement);
+            });
+        }
+
+        const panelButtonDelimiter = document.querySelector('#panel-button-delimiter');
+        if (panelButtonI) {
+            panelButtonDelimiter.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                insertTextToParagraph(delimiter, document.activeElement, false);
+            });
+        }
+
+        const panelButtonSwithCase = document.querySelector('#panel-button-switch_case');
+        if (panelButtonSwithCase) {
+            panelButtonSwithCase.addEventListener('mousedown', () => {
+                event.preventDefault();
+                insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+            });
+        }
+
+        const panelButtonDivision = document.querySelector('#panel-button-division');
+        if (panelButtonDivision) {
+            panelButtonDivision.addEventListener('mousedown', () => {
+                event.preventDefault();
+                splitParagraph();
+            });
+        }
+    }
+    
+    makePanelButtonsFunctional();
+
+    var hotKeysFunction;
+    if (typeof hotKeysFunction === 'undefined') {
+        hotKeysFunction = (event) => {
+            
+            if (event.ctrlKey && event.code === 'KeyS' && !event.repeat) {
+                event.preventDefault();
+                saveBook('both');
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyH' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyB' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<b>', '</b>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyI' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<i>', '</i>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyE' && !event.repeat) {
+                event.preventDefault();
+                insertTextToParagraph(delimiter, document.activeElement, false);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyQ' && !event.repeat) {
+                event.preventDefault();
+                insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyD' && !event.repeat) {
+                event.preventDefault();
+
+                if (getMode() === 2) {
+                    splitParagraph();
+                }
+            }
+        };
+
+    }
+    
+    document.removeEventListener('keydown', hotKeysFunction);
+    document.addEventListener('keydown', hotKeysFunction);
+
+    // if (sessionStorage.isHotKeysSet !== 'true') {
+    //     sessionStorage.isHotKeysSet = 'true';
+    // }
+</script>
+{% if mode == '2' %}
+    <script src="{{ url_for('static', filename='scripts/bilingual_script.js') }}"></script>
+{% elif mode == '1' %}
+    <script src="{{ url_for('static', filename='scripts/monolingual_script.js') }}"></script>
+{% endif %}

@@ -1,0 +1,117 @@
+<footer class="footer">
+    <div class="file-panel panel">
+        <div class="save-panel panel subpanel">
+            <button class="panel-button save-sources-panel-button save-not-needed" name="save" title="Save source files (Ctrl+S)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/save.png') }}" />
+            </button>
+            <button class="panel-button save-all-formats-panel-button"  title="Save in all formats">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/save_all_formats.png') }}" />
+            </button>
+            <button class="panel-button save-txt-panel-button" title="Save txt">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/save_txt.png') }}" />
+            </button>
+            <button class="panel-button save-fb2-panel-button" title="Save fb2">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/save_fb2.png') }}" />
+            </button>
+            <button class="panel-button save-epub-panel-button" title="Save epub">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/save_epub.png') }}" />
+            </button>
+        </div>
+
+        <div class="print-book-panel panel subpanel">
+            <button class="panel-button cols-panel-button" title="Print columns PDF (Ctrl+P)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/cols.png') }}" />
+            </button>
+
+            <button class="panel-button rows-panel-button" title="Print rows PDF (Ctrl+Shift+P)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/rows.png') }}" />
+            </button>
+
+        </div>
+    </div>
+
+    <div class="edition-panel panel">
+        <div class="insertions-edition-panel subpanel">
+            <button class="panel-button insertions-panel-button heading-panel-button" title="Title (Ctrl+H)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/h.png') }}" />
+            </button>
+            <button class="panel-button insertions-panel-button bold-panel-button" title="Bold (Ctrl+B)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/b.png') }}" />
+            </button>
+            <button class="panel-button insertions-panel-button italic-panel-button" title="Italic (Ctrl+I)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/i.png') }}" />
+            </button>
+            <button class="panel-button insertions-panel-button delimiter-panel-button" title="Add delimiter (Ctrl+,)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/delimiter.png') }}" />
+            </button>
+            <button class="panel-button insertions-panel-button case-panel-button" title="Switch case">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/case.png') }}" />
+            </button>
+            <button class="panel-button insertions-panel-button paste-img-panel-button" title="Add illustration (Ctrl+L)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/img.png') }}" />
+            </button>
+        </div>
+    </div>
+        
+    <div class="manipulations-panel panel">
+        <div class="division-concatenation-edition-panel subpanel">
+            <button class="panel-button division-panel-button" title="Divide paragraph (Ctrl+D)" onmousedown="divideParagraph()">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/division.png') }}" />
+            </button>
+            <button class="panel-button division-panel-button" title="Divide paragraph by newline (Ctrl+Shift+D)" onmousedown="divideParagraphBySubstring('\n')">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/division_by_newline.png') }}" />
+            </button>
+            <button class="panel-button concatenation-panel-button" title="Concatenate paragraphs (Ctrl+M)" onmousedown="concatenateParagraphs('')">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/concatenation.png') }}" />
+            </button>
+            <button class="panel-button concatenation-panel-button" title="Concatenate paragraphs via space (Ctrl+U)" onmousedown="concatenateParagraphs(' ')">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/concatenation_space.png') }}" />
+            </button>
+            <button class="panel-button concatenation-panel-button" title="Concatenate paragraphs via delimiter (Ctrl+Y)" onmousedown="concatenateParagraphs('<delimiter>')">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/concatenation_delimiter.png') }}" />
+            </button>
+        </div>
+
+        <div class="shift-area subpanel">
+            <div class="paragraph-indexes-container">
+                <input type="text" class="paragraph-index" rows="1" size="2" placeholder="№" value="" />
+                <hr />
+                <input type="text" class="paragraph-index" rows="1" size="2" placeholder="№"/>
+            </div>
+            <button class="panel-button shift-panel-button" title="Shift">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/shift.png') }}" />
+            </button>
+            <button class="panel-button delete-by-index-panel-button" title="Delete">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/delete_by_index.png') }}" />
+            </button>
+        </div>
+        
+        <div class="score-panel panel subpanel">
+            <button class="panel-button aim-button" onclick="focusOnParagraph()" title="To current position (Ctrl+O)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/focus.png') }}" />
+            </button>
+            <button class="panel-button bookmark-panel-button" title="Set bookmark (Ctrl+B)">
+                <img class="panel-button-img" src="{{ url_for('static', filename='img/bookmark.png') }}" />
+            </button>
+            <div class="stats">
+            <div class="bookmark-score-container subpanel">
+                <p class="bookmark-number">
+                    0
+                </p>
+                <p class="slash">
+                    /
+                </p>
+                <p class="paragraphs-count">
+                    -
+                </p>
+            </div>
+            </div>
+            <div class="scroll-panel subpanel">
+                <p class="percents">
+                    0%
+                </p>
+                <div class="scroll-score"></div>
+            </div>
+        </div>
+    </div>
+</footer>

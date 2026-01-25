@@ -1,0 +1,11 @@
+{
+    "0": [
+        ["about"]
+    ],
+    "1": [
+        ["swap", "statistics", "about"]
+    ],
+    "2": [
+        ["swap", "mojification", "about"]
+    ]
+}

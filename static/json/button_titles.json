@@ -1,0 +1,28 @@
+{
+    "about": "About",
+    "swap": "Swap texts",
+    "statistics": "Statistics",
+    "mojification": "Mojify texts",
+
+    "save": "Save texts (Ctrl+S)",
+    "save_txt": "Save bilingual TXT",
+    "save_fb2": "Save bilingual FB2",
+    "save_epub": "Save bilingual EPUB",
+    "cols": "Print bilingual PDF in columns",
+    "rows": "Print bilingual PDF in rows",
+    "h": "Title (Ctrl+H)",
+    "b": "Bold (Ctrl+B)",
+    "i": "Italic (Ctrl+I)",
+    "delimiter": "Add delimiter (Ctrl+R)",
+    "switch_case": "Switch case (Ctrl+Q)",
+    "img": "Illustration",
+    "division": "Divide paragraph (Ctrl+D)",
+    "division_by_newline": "Divide paragraph by line breaks",
+    "concatenation": "Concatenate paragraphs",
+    "concatenation_space": "Concatenate paragraphs via space (Ctrl+Space)",
+    "concatenation_delimiter": "Concatenate paragraphs via delimiter",
+    "shift": "Shift paragraphs",
+    "delete_by_index": "Delete paragraphs by indexes",
+    "focus": "To current position",
+    "bookmark": "Set bookmark (Ctrl+B)"
+}

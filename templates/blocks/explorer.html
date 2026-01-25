@@ -1,0 +1,27 @@
+<div class="explorer explorer-{{ side }}">
+    <button class="explorer-close-button explorer-close-button-{{ side }}" onclick="closeExplorer('{{ side }}')">×</button>
+    <div class="file-path-field" path="{{ path }}">
+        {% for i in range(upstream_folders|length) %}
+            <div class="explorer-element upstream-element" ondblclick="openExplorer('{{ upstream_absolute_paths[i] }}', true, '{{ side }}')">
+                <img class="explorer-img" src="{{ url_for('static', filename='img/folder.svg') }}" alt="Folder icon" />
+                <p class="explorer-element-text">{{ upstream_folders[i] }}</p>
+            </div>
+        {% endfor %}
+    </div>
+    
+    {% for i in range(downstream_folders|length) %}
+        <div class="explorer-element downstream-element" ondblclick="openExplorer('{{ downstream_folders_absolute_paths[i] }}', true, '{{ side }}')">
+            <img class="explorer-img" src="{{ url_for('static', filename='img/folder.svg') }}" alt="Folder icon" />
+            <p class="explorer-element-text">{{ downstream_folders[i] }}</p>
+        </div>
+    {% endfor %}
+    
+    {% for i in range(downstream_files|length) %}
+        <div class="explorer-element downstream-element{{ ' explorer-chosen-file' if original_path == downstream_files_absolute_paths[i] else '' }}" ondblclick="openBook('{{ downstream_files_absolute_paths[i] }}', '{{ side }}')">
+            <img class="explorer-img"
+                src="{{ url_for('static', filename=('img/file_selected.svg' if original_path == downstream_files_absolute_paths[i] else 'img/file.svg')) }}"
+                alt="File icon" />
+            <p class="explorer-element-text">{{ downstream_files[i] }}</p>
+        </div>
+    {% endfor %}
+</div>

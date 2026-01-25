@@ -1,0 +1,29 @@
+<div class="paragraphs">
+    {% for i in range(first_paragraph, last_paragraph) %}
+        <div class="paragraph-couple">
+            <div class="left">
+                <div class="paragraph-panel panel-left">
+                    <p class="paragraph-number paragraph-number-left {{ 'paragraph-number-bookmark' if i == bookmark else '' }}">{{ i+1 }}</p>
+                    <div class="addDelete">
+                        <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.png') }}">
+                        <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.png') }}">
+                    </div>
+                </div>
+                <textarea lang="{{ lang1 }}" class="paragraph paragraph-left">{{ paragraphs1[i] }}</textarea>
+            </div>
+                
+            <div class="right">
+                <textarea lang="{{ lang2 }}" class="paragraph paragraph-right">{{ paragraphs2[i] }}</textarea>
+                
+                <div class="paragraph-panel paragraph-panel-right">
+                    <p class="paragraph-number paragraph-number-right {{ 'paragraph-number-bookmark' if i == bookmark else '' }}">{{ i+1 }}</p>
+                    <div class="addDelete">
+                        <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.png') }}">
+                        <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.png') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    <div class="paragraphs-padding"></div>
+</div>

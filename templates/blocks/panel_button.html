@@ -1,0 +1,9 @@
+{% macro panel_button(button_name, button_title, additional_class='') %}
+<button class="panel-button {{ additional_class }}">
+    <img src="{{ url_for('static', filename='img/'+button_name+'.png') }}"
+     id="panel-button-{{ button_name }}"
+      alt="{{ button_name }}"
+      title="{{ button_title }}"
+      class="panel-button-img">
+</button>
+{% endmacro %}
