@@ -875,6 +875,48 @@
                 splitParagraph();
             });
         }
+
+        const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
+        if (panelButtonConcatenation) {
+            panelButtonConcatenation.addEventListener('mousedown', () => {
+                event.preventDefault();
+                concatenateParagraphs('');
+            });
+        }
+
+        const panelButtonConcatenationSpace = document.querySelector('#panel-button-concatenation_space');
+        if (panelButtonConcatenationSpace) {
+            panelButtonConcatenationSpace.addEventListener('mousedown', () => {
+                event.preventDefault();
+                concatenateParagraphs(' ');
+            });
+        }
+
+        const panelButtonConcatenationDelimiter = document.querySelector('#panel-button-concatenation_delimiter');
+        if (panelButtonConcatenationDelimiter) {
+            panelButtonConcatenationDelimiter.addEventListener('mousedown', () => {
+                event.preventDefault();
+                concatenateParagraphs(delimiter);
+            });
+        }
+
+        const deleteParagraphButtons = document.querySelectorAll('.delete-paragraph-button');
+        if (deleteParagraphButtons) {
+            deleteParagraphButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    removeParagraphByButton(button);
+                });
+            });
+        }
+
+        const addParagraphButtons = document.querySelectorAll('.add-paragraph-button');
+        if (addParagraphButtons) {
+            addParagraphButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    addParagraphByButton(button);
+                });
+            });
+        }
     }
     
     makePanelButtonsFunctional();
@@ -920,8 +962,23 @@
                     splitParagraph();
                 }
             }
-        };
+            
+            if (event.ctrlKey && event.code === 'Space' && !event.repeat) {
+                event.preventDefault();
 
+                if (getMode() === 2) {
+                    concatenateParagraphs(' ');
+                }
+            }
+            
+            if (event.shiftKey && event.code === 'Space' && !event.repeat) {
+                event.preventDefault();
+
+                if (getMode() === 2) {
+                    concatenateParagraphs(delimiter);
+                }
+            }
+        };
     }
     
     document.removeEventListener('keydown', hotKeysFunction);
