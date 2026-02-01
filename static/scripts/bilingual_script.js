@@ -372,6 +372,9 @@ function removeParagraphByButton (button) {
         paragraphNumber
     );
 
+    sessionStorage.text1 = sessionStorage.text1.trimRight();
+    sessionStorage.text2 = sessionStorage.text2.trimRight();
+
     sessionStorage[side + 'FileChanged'] = 'true';
     
     equalizeParagraphCountsInTexts();
@@ -413,4 +416,5 @@ function addParagraphByButton (button) {
 }
 
 
+equalizeParagraphCountsInTexts();
 window.onresize = fixTextAreas;
