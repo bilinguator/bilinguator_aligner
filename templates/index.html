@@ -917,6 +917,13 @@
                 });
             });
         }
+
+        const deleteByIndexButton = document.querySelector('#panel-button-delete_by_index');
+        if (deleteByIndexButton) {
+            deleteByIndexButton.addEventListener('click', () => {
+                removeParagraphsFromTwoTexts();
+            });
+        }
     }
     
     makePanelButtonsFunctional();
@@ -983,6 +990,48 @@
     
     document.removeEventListener('keydown', hotKeysFunction);
     document.addEventListener('keydown', hotKeysFunction);
+
+
+    function setParagraphIndex (paragraphIndex, side = 'left') {
+        
+        const mode = getMode();
+        if (mode === 1) {
+            document.querySelector('.paragraph-index').value = paragraphIndex;
+            sessionStorage['paragraphIndex'] = paragraphIndex;
+        } else if (mode === 2) {
+            const indexOfParagraphIndex = side === 'left' ? 0 : 1;
+            document.querySelectorAll('.paragraph-index')[indexOfParagraphIndex].value = paragraphIndex;
+            sessionStorage[side + 'ParagraphIndex'] = paragraphIndex;
+        }
+    }
+
+
+    function makeParagraphIndexesFunctional () {
+
+        const mode = getMode();
+
+        if (mode === 1) {
+            console.log('TO BE IMPLEMENTED!');
+        } else if (mode === 2) {
+            document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
+                const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
+                const paragraphIndex = paragraphNumber.innerText;
+
+                paragraphNumber.addEventListener('click', () => {
+                    setParagraphIndex(paragraphIndex, side);
+                });
+            });
+
+            ['left', 'right'].forEach((side) => {
+                if (sessionStorage[side + 'ParagraphIndex']) {
+                    setParagraphIndex(sessionStorage[side + 'ParagraphIndex'], side);
+                }
+            });
+        }
+    }
+
+    makeParagraphIndexesFunctional();
+
 
     // if (sessionStorage.isHotKeysSet !== 'true') {
     //     sessionStorage.isHotKeysSet = 'true';

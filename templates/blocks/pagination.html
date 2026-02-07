@@ -1,6 +1,6 @@
 <div class="pagination subpanel">
     <button class="panel-button panel-button-pagination-arrow"
-     page="1">
+     page="{{ 'stop' if current_page == 1 else 1 }}">
         <img src="{{ url_for('static', filename='img/pagination_arrow_beginning.svg') }}"
          alt="To the beginning"
          title="To the beginning"
@@ -28,7 +28,7 @@
     </button>
 
     <button class="panel-button panel-button-pagination-arrow"
-     page="{{ pages_count }}">
+     page="{{ 'stop' if current_page == pages_count else pages_count }}">
         <img src="{{ url_for('static', filename='img/pagination_arrow_end.svg') }}"
          alt="To the end"
          title="To the end"
@@ -39,6 +39,6 @@
     document.querySelector('.page-number').addEventListener('keydown', (event) => {
         if (event.code === 'Enter') {
             goToPage(parseInt(event.target.value));
-        } // Not working twice
+        }
     });
 </script>

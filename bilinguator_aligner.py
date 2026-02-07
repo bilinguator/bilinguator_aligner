@@ -342,12 +342,11 @@ def index():
         lang2 = request.json.get('lang2', 'en')
         page = request.json.get('page', 1)
     
-
-    if not text1 and os.path.isfile(text1_path):
+    if type(text1) != str and not text1 and os.path.isfile(text1_path):
         with open(text1_path, 'r', encoding='utf-8') as file:
             text1 = file.read()
     
-    if not text2 and os.path.isfile(text2_path):
+    if type(text2) != str and not text2 and os.path.isfile(text2_path):
         with open(text2_path, 'r', encoding='utf-8') as file:
             text2 = file.read()
 

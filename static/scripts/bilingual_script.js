@@ -383,6 +383,48 @@ function removeParagraphByButton (button) {
 }
 
 
+function removeParagraphsFromTwoTexts () {
+    let paragraphIndexes = [
+        document.querySelectorAll('.paragraph-index')[0].value,
+        document.querySelectorAll('.paragraph-index')[1].value
+    ];
+
+    const isNumericIndexes = paragraphIndexes.every((paragraphIndex) => {
+        return paragraphIndex === parseInt(paragraphIndex).toString();
+    });
+
+    const paragraphsCount = parseInt(document.querySelector('.total-count').innerText.trim())
+
+    const isInsideParagraphsRange = paragraphIndexes.every((paragraphIndex) => {
+        return parseInt(paragraphIndex) > 0 && paragraphIndex <= paragraphsCount;
+    });
+
+    if (!isNumericIndexes || !isInsideParagraphsRange) {
+        return;
+    }
+
+    paragraphIndexes = paragraphIndexes.map(Number);
+
+    const startParagraphIndex = Math.min(...paragraphIndexes);
+    const endParagraphIndex = Math.max(...paragraphIndexes);
+
+    ['1', '2'].forEach((textNumber) => {        
+        sessionStorage['text' + textNumber] = removeParagraphsFromText(
+            sessionStorage['text' + textNumber],
+            startParagraphIndex,
+            endParagraphIndex
+        ).trimRight();
+    });
+
+    sessionStorage['leftFileChanged'] = 'true';
+    sessionStorage['rightFileChanged'] = 'true';
+    
+    equalizeParagraphCountsInTexts();
+    rerenderAllByTexts();
+    enableSaveButtons('both');
+}
+
+
 function addParagraphToText (text, paragraphNumber) {
     text = '\n' + text;
     const lineBreakIndex = indexOfNthSubstring(text, '\n', paragraphNumber);
