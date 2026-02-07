@@ -400,6 +400,7 @@ def index():
             mode=mode,
             page_config=page_config,
         ),
+        paragraphs_per_page=PARAGRAPHS_PER_PAGE,
     )
 
 @app.route('/save_book', methods=['GET', 'POST'])

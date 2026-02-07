@@ -1,7 +1,9 @@
 <div class="paragraph-indexes-container subpanel">
-    <input type="text" class="paragraph-index" rows="1" size="2" placeholder="№" value="{{ paragraph1 }}">
-    {% if mode == '2' %}
+    {% if mode == '1' %}
+        <input type="text" class="paragraph-index" id="paragraph-index" rows="1" size="2" placeholder="№" value="{{ paragraph1 }}">
+    {% elif mode == '2' %}
+        <input type="text" class="paragraph-index" id="paragraph-index-left" rows="1" size="2" placeholder="№" value="{{ paragraph1 }}">
         <hr>
-        <input type="text" class="paragraph-index" rows="1" size="2" placeholder="№" value="{{ paragraph2 }}">
+        <input type="text" class="paragraph-index" id="paragraph-index-right" rows="1" size="2" placeholder="№" value="{{ paragraph2 }}">
     {% endif %}
 </div>

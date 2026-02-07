@@ -22,6 +22,8 @@
 
     rootFolder = {{ root_folder | tojson }};
 
+    paragraphsPerPage = {{ paragraphs_per_page | tojson }};
+
     {% if mode == '0' %}
         sessionStorage.leftFileFound = 'false';
         sessionStorage.rightFileFound = 'false';
@@ -827,6 +829,42 @@
     }
     
 
+    function toCurrentPosition() {
+        const mode = getMode();
+        if (mode === 2) {
+
+            const paragraphsCount = parseInt(
+                document.querySelector('.total-count').innerText
+            );
+            let targetParagraphIndex = document.querySelector('#paragraph-index-left').value;
+            
+            if (targetParagraphIndex !== parseInt(targetParagraphIndex).toString()) {
+                return;
+            }
+
+            targetParagraphIndex = parseInt(targetParagraphIndex);
+
+            if (targetParagraphIndex < 1 || targetParagraphIndex > paragraphsCount) {
+                return;
+            }
+
+            const targetPage = Math.ceil(targetParagraphIndex / paragraphsPerPage);
+            const currentPage = parseInt(
+                document.querySelector('.page-number').attributes.page.value
+            );
+
+            if (targetPage !== currentPage) {
+                goToPage(targetPage);
+            }
+
+            const focusedElement = document.getElementById('paragraph' + targetParagraphIndex);
+            if (focusedElement) {
+                focusedElement.focus();
+            }
+        }
+    }
+
+
     function makePanelButtonsFunctional () {
 
         const panelButtonH = document.querySelector('#panel-button-h');
@@ -933,6 +971,13 @@
                 removeParagraphsFromTwoTexts();
             });
         }
+
+        const focusButton = document.querySelector('#panel-button-focus');
+        if (focusButton) {
+            focusButton.addEventListener('click', () => {
+                toCurrentPosition();
+            });
+        }
     }
     
     makePanelButtonsFunctional();
@@ -1002,14 +1047,12 @@
 
 
     function setParagraphIndex (paragraphIndex, side = 'left') {
-        
         const mode = getMode();
         if (mode === 1) {
-            document.querySelector('.paragraph-index').value = paragraphIndex;
+            document.querySelector('#paragraph-index').value = paragraphIndex;
             sessionStorage['paragraphIndex'] = paragraphIndex;
         } else if (mode === 2) {
-            const indexOfParagraphIndex = side === 'left' ? 0 : 1;
-            document.querySelectorAll('.paragraph-index')[indexOfParagraphIndex].value = paragraphIndex;
+            document.querySelector('#paragraph-index-' + side).value = paragraphIndex;
             sessionStorage[side + 'ParagraphIndex'] = paragraphIndex;
         }
     }
@@ -1035,6 +1078,11 @@
                 if (sessionStorage[side + 'ParagraphIndex']) {
                     setParagraphIndex(sessionStorage[side + 'ParagraphIndex'], side);
                 }
+
+                const paragraphIndex = document.querySelector('#paragraph-index-' + side);
+                paragraphIndex.addEventListener('input', () => {
+                    sessionStorage[side + 'ParagraphIndex'] = paragraphIndex.value;
+                });
             });
         }
     }

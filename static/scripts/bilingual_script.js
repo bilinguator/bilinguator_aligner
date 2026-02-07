@@ -393,8 +393,8 @@ function removeParagraphByButton (button) {
 
 function removeParagraphsFromTwoTexts () {
     let paragraphIndexes = [
-        document.querySelectorAll('.paragraph-index')[0].value,
-        document.querySelectorAll('.paragraph-index')[1].value
+        document.querySelector('#paragraph-index-left').value,
+        document.querySelector('#paragraph-index-right').value,
     ];
 
     const isNumericIndexes = paragraphIndexes.every((paragraphIndex) => {
@@ -464,6 +464,24 @@ function addParagraphByButton (button) {
     rerenderAllByTexts();
     enableSaveButtons(side);
 }
+
+
+function focusInBilingualMode () {
+    let focusedElement;
+    if (sessionStorage.leftParagraphIndex) {
+        const paragraphID = '#paragraph' + sessionStorage.leftParagraphIndex;
+        focusedElement = document.querySelector(paragraphID);
+    }
+
+    if (focusedElement) {
+        focusedElement.focus();
+    } else {
+        document.querySelector('.paragraph').focus();
+    }
+    console.log('YES');
+}
+
+focusInBilingualMode();
 
 
 equalizeParagraphCountsInTexts();

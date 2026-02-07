@@ -9,7 +9,7 @@
                         <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.png') }}">
                     </div>
                 </div>
-                <textarea lang="{{ lang1 }}" class="paragraph paragraph-left">{{ paragraphs1[i] }}</textarea>
+                <textarea lang="{{ lang1 }}" class="paragraph paragraph-left" id="paragraph{{ i+1 }}">{{ paragraphs1[i] }}</textarea>
             </div>
                 
             <div class="right">
