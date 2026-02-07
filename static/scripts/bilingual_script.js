@@ -274,6 +274,14 @@ function splitParagraph () {
     enableSaveButtons(side);
 }
 
+
+function updateAndReloadTexts () {
+    updateTextsInSessionStorage('both');
+    equalizeParagraphCountsInTexts();
+    rerenderAllByTexts();
+}
+
+
 function concatenateParagraphs (separator = '') {
     const paragraph = document.activeElement;
 

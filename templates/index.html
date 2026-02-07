@@ -788,6 +788,7 @@
         if (side === 'both') {
             updateTextsInSessionStorage('left');
             updateTextsInSessionStorage('right');
+            return;
         }
         
         const text = getTextBySide(side); 
@@ -876,6 +877,14 @@
             });
         }
 
+        const panelButtonDivisionByNewLine = document.querySelector('#panel-button-division_by_newline');
+        if (panelButtonDivisionByNewLine) {
+            panelButtonDivisionByNewLine.addEventListener('click', () => {
+                event.preventDefault();
+                updateAndReloadTexts();
+            });
+        }
+
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {
             panelButtonConcatenation.addEventListener('mousedown', () => {
@@ -931,7 +940,7 @@
     var hotKeysFunction;
     if (typeof hotKeysFunction === 'undefined') {
         hotKeysFunction = (event) => {
-            
+
             if (event.ctrlKey && event.code === 'KeyS' && !event.repeat) {
                 event.preventDefault();
                 saveBook('both');
@@ -952,7 +961,7 @@
                 addTagsToParagraph('<i>', '</i>', document.activeElement);
             }
             
-            if (event.ctrlKey && event.code === 'KeyE' && !event.repeat) {
+            if (event.ctrlKey && event.code === 'KeyD' && !event.repeat) {
                 event.preventDefault();
                 insertTextToParagraph(delimiter, document.activeElement, false);
             }
@@ -962,7 +971,7 @@
                 insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
             }
             
-            if (event.ctrlKey && event.code === 'KeyD' && !event.repeat) {
+            if (event.ctrlKey && event.code === 'Enter' && !event.repeat) {
                 event.preventDefault();
 
                 if (getMode() === 2) {
