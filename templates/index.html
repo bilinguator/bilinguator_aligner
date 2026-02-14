@@ -390,7 +390,7 @@
     }
 
     
-    function getTextBySide (side) {
+    function getTextBySide (side = 'left') {
         let text = '';
         const mode = getMode();
 
@@ -684,6 +684,10 @@
     function getSideByParagraph (paragraph) {
         const mode = getMode();
 
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
         if (mode === 1) {
             return sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
         } else if (mode === 2) {
@@ -865,6 +869,54 @@
     }
 
 
+    function getPositionInText () {
+        const paragraph = document.activeElement;
+
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
+        const localPosition = document.activeElement.selectionStart;
+        const mode = getMode();
+
+        if (mode === 1) {
+            return localPosition;
+        } else if (mode === 2) {
+            const paragraphNumber = getCurrentParagraphNumber();
+            
+            const side = getCurrentParagraphSide();
+            let text = getTextBySide(side);
+    
+            return indexOfNthSubstring(text, '\n', paragraphNumber-1) + localPosition + 1;
+        }
+    }
+
+
+    function getImageNumberByPosition (text, position) {
+        const previousText = text.slice(0, position);
+        const matchesCount = previousText.match(/<img\d+>/g);
+
+        return matchesCount ? matchesCount.length + 1 : 1;
+    }
+
+
+    function insertImage () {
+        const mode = getMode();
+        const paragraph = document.activeElement;
+
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
+        const side = getSideByParagraph(document.activeElement);
+        const text = getTextBySide(side);
+        const position = getPositionInText();
+        const imageNumber = getImageNumberByPosition(text, position);
+        const imageTag = `<img${imageNumber}>`;
+        insertTextToParagraph(imageTag, document.activeElement, isSubstituted = false);
+    }
+
+
     function makePanelButtonsFunctional () {
 
         const panelButtonH = document.querySelector('#panel-button-h');
@@ -904,6 +956,14 @@
             panelButtonSwithCase.addEventListener('mousedown', () => {
                 event.preventDefault();
                 insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+            });
+        }
+
+        const panelButtonInsertImage = document.querySelector('#panel-button-img');
+        if (panelButtonInsertImage) {
+            panelButtonInsertImage.addEventListener('mousedown', () => {
+                event.preventDefault();
+                insertImage();
             });
         }
 

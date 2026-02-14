@@ -154,23 +154,6 @@ function getCurrentParagraphSide () {
 }
 
 
-function getPositionInText () {
-    const paragraph = document.activeElement;
-
-    if (!paragraph.classList.contains('paragraph')) {
-        return;
-    }
-
-    const paragraphNumber = getCurrentParagraphNumber();
-    const localPosition = document.activeElement.selectionStart;
-    
-    const side = getCurrentParagraphSide();
-    let text = getTextBySide(side);
-
-    return indexOfNthSubstring(text, '\n', paragraphNumber-1) + localPosition + 1;
-}
-
-
 // function insertNewlineAndTrim(text, pos) {
 //     // Find whitespace boundaries (excluding \n) on both sides
     
@@ -478,7 +461,6 @@ function focusInBilingualMode () {
     } else {
         document.querySelector('.paragraph').focus();
     }
-    console.log('YES');
 }
 
 focusInBilingualMode();
