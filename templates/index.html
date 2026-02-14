@@ -922,56 +922,70 @@
         const panelButtonH = document.querySelector('#panel-button-h');
         if (panelButtonH) {
             panelButtonH.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-                addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+                }
             });
         }
         
         const panelButtonB = document.querySelector('#panel-button-b');
         if (panelButtonB) {
             panelButtonB.addEventListener('mousedown', () => {
-                event.preventDefault();
-                addTagsToParagraph('<b>', '</b>', document.activeElement);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<b>', '</b>', document.activeElement);
+                }
             });
         }
         
         const panelButtonI = document.querySelector('#panel-button-i');
         if (panelButtonI) {
             panelButtonI.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-                addTagsToParagraph('<i>', '</i>', document.activeElement);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<i>', '</i>', document.activeElement);
+                }
             });
         }
 
         const panelButtonDelimiter = document.querySelector('#panel-button-delimiter');
-        if (panelButtonI) {
+        if (panelButtonDelimiter) {
             panelButtonDelimiter.addEventListener('mousedown', (event) => {
-                event.preventDefault();
-                insertTextToParagraph(delimiter, document.activeElement, false);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertTextToParagraph(delimiter, document.activeElement, false);
+                }
             });
         }
 
         const panelButtonSwithCase = document.querySelector('#panel-button-switch_case');
         if (panelButtonSwithCase) {
             panelButtonSwithCase.addEventListener('mousedown', () => {
-                event.preventDefault();
-                insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+                }
             });
         }
 
         const panelButtonInsertImage = document.querySelector('#panel-button-img');
         if (panelButtonInsertImage) {
             panelButtonInsertImage.addEventListener('mousedown', () => {
-                event.preventDefault();
-                insertImage();
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertImage();
+                }
             });
         }
 
         const panelButtonDivision = document.querySelector('#panel-button-division');
         if (panelButtonDivision) {
             panelButtonDivision.addEventListener('mousedown', () => {
-                event.preventDefault();
-                splitParagraph();
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    splitParagraph();
+                }
             });
         }
 
@@ -986,24 +1000,30 @@
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {
             panelButtonConcatenation.addEventListener('mousedown', () => {
-                event.preventDefault();
-                concatenateParagraphs('');
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    concatenateParagraphs('');
+                }
             });
         }
 
         const panelButtonConcatenationSpace = document.querySelector('#panel-button-concatenation_space');
         if (panelButtonConcatenationSpace) {
             panelButtonConcatenationSpace.addEventListener('mousedown', () => {
-                event.preventDefault();
-                concatenateParagraphs(' ');
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    concatenateParagraphs(' ');
+                }
             });
         }
 
         const panelButtonConcatenationDelimiter = document.querySelector('#panel-button-concatenation_delimiter');
         if (panelButtonConcatenationDelimiter) {
             panelButtonConcatenationDelimiter.addEventListener('mousedown', () => {
-                event.preventDefault();
-                concatenateParagraphs(delimiter);
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    concatenateParagraphs(delimiter);
+                }
             });
         }
 
