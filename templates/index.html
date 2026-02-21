@@ -728,32 +728,6 @@
     }
 
 
-    // function insertTextToParagraph (text, paragraph, isSubstituted = true) {
-        
-    //     if (paragraph.classList.contains('paragraph') && text !== '') {
-    //         let start = paragraph.selectionStart;
-    //         let end = isSubstituted ? paragraph.selectionEnd : start;
-    //         let paragraphValue = paragraph.value;
-            
-    //         let part1 = paragraphValue.substring(0, start);
-    //         let part3 = paragraphValue.substring(end);
-            
-    //         paragraph.value = part1 + text + part3;
-            
-    //         activeParagraph.paragraph = paragraph;
-    //         activeParagraph.start = isSubstituted ? start : start + text.length;
-    //         activeParagraph.end = start + text.length;
-            
-    //         fixTextArea();
-    //         alignSiblingTextareas();
-    //         document.querySelectorAll('.panel-button').forEach((button) => {
-    //             button.classList.remove('save-not-needed');
-    //         });
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
     function insertTextToParagraph (text, paragraph, isSubstituted = true) {
             
         if (!paragraph.classList.contains('paragraph') || text === '') {
@@ -1027,6 +1001,43 @@
             });
         }
 
+        const focusButton = document.querySelector('#panel-button-focus');
+        if (focusButton) {
+            focusButton.addEventListener('click', () => {
+                toCurrentPosition();
+            });
+        }
+
+        ['cols', 'rows'].forEach((mode) => {
+            const printColsButton = document.querySelector('#panel-button-' + mode);
+
+            if (printColsButton) {
+                printColsButton.addEventListener('click', () => {
+                    updateTextsInSessionStorage('both');
+
+                    const lang1 = document.querySelector('#languages-dropdown-list-left').value;
+                    const lang2 = document.querySelector('#languages-dropdown-list-right').value;
+
+                    printBilingualPDF(sessionStorage.text1, sessionStorage.text2, lang1, lang2,
+                        mode = mode, cover = '', fileName = 'bilingual_book', illustrationsFolder = '/');
+                });
+            }
+        });
+
+        const shiftButton = document.querySelector('#panel-button-shift');
+        if (shiftButton) {
+            shiftButton.addEventListener('click', () => {
+                shiftParagraphs();
+            });
+        }
+
+        const deleteByIndexButton = document.querySelector('#panel-button-delete_by_index');
+        if (deleteByIndexButton) {
+            deleteByIndexButton.addEventListener('click', () => {
+                removeParagraphsFromTwoTexts();
+            });
+        }
+
         const deleteParagraphButtons = document.querySelectorAll('.delete-paragraph-button');
         if (deleteParagraphButtons) {
             deleteParagraphButtons.forEach((button) => {
@@ -1044,30 +1055,10 @@
                 });
             });
         }
-
-        const shiftButton = document.querySelector('#panel-button-shift');
-        if (shiftButton) {
-            shiftButton.addEventListener('click', () => {
-                shiftParagraphs();
-            });
-        }
-
-        const deleteByIndexButton = document.querySelector('#panel-button-delete_by_index');
-        if (deleteByIndexButton) {
-            deleteByIndexButton.addEventListener('click', () => {
-                removeParagraphsFromTwoTexts();
-            });
-        }
-
-        const focusButton = document.querySelector('#panel-button-focus');
-        if (focusButton) {
-            focusButton.addEventListener('click', () => {
-                toCurrentPosition();
-            });
-        }
     }
-    
+
     makePanelButtonsFunctional();
+
 
     var hotKeysFunction;
     if (typeof hotKeysFunction === 'undefined') {
@@ -1128,7 +1119,7 @@
             }
         };
     }
-    
+
     document.removeEventListener('keydown', hotKeysFunction);
     document.addEventListener('keydown', hotKeysFunction);
 
@@ -1175,14 +1166,11 @@
     }
 
     makeParagraphIndexesFunctional();
-
-
-    // if (sessionStorage.isHotKeysSet !== 'true') {
-    //     sessionStorage.isHotKeysSet = 'true';
-    // }
 </script>
+
 {% if mode == '2' %}
-    <script src="{{ url_for('static', filename='scripts/bilingual_script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/bilingual_script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/print-bilingual-pdf/scripts/print_bilingual_pdf.js') }}"></script>
 {% elif mode == '1' %}
     <script src="{{ url_for('static', filename='scripts/monolingual_script.js') }}"></script>
 {% endif %}

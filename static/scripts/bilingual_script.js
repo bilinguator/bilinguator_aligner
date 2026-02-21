@@ -116,22 +116,6 @@ document.querySelector('.page-number').addEventListener('keydown', (event) => {
 });
 
 
-// function updateTextsOnChangeInParagraphs () {
-//     ['input', 'change'].forEach((eventType) => {
-//         document.querySelectorAll('.paragraph').forEach((paragraph) => {
-//             paragraph.addEventListener(eventType, () => {
-//                 const textNumber = paragraph.classList.contains('paragraph-left') ? '1' : '2';    
-//                 const side = paragraph.classList.contains('paragraph-left') ? 'left' : 'right';    
-//                 sessionStorage['text' + textNumber] = getFullTextFromBilingualMode(side);
-//                 enableSaveButtons(side);
-//             });
-//         });
-//     });
-// }
-
-// updateTextsOnChangeInParagraphs();
-
-
 function getCurrentParagraphNumber () {
     const paragraph = document.activeElement;
     if (!paragraph.classList.contains('paragraph')) {
@@ -154,26 +138,6 @@ function getCurrentParagraphSide () {
 }
 
 
-// function insertNewlineAndTrim(text, pos) {
-//     // Find whitespace boundaries (excluding \n) on both sides
-    
-//     // Left side: move back while there are spaces/tabs
-//     let start = pos;
-//     while (start > 0 && /[^\S\n]/.test(text[start - 1])) {
-//         start--;
-//     }
-
-//     // Right side: move forward while there are spaces/tabs
-//     let end = pos;
-//     while (end < text.length && /[^\S\n]/.test(text[end])) {
-//         end++;
-//     }
-
-//     // Insert newline, removing surrounding whitespace except \n
-//     return text.slice(0, start) + '\n' + text.slice(end);
-// }
-
-
 function countSubstrings (string, substring) {
   const regex = new RegExp(substring, 'g'); 
   const matches = string.match(regex) || []; 
@@ -194,41 +158,6 @@ function equalizeParagraphCountsInTexts () {
 
     sessionStorage['text' + shorterTextNumber] += '\n'.repeat(lineBreaksDifference);
 }
-
-
-// function splitParagraph () {
-//     const paragraph = document.activeElement;
-
-//     if (!paragraph.classList.contains('paragraph')) {
-//         return;
-//     }
-
-//     if (paragraph.selectionStart !== paragraph.selectionEnd) {
-//         return;
-//     }
-
-//     const side = getCurrentParagraphSide();
-//     const textNumber = side === 'left' ? '1' : '2';
-//     const positionInText = getPositionInText();
-    
-//     let part1 = sessionStorage['text' + textNumber].slice(0, positionInText);
-//     let part2 = sessionStorage['text' + textNumber].slice(positionInText);
-
-//     part1 = part1.trim() === '' ? part1 : part1.trimEnd();
-//     part2 = part2.trim() === '' ? part2 : part2.trimStart();
-
-//     const leftNewLine = paragraph.selectionStart === 0 && part1 !== '' ? '\n' : '';
-//     const rightNewLine = paragraph.selectionStart === paragraph.value.length && part2 !== '' ? '\n' : '';
-//     const centralNewLine = leftNewLine === '\n' || rightNewLine === '\n' ? '' : '\n';
-
-//     // sessionStorage['text' + textNumber] = part1 + leftNewLine + centralNewLine + rightNewLine + part2;
-//     sessionStorage['text' + textNumber] = insertNewlineAndTrim(sessionStorage['text' + textNumber], positionInText);
-    
-//     sessionStorage[side + 'FileChanged'] = 'true'
-
-//     rerenderAllByTexts();
-//     enableSaveButtons(side);
-// }
 
 
 function splitParagraph () {
@@ -272,7 +201,6 @@ function concatenateParagraphs (separator = '') {
         return;
     }
 
-    // const paragraphNumber = getCurrentParagraphNumber();
     let positionInText = getPositionInText();
     const side = getCurrentParagraphSide();
     const textNumber = side === 'left' ? '1' : '2';
