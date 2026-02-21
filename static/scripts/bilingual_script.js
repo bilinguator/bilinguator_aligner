@@ -374,7 +374,7 @@ function removeParagraphByButton (button) {
 }
 
 
-function removeParagraphsFromTwoTexts () {
+function getParagraphIndexes () {
     let paragraphIndexes = [
         document.querySelector('#paragraph-index-left').value,
         document.querySelector('#paragraph-index-right').value,
@@ -395,6 +395,17 @@ function removeParagraphsFromTwoTexts () {
     }
 
     paragraphIndexes = paragraphIndexes.map(Number);
+
+    return paragraphIndexes;
+}
+
+
+function removeParagraphsFromTwoTexts () {
+    const paragraphIndexes = getParagraphIndexes();
+
+    if (!paragraphIndexes) {
+        return;
+    }
 
     const startParagraphIndex = Math.min(...paragraphIndexes);
     const endParagraphIndex = Math.max(...paragraphIndexes);
@@ -464,6 +475,45 @@ function focusInBilingualMode () {
 }
 
 focusInBilingualMode();
+
+
+function shiftParagraphs () {
+    const paragraphIndexes = getParagraphIndexes();
+    if (!paragraphIndexes) {
+        return;
+    }
+
+    const allEqual = paragraphIndexes.every(index => index === paragraphIndexes[0]);
+    if (allEqual) {
+        return;
+    }
+
+    const textNumber = paragraphIndexes[0] < paragraphIndexes[1] ? '1' : '2';
+
+    let text = '\n' + sessionStorage['text' + textNumber];
+
+    const smallerIndex = Math.min(...paragraphIndexes);
+    const biggerIndex = Math.max(...paragraphIndexes);
+    const lineBreakIndex = indexOfNthSubstring(text, '\n', smallerIndex);
+    console.log('lineBreakIndex', lineBreakIndex);
+
+    const paragraphsDifference = biggerIndex - smallerIndex;
+
+    console.log('paragraphsDifference', paragraphsDifference);
+
+    text = text.slice(0, lineBreakIndex) + '\n'.repeat(paragraphsDifference) + text.slice(lineBreakIndex);
+
+    sessionStorage['text' + textNumber] = text.replace(/^\n/, '');
+
+    sessionStorage['text2'] = sessionStorage['text2'].trimRight();
+
+    const side = textNumber === '1' ? 'left' : 'right';
+    
+    sessionStorage[side + 'FileChanged'] = 'true';
+    equalizeParagraphCountsInTexts();
+    rerenderAllByTexts();
+    enableSaveButtons(side);
+}
 
 
 equalizeParagraphCountsInTexts();

@@ -1045,6 +1045,13 @@
             });
         }
 
+        const shiftButton = document.querySelector('#panel-button-shift');
+        if (shiftButton) {
+            shiftButton.addEventListener('click', () => {
+                shiftParagraphs();
+            });
+        }
+
         const deleteByIndexButton = document.querySelector('#panel-button-delete_by_index');
         if (deleteByIndexButton) {
             deleteByIndexButton.addEventListener('click', () => {
