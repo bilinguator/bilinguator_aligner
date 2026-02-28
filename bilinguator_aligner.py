@@ -237,6 +237,42 @@ def render_bilingual_paragraphs(text1, text2, page, lang1, lang2, bookmark=''):
     )
 
 
+def render_storage_items(mode, storage_items, value_key, heading):
+    """
+    storage_items:
+        * path1
+        * path2
+        * value: date for dump; page for bookmark
+    """
+
+    if (mode != '0') or (not storage_items):
+        return ''
+    
+    return render_partial_template(
+        'blocks/storage_items.html',
+        storage_items=storage_items,
+        value_key=value_key,
+        heading=heading
+    )
+
+
+def render_home_screen(mode):
+    if mode != '0':
+        return ''
+    
+    bookmarks_list = render_storage_items(
+        mode=mode,
+        storage_items=storage.projects_with_attribute('bookmark'),
+        value_key='bookmark',
+        heading='🔖 Bookmarks',
+    )
+
+    return render_partial_template(
+        'blocks/home_screen.html',
+        storage_items_panel=bookmarks_list,
+    )
+
+
 def render_monongual_paragraph(text, lang):
     """
     """
@@ -328,6 +364,14 @@ def set_bookmark():
     return jsonify({'status': 'success'})
 
 
+@app.route('/unset_bookmark', methods=['POST'])
+def unset_bookmark():
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    storage.unset_attribute(text1_path, text2_path, 'bookmark')
+    return jsonify({'status': 'success'})
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
@@ -408,6 +452,7 @@ def index():
             page_config=page_config,
         ),
         paragraphs_per_page=PARAGRAPHS_PER_PAGE,
+        home_screen=render_home_screen(mode),
     )
 
 @app.route('/save_book', methods=['GET', 'POST'])

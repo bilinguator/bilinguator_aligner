@@ -1,7 +1,10 @@
 <div class="home-screen-outer-container">
     <div class="home-screen-inner-container">
         <img src="{{ url_for('static', filename='img/cat.png') }}" alt="Confused cat" class="home-screen-img">
-        <p class="home-screen-message">Load at least one book to start!</p>
+        <h1 class="home-screen-message">Load at least one book to start!</h1>
+    </div>
+    <div class="storage-items-panel">
+        {{ storage_items_panel }}
     </div>
 </div>
 <script type="text/javascript">

@@ -4,9 +4,7 @@
     <body>
         {% include 'blocks/header.html' %}
         <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }}">
-            {% if mode == '0' %}
-                {% include 'blocks/home_screen.html' %}
-            {% endif %}
+            {{ home_screen }}
             {{ paragraphs }}
             {{ footer | safe }}
         </div>
@@ -201,8 +199,30 @@
     }
 
 
-    function unsetBookmark () { // TO DO!
-        console.log('TO BE IMPLEMENTED!');
+    function unsetBookmark () {
+        const bookAddressLeft = document.querySelector('#book-address-left').value;
+        const bookAddressRight = document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/unset_bookmark',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+            }),
+            success: function (response) {
+                document.querySelector('.bookmark-number').innerText = '∅';
+                updateBookmarkOnScreen();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
     }
 
 
@@ -1225,16 +1245,15 @@
                     setParagraphIndex(paragraphIndex, side);
                 });
 
-                if (paragraphNumber.classList.contains('paragraph-number-bookmark')){
-                    paragraphNumber.addEventListener('dblclick', () => {
+                paragraphNumber.addEventListener('dblclick', () => {
+                    if (paragraphNumber.classList.contains('paragraph-number-bookmark')){
                         unsetBookmark();
-                    });
-                } else {
-                    paragraphNumber.addEventListener('dblclick', () => {
+                    } else {
                         setBookmark(paragraphIndex);
-                    });
-                }
+                    }
+                });
             });
+            
 
             ['left', 'right'].forEach((side) => {
                 if (sessionStorage[side + 'ParagraphIndex']) {
@@ -1257,7 +1276,7 @@
     makeParagraphIndexesFunctional();
 
 
-    function updateBookmarkOnScreen (bookmark) {
+    function updateBookmarkOnScreen (bookmark = '∅') {
         document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
             // const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
             const paragraphIndex = paragraphNumber.innerText;

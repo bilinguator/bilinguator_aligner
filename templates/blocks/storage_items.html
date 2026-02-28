@@ -1,0 +1,16 @@
+<div class="storage-items">
+    <h2 class="storage-item-heading">{{ heading }}</h2>
+    {% for item in storage_items %}
+        <div class="storage-item storage-item-{{ value_key }}">
+            <div class="storage-item-paths">
+                <p class="storage-item-path">{{ item['path1'] }}</p>
+                <p class="storage-item-path">{{ item['path2'] }}</p>
+            </div>
+            <p class="storage-item-value">{{ item[value_key] }}</p>
+            <img src="{{ url_for('static', filename='img/delete_storage_item.png') }}"
+              class="storage-item-delete-button"    
+              alt="Remove"
+              title="Remove">
+        </div>
+    {% endfor %}
+</div>
