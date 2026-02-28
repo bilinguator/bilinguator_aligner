@@ -2,9 +2,12 @@
 	--panel-button-width: 20px;
 	--paragraph-button-width: 15px;
 	--orange: #FA9038;
+	--bookmark-red: #Ed3E0D;
 	--blue: #222A35;
 	--dark-blue: #161C24;
 
+	--paragraph-number-height: 15px;
+	--paragraph-number-margin-bottom: 3px;
 	--footer-height: 37px;
 }
 
@@ -305,6 +308,10 @@ input::-moz-placeholder{
 	color: white;
 }
 
+.addDelete {
+	align-items: center;
+}
+
 .paragraph-button {
 	cursor: pointer;
 	height: var(--paragraph-button-width);
@@ -329,13 +336,19 @@ input::-moz-placeholder{
 	-khtml-user-select: none;
 	-webkit-user-select: none;
 	user-select: none;
+	height: var(--paragraph-number-height);
+	margin-bottom: var(--paragraph-number-margin-bottom);
+	padding: 0 1px;
 	background-color: var(--orange);
 	cursor: pointer;
 	text-align: center;
 }
 
 .paragraph-number-bookmark {
-	background-color: #D56305;
+	height: calc(var(--paragraph-number-height) + var(--paragraph-number-margin-bottom));
+	margin-bottom: 0;
+	background-color: var(--bookmark-red);
+	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% var(--paragraph-number-height), 0 100%);
 }
 
 .paragraphs-padding {

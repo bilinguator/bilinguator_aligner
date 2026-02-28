@@ -11,6 +11,9 @@ from flask import request
 from flask import render_template
 from flask import url_for
 
+import storage
+
+
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 PARAGRAPHS_PER_PAGE = 100
 
@@ -151,14 +154,7 @@ def get_first_last_paragraphs(text1, text2, page):
     return first_paragraph, last_paragraph
 
 
-def get_bookmark(text1_path, text2_path):
-    """
-    To be implemented!
-    """
-    
-    return 0
-
-def render_progress(mode, text1, text2, page=1, bookmark=''):
+def render_progress(mode, text1, text2, page=1, bookmark='∅'):
     """
     """
     if mode == '0':
@@ -187,6 +183,8 @@ def render_progress(mode, text1, text2, page=1, bookmark=''):
         max_percent += len('\n'.join(str(text2).split('\n')[0:last_paragraph]))
         max_percent = round(max_percent / total_texts_length * 100)
 
+    bookmark = bookmark if bookmark else '∅'
+
     return render_partial_template(
         'blocks/progress.html',
         mode=mode,
@@ -209,7 +207,6 @@ def render_pagination(mode, current_page=None, pages_count=None):
         current_page=current_page,
         pages_count=pages_count,
     )
-    
 
 
 def render_bilingual_paragraphs(text1, text2, page, lang1, lang2, bookmark=''):
@@ -322,6 +319,15 @@ def render_explorer():
     return jsonify(response)
 
 
+@app.route('/set_bookmark', methods=['POST'])
+def set_bookmark():
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    bookmark = request.json.get('bookmark')
+    storage.set_attribute(text1_path, text2_path, 'bookmark', bookmark)
+    return jsonify({'status': 'success'})
+
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
@@ -355,11 +361,12 @@ def index():
     page = get_existing_page(text1, text2, page)
 
     pages_count = get_pages_count(text1, text2)
-    bookmark = get_bookmark(text1_path, text2_path) if mode == '2' else None
+    bookmark = storage.get_attribute_value(text1_path, text2_path, 'bookmark') if mode == '2' else ''
+    bookmark = int(bookmark) if bookmark and bookmark.isnumeric() else ''
 
     page_config = {}
-    page_config['paragraph_number_inputs'] = render_paragraph_number_inputs(mode)
-    page_config['progress'] = render_progress(mode, text1, text2, page)
+    page_config['paragraph_number_inputs'] = render_paragraph_number_inputs(mode, paragraph1=bookmark)
+    page_config['progress'] = render_progress(mode, text1, text2, page, bookmark)
     page_config['pagination'] = render_pagination(mode, page, pages_count)
 
     if mode == '2':

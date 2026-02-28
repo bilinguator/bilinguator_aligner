@@ -152,6 +152,60 @@
     }
 
 
+    function setBookmark (bookmark = '') {
+
+        if (getMode() !== 2) {
+            return;
+        }
+
+        if (!bookmark) {
+            bookmark = document.querySelector('#paragraph-index-left').value;
+        }
+
+        if (bookmark.toString() !== parseInt(bookmark).toString()) {
+            return;
+        }
+
+        const paragraphsCount = parseInt(
+            document.querySelector('.total-count').innerText
+        );
+
+        if (bookmark < 0 || bookmark > paragraphsCount) {
+            return;
+        }
+
+        const bookAddressLeft = document.querySelector('#book-address-left').value;
+        const bookAddressRight = document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/set_bookmark',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+                bookmark: bookmark,
+            }),
+            success: function (response) {
+                document.querySelector('.bookmark-number').innerText = bookmark;
+                updateBookmarkOnScreen(bookmark);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function unsetBookmark () { // TO DO!
+        console.log('TO BE IMPLEMENTED!');
+    }
+
+
     function openBook (path, side) {
         const hasFileChanged = isAnyFileChanged();
         
@@ -807,16 +861,19 @@
     }
     
 
-    function toCurrentPosition() {
+    function toCurrentPosition(targetParagraphIndex = null) {
         const mode = getMode();
         if (mode === 2) {
 
             const paragraphsCount = parseInt(
                 document.querySelector('.total-count').innerText
             );
-            let targetParagraphIndex = document.querySelector('#paragraph-index-left').value;
+
+            if (!targetParagraphIndex) {
+                targetParagraphIndex = document.querySelector('#paragraph-index-left').value;
+            }
             
-            if (targetParagraphIndex !== parseInt(targetParagraphIndex).toString()) {
+            if (targetParagraphIndex.toString() !== parseInt(targetParagraphIndex).toString()) {
                 return;
             }
 
@@ -1008,6 +1065,23 @@
             });
         }
 
+        const bookmarkButton = document.querySelector('#panel-button-bookmark');
+        if (bookmarkButton) {
+            bookmarkButton.addEventListener('click', () => {
+                setBookmark();
+            });
+        }
+
+        const bookmarkNumberClass = '.bookmark-number';
+        const bookmarkNumber = document.querySelector(bookmarkNumberClass);
+        if (bookmarkNumber) {
+            bookmarkNumber.addEventListener('click', () => {
+                const bookmark = document.querySelector(bookmarkNumberClass).innerText;
+                setParagraphIndex(bookmark, 'left');
+                toCurrentPosition(bookmark);
+            });
+        }
+
         ['cols', 'rows'].forEach((mode) => {
             const printColsButton = document.querySelector('#panel-button-' + mode);
 
@@ -1150,6 +1224,16 @@
                 paragraphNumber.addEventListener('click', () => {
                     setParagraphIndex(paragraphIndex, side);
                 });
+
+                if (paragraphNumber.classList.contains('paragraph-number-bookmark')){
+                    paragraphNumber.addEventListener('dblclick', () => {
+                        unsetBookmark();
+                    });
+                } else {
+                    paragraphNumber.addEventListener('dblclick', () => {
+                        setBookmark(paragraphIndex);
+                    });
+                }
             });
 
             ['left', 'right'].forEach((side) => {
@@ -1162,10 +1246,35 @@
                     sessionStorage[side + 'ParagraphIndex'] = paragraphIndex.value;
                 });
             });
+
+            const bookmark = document.querySelector('.bookmark-number').innerText;
+            if (!sessionStorage.leftParagraphIndex & (bookmark !== '∅')) {
+                sessionStorage.leftParagraphIndex = bookmark;
+            }
         }
     }
 
     makeParagraphIndexesFunctional();
+
+
+    function updateBookmarkOnScreen (bookmark) {
+        document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
+            // const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
+            const paragraphIndex = paragraphNumber.innerText;
+
+            if (paragraphIndex === bookmark.toString()) {
+                paragraphNumber.classList.add('paragraph-number-bookmark');
+            } else {
+                paragraphNumber.classList.remove('paragraph-number-bookmark');
+            }
+        });
+    }
+
+    // TO DO - Fix error:
+    // print_bilingual_pdf.js:1
+    // Uncaught SyntaxError: Identifier 'scriptUrl' has already been declared
+    // (at print_bilingual_pdf.js:1:1)
+
 </script>
 
 {% if mode == '2' %}
@@ -1174,3 +1283,4 @@
 {% elif mode == '1' %}
     <script src="{{ url_for('static', filename='scripts/monolingual_script.js') }}"></script>
 {% endif %}
+
