@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 import json
 import hashlib
 from pathlib import Path
@@ -27,16 +28,33 @@ def delete_project_from_json(path1, path2):
         write_projects(projects)
 
 
+def get_project_attributes(path1, path2, projects = None):
+    hash = project_hash(path1, path2)
+
+    if not projects:
+        projects = read_projects()
+
+    if hash in projects:
+        attributes = projects[hash]
+        attributes = {key: value for key, value in attributes.items()
+                      if key not in ['path1', 'path2']}
+    else:
+        attributes = {}
+    
+    print(attributes)
+    return attributes
+
+
 def write_projects(projects):
     with open(PROJECTS_JSON, 'w') as file:
         json.dump(projects, file, indent=4)
 
 
 def project_hash(path1, path2):
-    p1 = os.path.normcase(os.path.normpath(path1))
-    p2 = os.path.normcase(os.path.normpath(path2))
+    path1 = Path(path1).as_posix()
+    path2 = Path(path2).as_posix()
 
-    combined = f"{p1}||{p2}"
+    combined = f'{path1}||{path2}'
 
     digest = hashlib.sha256(combined.encode('utf-8')).hexdigest()
 
@@ -67,28 +85,49 @@ def add_project_to_json(path1, path2, return_projects=False):
         return projects
 
 
-def set_attribute(path1, path2, attribute, value):
+def set_attribute(path1, path2, attribute, value, set_date=True):
     projects = add_project_to_json(path1, path2, return_projects=True)
     hash = project_hash(path1, path2)
     projects[hash][attribute] = value
 
+    if set_date:
+        projects[hash][attribute+'_date'] = datetime.now().strftime("%d.%m.%Y")
+
     write_projects(projects)
 
 
-def unset_attribute(path1, path2, attribute):
+def unset_attribute(path1, path2, attribute, unset_date=True):
     projects = read_projects()
     hash = project_hash(path1, path2)
 
     if hash not in projects or attribute not in projects[hash]:
         return
-        
+
     del projects[hash][attribute]
+    
+    if unset_date:
+        date_attribute = attribute+'_date'
+
+        if date_attribute in projects[hash]:
+            del projects[hash][date_attribute]
+
+    other_attributes = get_project_attributes(path1, path2, projects)
+    if not other_attributes:
+        del projects[hash]
+
     write_projects(projects)
 
 
 def projects_with_attribute(attribute):
     projects = read_projects()
-    return [projects[hash] for hash in projects if attribute in projects[hash]]
+    selected_projects = [projects[hash] for hash in projects if attribute in projects[hash]]
+    
+    return sorted(
+        selected_projects,
+        key=lambda x: -datetime.strptime(x[attribute+'_date'], '%d.%m.%Y').timestamp()
+        if x.get('bookmark_date')
+        else datetime.now().timestamp(),
+    )
 
 
 def get_attribute_value(path1, path2, attribute):

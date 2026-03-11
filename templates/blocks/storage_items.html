@@ -1,4 +1,4 @@
-<div class="storage-items">
+<div class="storage-items storage-items-{{ value_key }}">
     <h2 class="storage-item-heading">{{ heading }}</h2>
     {% for item in storage_items %}
         <div class="storage-item storage-item-{{ value_key }}">
@@ -7,8 +7,9 @@
                 <p class="storage-item-path">{{ item['path2'] }}</p>
             </div>
             <p class="storage-item-value">{{ item[value_key] }}</p>
+            <p class="storage-item-value">{{ item[value_key+'_date'] }}</p>
             <img src="{{ url_for('static', filename='img/delete_storage_item.png') }}"
-              class="storage-item-delete-button"    
+              class="storage-item-delete-button storage-item-delete-button-{{ value_key }}"    
               alt="Remove"
               title="Remove">
         </div>

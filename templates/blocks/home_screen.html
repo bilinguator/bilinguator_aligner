@@ -3,7 +3,7 @@
         <img src="{{ url_for('static', filename='img/cat.png') }}" alt="Confused cat" class="home-screen-img">
         <h1 class="home-screen-message">Load at least one book to start!</h1>
     </div>
-    <div class="storage-items-panel">
+    <div class="storage-items-panel storage-items-panel-{{ value_key }}">
         {{ storage_items_panel }}
     </div>
 </div>

@@ -299,6 +299,10 @@ input::-moz-placeholder{
 	color: white;
 }
 
+.storage-item-value {
+	min-width: 70px;
+}
+
 .storage-items > div:first-of-type {
 	border-top-color: var(--blue);
 }

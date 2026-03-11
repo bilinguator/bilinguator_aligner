@@ -199,9 +199,9 @@
     }
 
 
-    function unsetBookmark () {
-        const bookAddressLeft = document.querySelector('#book-address-left').value;
-        const bookAddressRight = document.querySelector('#book-address-right').value;
+    function unsetBookmark (bookAddressLeft = null, bookAddressRight = null) {
+        bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
+        bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
 
         $.ajax({
             url: '/unset_bookmark',
@@ -969,6 +969,23 @@
 
 
     function makePanelButtonsFunctional () {
+        const bookmarkDeleteButtons = document.querySelectorAll('.storage-item-delete-button-bookmark');
+        if (bookmarkDeleteButtons) {
+            bookmarkDeleteButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const storageItemPaths = button.parentElement.querySelectorAll('.storage-item-path')
+                    const bookAddressLeft = storageItemPaths[0].innerText;
+                    const bookAddressRight = storageItemPaths[1].innerText;
+                    unsetBookmark(bookAddressLeft, bookAddressRight);
+                    button.parentElement.remove();
+
+                    const bookmarkStorageItems = document.querySelector('.storage-item-bookmark');
+                    if (!bookmarkStorageItems) {
+                        document.querySelector('.storage-items-bookmark').remove();
+                    }
+                });
+            });
+        }
 
         const panelButtonH = document.querySelector('#panel-button-h');
         if (panelButtonH) {
