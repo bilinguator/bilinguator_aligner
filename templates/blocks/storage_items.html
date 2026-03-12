@@ -6,8 +6,12 @@
                 <p class="storage-item-path">{{ item['path1'] }}</p>
                 <p class="storage-item-path">{{ item['path2'] }}</p>
             </div>
-            <p class="storage-item-value">{{ item[value_key] }}</p>
-            <p class="storage-item-value">{{ item[value_key+'_date'] }}</p>
+            <div class="storage-item-value storage-item-langs">
+                <p class="storage-item-lang" data-lang="{{ item['lang1'] }}">{{ languages[item['lang1']] }}</p>
+                <p class="storage-item-lang" data-lang="{{ item['lang2'] }}">{{ languages[item['lang2']] }}</p>
+            </div>
+            <p class="storage-item-value storage-item-value-{{ value_key }}">{{ item[value_key] }}</p>
+            <p class="storage-item-value storage-item-value-date">{{ item[value_key+'_date'] }}</p>
             <img src="{{ url_for('static', filename='img/delete_storage_item.png') }}"
               class="storage-item-delete-button storage-item-delete-button-{{ value_key }}"    
               alt="Remove"

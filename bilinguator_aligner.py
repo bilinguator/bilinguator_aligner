@@ -252,7 +252,8 @@ def render_storage_items(mode, storage_items, value_key, heading):
         'blocks/storage_items.html',
         storage_items=storage_items,
         value_key=value_key,
-        heading=heading
+        heading=heading,
+        languages=LANGUAGES,
     )
 
 
@@ -360,7 +361,11 @@ def set_bookmark():
     text1_path = request.json.get('text1_path')
     text2_path = request.json.get('text2_path')
     bookmark = request.json.get('bookmark')
+    lang1 = request.json.get('lang1')
+    lang2 = request.json.get('lang2')
     storage.set_attribute(text1_path, text2_path, 'bookmark', bookmark, set_date=True)
+    storage.set_attribute(text1_path, text2_path, 'lang1', lang1, set_date=False)
+    storage.set_attribute(text1_path, text2_path, 'lang2', lang2, set_date=False)
     return jsonify({'status': 'success'})
 
 
@@ -368,7 +373,7 @@ def set_bookmark():
 def unset_bookmark():
     text1_path = request.json.get('text1_path')
     text2_path = request.json.get('text2_path')
-    storage.unset_attribute(text1_path, text2_path, 'bookmark', unset_date=True)
+    storage.unset_attribute(text1_path, text2_path, 'bookmark', unset_langs=True, unset_date=True)
     return jsonify({'status': 'success'})
 
 

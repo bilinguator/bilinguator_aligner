@@ -96,7 +96,7 @@ def set_attribute(path1, path2, attribute, value, set_date=True):
     write_projects(projects)
 
 
-def unset_attribute(path1, path2, attribute, unset_date=True):
+def unset_attribute(path1, path2, attribute, unset_langs=True, unset_date=True):
     projects = read_projects()
     hash = project_hash(path1, path2)
 
@@ -104,6 +104,12 @@ def unset_attribute(path1, path2, attribute, unset_date=True):
         return
 
     del projects[hash][attribute]
+    
+    if unset_langs:
+        for index in ['1', '2']:
+            date_attribute = 'lang' + index
+            if date_attribute in projects[hash]:
+                del projects[hash][date_attribute]
     
     if unset_date:
         date_attribute = attribute+'_date'
