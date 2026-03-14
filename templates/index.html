@@ -248,6 +248,9 @@
             const leftFileFound = side === 'left' ? 'true' : sessionStorage['leftFileFound'];
             const rightFileFound = side === 'right' ? 'true' : sessionStorage['rightFileFound'];
     
+            setURLParameter('focus', 'true');
+            setParagraphIndex('', 'left');
+            setParagraphIndex('', 'right');
             rerenderAllByPaths(leftFileFound, rightFileFound, null);
         }
     }
@@ -315,10 +318,23 @@
 
     fillEmptyFileAddresses();
 
-    function setUrlParam(paramName, paramValue) {
+    function setURLParameter (paramName, paramValue) {
         const url = new URL(window.location.href);
         url.searchParams.set(paramName, paramValue);
         window.history.replaceState({}, '', url);
+    }
+
+
+    function unsetURLParameter (paramName) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(paramName);
+        window.history.replaceState(null, '', url.toString());
+    }
+
+
+    function getURLParameter (paramName) {
+        const urlParams = new URLSearchParams(window.location.search); 
+        return urlParams.get(paramName);
     }
 
 
@@ -398,12 +414,12 @@
                 text2_path: document.querySelector('#book-address-right').value,
                 lang1: document.querySelector('#languages-dropdown-list-left').value,
                 lang2: document.querySelector('#languages-dropdown-list-right').value,
-                page: 1,
+                //page: -1,
            }
         }
 
         for (const paramName in queryParameters) {
-            setUrlParam(paramName, queryParameters[paramName]);
+            setURLParameter(paramName, queryParameters[paramName]);
         }
 
         queryParameters = $.param(queryParameters);
@@ -456,7 +472,7 @@
 
         // for (const paramName in ['text1_path', 'text2_path', 'lang1', 'lang2', 'page']) {
         //     if (queryParameters[paramName]) {
-        //         setUrlParam(paramName, queryParameters[paramName]);
+        //         setURLParameter(paramName, queryParameters[paramName]);
         //     }
         // }
 
@@ -565,7 +581,10 @@
                 lang2: document.querySelector('#languages-dropdown-list-left').value,
                 page: getCurrentPage(),
             }
-    
+
+            setParagraphIndex('', 'left');
+            setParagraphIndex('', 'right');
+            setURLParameter('focus', 'true');
             rerenderAllByPaths(sessionStorage.rightFileFound, sessionStorage.leftFileFound, queryParameters = queryParameters);
 
             const rightFileFound = sessionStorage.rightFileFound;
@@ -760,7 +779,7 @@
             languagesDropdownList.addEventListener('change', () => {
                 setLanguageForParagraphs(side);
                 const langParamName = 'lang' + (side === 'left' ? '1' : '2');
-                setUrlParam(langParamName, languagesDropdownList.value);
+                setURLParameter(langParamName, languagesDropdownList.value);
 
                 if (getMode() === 2) {
                     fixTextAreas();
@@ -1006,6 +1025,7 @@
                     }
                     
                     rerenderAllByPaths(leftFileFound = 'true', rightFileFound = 'true', queryParameters = queryParameters);
+                    setURLParameter('focus', 'true');
                 });
             });
         }

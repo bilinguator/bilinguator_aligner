@@ -46,7 +46,8 @@ function goToPage (page) {
     }
 
     rerenderAllByTexts(queryParameters);
-    setUrlParam('page', page);
+    setURLParameter('page', page);
+    setURLParameter('focus', 'true');
 }
 
 
@@ -402,7 +403,10 @@ function focusInBilingualMode () {
     }
 }
 
-focusInBilingualMode();
+if (getURLParameter('focus') === 'true') {
+    focusInBilingualMode();
+    unsetURLParameter('focus');
+}
 
 
 function shiftParagraphs () {

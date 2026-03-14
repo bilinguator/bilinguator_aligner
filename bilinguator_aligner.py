@@ -92,6 +92,12 @@ def render_paragraph_number_inputs(mode, paragraph1='', paragraph2=''):
     )
 
 
+def get_page_by_paragraph(paragraph):
+    page = paragraph // PARAGRAPHS_PER_PAGE
+    page += bool(paragraph % PARAGRAPHS_PER_PAGE)
+    return page
+
+
 def get_pages_count(text1, text2):
     """
     """
@@ -104,8 +110,7 @@ def get_pages_count(text1, text2):
         text2.count('\n')+1
     )
 
-    pages_count = max_paragraphs_count // PARAGRAPHS_PER_PAGE
-    pages_count += bool(max_paragraphs_count % PARAGRAPHS_PER_PAGE)
+    pages_count = get_page_by_paragraph(max_paragraphs_count)
 
     return pages_count
 
@@ -387,7 +392,7 @@ def index():
         text2_path = request.values.get('text2_path', SCRIPT_DIRECTORY)
         lang1 = request.values.get('lang1', 'en')
         lang2 = request.values.get('lang2', 'en')
-        page = request.values.get('page', 1)
+        page = request.values.get('page', -1)
     else:
         text1 = request.json.get('text1', None)
         text2 = request.json.get('text2', None)
@@ -395,7 +400,7 @@ def index():
         text2_path = request.json.get('text2_path', SCRIPT_DIRECTORY)
         lang1 = request.json.get('lang1', 'en')
         lang2 = request.json.get('lang2', 'en')
-        page = request.json.get('page', 1)
+        page = request.json.get('page', -1)
     
     if type(text1) != str and not text1 and os.path.isfile(text1_path):
         with open(text1_path, 'r', encoding='utf-8') as file:
@@ -405,13 +410,18 @@ def index():
         with open(text2_path, 'r', encoding='utf-8') as file:
             text2 = file.read()
 
-
     mode = get_mode(text1, text2)
-    page = get_existing_page(text1, text2, page)
+    
+    bookmark = storage.get_attribute_value(text1_path, text2_path, 'bookmark') if mode == '2' else ''
+    with_bookmark = bookmark and bookmark.isnumeric()
+    bookmark = int(bookmark) if with_bookmark else ''
+
+    if text1_path and text2_path and with_bookmark and (page == -1):
+        page = get_page_by_paragraph(bookmark)
+    else:
+        page = get_existing_page(text1, text2, page)
 
     pages_count = get_pages_count(text1, text2)
-    bookmark = storage.get_attribute_value(text1_path, text2_path, 'bookmark') if mode == '2' else ''
-    bookmark = int(bookmark) if bookmark and bookmark.isnumeric() else ''
 
     page_config = {}
     page_config['paragraph_number_inputs'] = render_paragraph_number_inputs(mode, paragraph1=bookmark)
