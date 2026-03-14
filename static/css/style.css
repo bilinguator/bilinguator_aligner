@@ -20,6 +20,10 @@
 	box-sizing: border-box;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 body {
 	display: flex;
 	flex-direction: column;
@@ -353,13 +357,13 @@ input::-moz-placeholder{
 	background-color: #ECEFF4;
 }
 
-.paragraph-panel, .addDelete {
+.paragraph-panel, .paragraph-buttons {
 	display: flex;
 	flex-direction: column;
 	color: white;
 }
 
-.addDelete {
+.paragraph-buttons {
 	align-items: center;
 }
 

@@ -1005,6 +1005,39 @@
 
 
     function makePanelButtonsFunctional () {
+        const paragraphButtonsPanels = document.querySelectorAll('.paragraph-buttons');
+        if (paragraphButtonsPanels) {
+            paragraphButtonsPanels.forEach((panel) => {
+                panel.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+
+                    const siblingPanel = panel.classList.contains('main-paragraph-buttons')? panel.nextElementSibling : panel.previousElementSibling;
+                    siblingPanel.hidden = false;
+                    panel.hidden = true;
+                });
+            });
+        }
+
+        const shiftParagraphButtons = document.querySelectorAll('.shift-paragraph-button');
+        if (shiftParagraphButtons) {
+            shiftParagraphButtons.forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    const side = getSideByParagraphButton(button);
+                    console.log(side);
+                    swapParagraphsByButton(button, side);
+                });
+            });
+        }
+
+        const swapParagraphButtons = document.querySelectorAll('.swap-paragraph-button');
+        if (swapParagraphButtons) {
+            swapParagraphButtons.forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    swapParagraphsByButton(button, 'both');
+                });
+            });
+        }
+        
         const bookmarkItems = document.querySelectorAll('.storage-item-bookmark');
         if (bookmarkItems) {
             bookmarkItems.forEach((item) => {

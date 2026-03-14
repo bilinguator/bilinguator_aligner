@@ -303,6 +303,30 @@ function removeParagraphByButton (button) {
 }
 
 
+function swapParagraphsByButton (button, side = 'both') {
+    const paragraphNumber = getParagraphNumberByParagraphButton(button);
+
+    const leftParagraph = document.querySelector(`.paragraph-left[data-paragraph="${paragraphNumber}"]`)
+    const rightParagraph = document.querySelector(`.paragraph-right[data-paragraph="${paragraphNumber}"]`)
+
+    const leftParagraphText = leftParagraph.value;
+    const rightParagraphText = rightParagraph.value;
+
+    if (['both', 'left'].includes(side)) {
+        rightParagraph.value = leftParagraphText;
+        sessionStorage['rightFileChanged'] = 'true';
+    }
+    
+    if (['both', 'right'].includes(side)) {
+        leftParagraph.value = rightParagraphText;
+        sessionStorage['leftFileChanged'] = 'true';
+    }
+
+    const changedSide = {'both': 'both', 'left': 'right', 'right': 'left'}[side];
+    updateTextsInSessionStorage(changedSide);
+    enableSaveButtons(changedSide);
+}
+
 function getParagraphIndexes () {
     let paragraphIndexes = [
         document.querySelector('#paragraph-index-left').value,
