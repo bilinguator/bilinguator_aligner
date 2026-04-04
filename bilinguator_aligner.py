@@ -5,13 +5,10 @@ from time import sleep
 import webbrowser
 from urllib.parse import unquote
 from markupsafe import Markup
-from flask import Flask
-from flask import jsonify
-from flask import request
-from flask import render_template
-from flask import url_for
+from flask import Flask, jsonify, request, render_template, url_for
 
 import storage
+import fast_mojification
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -470,6 +467,7 @@ def index():
         home_screen=render_home_screen(mode),
     )
 
+
 @app.route('/save_book', methods=['GET', 'POST'])
 def save_file():
     book_address = request.json.get('bookAddress')
@@ -479,6 +477,80 @@ def save_file():
         file.write(text)
     
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+
+@app.route('/mojify', methods=['GET', 'POST'])
+def mojify():
+    remove_alignments()
+
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    hash = storage.project_hash(text1_path, text2_path)
+
+    project_folder = f'storage/{hash}'
+
+    if not os.path.isdir(project_folder):
+        os.mkdir(project_folder)
+
+    # storage.set_attribute(
+    #     path1=text1_path,
+    #     path2=text2_path,
+    #     attribute='alignment',
+    #     value=True,
+    #     set_date=False
+    # )
+
+    db_path = f'{project_folder}/alignment.db'
+    image_path = f'{project_folder}/alignment.png'
+
+    text1, text2 = fast_mojification.fast_mojify(
+        text1=request.json.get('text1'),
+        text2=request.json.get('text2'),
+        lang1=request.json.get('lang1'),
+        lang2=request.json.get('lang2'),
+        db_path=db_path,
+        image_path=image_path,
+        text1_split_method=request.json.get('text1_split_method', 'splitter'),
+        text2_split_method=request.json.get('text2_split_method', 'splitter'),
+        text1_period_marks=request.json.get('text1_period_marks', None),
+        text2_period_marks=request.json.get('text2_period_marks', None),
+        batch_size=request.json.get('batch_size', 200),
+        batch_count=request.json.get('batch_count', 1),
+        resolve_conflicts=request.json.get('resolve_conflicts') == 'True',
+        demojify_first=True
+    )
+
+    response = {
+        'text1': text1,
+        'text2': text2,
+        'image_path': image_path,
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/demojify', methods=['GET', 'POST'])
+def demojify():
+    response = {
+        'text1': fast_mojification.demojify(request.json.get('text1')),
+        'text2': fast_mojification.demojify(request.json.get('text2')),
+    }
+
+    remove_alignments()
+
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+def remove_alignments():
+    projects_folder = 'storage'
+    for item in os.listdir(projects_folder):
+        item_folder = f'{projects_folder}/{item}'
+        if os.path.isdir(item_folder):
+            for item_file in os.listdir(item_folder):
+                if item_file in ['alignment.db', 'alignment_0.png']:
+                    os.remove(f'{item_folder}/{item_file}')
+
+remove_alignments()
 
 
 @app.route('/go_to_page', methods=['POST'])

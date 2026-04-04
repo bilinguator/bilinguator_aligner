@@ -8,6 +8,7 @@
             {{ paragraphs }}
             {{ footer | safe }}
         </div>
+        {% include 'blocks/screen_block.html' %}
     </body>
 </html>
 <script type="text/javascript">
@@ -1037,6 +1038,17 @@
                 });
             });
         }
+
+        const mojificationButton = document.querySelector('#panel-button-mojification');
+        if (mojificationButton) {
+            mojificationButton.addEventListener('click', () => {
+                mojify();
+            });
+            mojificationButton.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+                demojify(withMessage = true);
+            });
+        }
         
         const bookmarkItems = document.querySelectorAll('.storage-item-bookmark');
         if (bookmarkItems) {
@@ -1338,6 +1350,29 @@
             document.querySelector('#paragraph-index-' + side).value = paragraphIndex;
             sessionStorage[side + 'ParagraphIndex'] = paragraphIndex;
         }
+    }
+
+
+    function showLoading (enable = true, message = '') {
+        document.querySelector('.screen-block').hidden = !enable;
+        document.querySelector('.loading-img').hidden = !enable;
+        document.querySelector('.screen-block-abort-button').hidden = !enable;
+
+        if (message) {
+            document.querySelector('.screen-block-message').innerText = message;
+        }
+    }
+
+
+    function showMessage (message = '') {
+        document.querySelector('.screen-block').hidden = false;
+        document.querySelector('.message-img').hidden = false;
+        document.querySelector('.screen-block-message').innerText = message;
+        
+        setTimeout( () => {
+            document.querySelector('.screen-block').hidden = true;
+            document.querySelector('.message-img').hidden = true;
+        }, 1500);
     }
 
 

@@ -472,5 +472,112 @@ function shiftParagraphs () {
 }
 
 
+function mojify () {
+    demojify(withMessage = false);
+
+    showLoading(enable = true, message = 'Mojification in progress…');
+    enableSaveButtons('both');
+
+    let xhr = $.ajax({
+        url: '/mojify',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: getCurrentTextFromBilingualMode('left'),
+            text2: getCurrentTextFromBilingualMode('right'),
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            lang1: document.querySelector('#languages-dropdown-list-left').value,
+            lang2: document.querySelector('#languages-dropdown-list-right').value
+        }),
+        success: function (response) {
+            text1 = response['text1'].split('\n');
+            text2 = response['text2'].split('\n');
+
+            const leftParagraphs = document.querySelectorAll('.paragraph-left');
+            const rightParagraphs = document.querySelectorAll('.paragraph-right');
+
+            for (let i = 0; i < text1.length; i++) {
+                leftParagraphs[i].value = text1[i];
+                rightParagraphs[i].value = text2[i];
+            }
+
+            updateTextsInSessionStorage('both');
+            enableSaveButtons('both');
+            fixTextAreas();
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+        complete: function() {
+            showLoading(false);
+        },
+    });
+
+    document.querySelector('.screen-block-abort-button').addEventListener('click', () => {
+        xhr.abort();
+    });
+}
+
+
+function demojify (withMessage = false) {
+    $.ajax({
+        url: '/demojify',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: sessionStorage.text1,
+            text2: sessionStorage.text2,
+        }),
+        success: function (response) {
+            console.log(response);
+            sessionStorage.text1 = response['text1'];
+            sessionStorage.text2 = response['text2'];
+            updateTextOnScreen();
+
+            if (withMessage) {
+                showMessage('Successfully demojified!');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function updateTextOnScreen () {
+    equalizeParagraphCountsInTexts();
+
+    splittedTexts = {
+        'left': sessionStorage.text1.split('\n'),
+        'right': sessionStorage.text2.split('\n')
+    };
+
+    const startParagraph = parseInt(document.querySelector('.paragraph-number').innerText);
+
+    ['left', 'right'].forEach((side) => {
+        let paragraphs = document.querySelectorAll('.paragraph-' + side);
+
+        let i = startParagraph - 1;
+
+        paragraphs.forEach((paragraph) => {
+            paragraph.value = splittedTexts[side][i];
+            i++;
+        });
+    });
+}
+
+
 equalizeParagraphCountsInTexts();
 window.onresize = fixTextAreas;
