@@ -5,6 +5,9 @@ from pathlib import Path
 from lingtrain_aligner import splitter, aligner, resolver, reader, vis_helper
 
 
+SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+
+
 def rename_lang(lang: str) -> str:
     """
     Get the language code compatible with Lingtrain Aligner.
@@ -274,7 +277,7 @@ def get_emojis() -> str:
     Get all emojis as one string. Function gets no parameters and returns str containing emoji symbols.
     """
     
-    emojis_path = 'mojification/emojis/emojis.txt'
+    emojis_path = f'{SCRIPT_DIRECTORY}/emojis.txt'
     
     with open(emojis_path, 'r', encoding='utf-8') as handle:
         return handle.read()

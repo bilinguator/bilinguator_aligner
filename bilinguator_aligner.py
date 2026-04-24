@@ -7,8 +7,8 @@ from urllib.parse import unquote
 from markupsafe import Markup
 from flask import Flask, jsonify, request, render_template, url_for
 
-import storage
-import fast_mojification
+from storage import storage
+from mojification import fast_mojification
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -481,13 +481,11 @@ def save_file():
 
 @app.route('/mojify', methods=['GET', 'POST'])
 def mojify():
-    remove_alignments()
-
     text1_path = request.json.get('text1_path')
     text2_path = request.json.get('text2_path')
     hash = storage.project_hash(text1_path, text2_path)
 
-    project_folder = f'storage/{hash}'
+    project_folder = f'{SCRIPT_DIRECTORY}/storage/{hash}'
 
     if not os.path.isdir(project_folder):
         os.mkdir(project_folder)
@@ -536,21 +534,7 @@ def demojify():
         'text2': fast_mojification.demojify(request.json.get('text2')),
     }
 
-    remove_alignments()
-
     return json.dumps(response), 200, {'ContentType':'application/json'}
-
-
-def remove_alignments():
-    projects_folder = 'storage'
-    for item in os.listdir(projects_folder):
-        item_folder = f'{projects_folder}/{item}'
-        if os.path.isdir(item_folder):
-            for item_file in os.listdir(item_folder):
-                if item_file in ['alignment.db', 'alignment_0.png']:
-                    os.remove(f'{item_folder}/{item_file}')
-
-remove_alignments()
 
 
 @app.route('/go_to_page', methods=['POST'])
@@ -592,6 +576,9 @@ def go_to_page():
             bookmark
         )
     })
+
+
+storage.garbage_collection()
 
 
 if __name__ == '__main__':
