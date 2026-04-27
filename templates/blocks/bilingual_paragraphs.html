@@ -13,11 +13,15 @@
                         <img class="paragraph-button swap-paragraph-button" src="{{ url_for('static', filename='img/swap_paragraphs_arrows.svg') }}">
                     </div>
                 </div>
-                <textarea lang="{{ lang1 }}" class="paragraph paragraph-left" id="paragraph{{ i+1 }}" data-paragraph="{{ i+1 }}">{{ paragraphs1[i] }}</textarea>
+                <div class="paragraph-container">
+                    <textarea lang="{{ lang1 }}" class="paragraph paragraph-left" id="paragraph{{ i+1 }}" data-paragraph="{{ i+1 }}">{{ paragraphs1[i] }}</textarea>
+                </div>
             </div>
                 
             <div class="right">
-                <textarea lang="{{ lang2 }}" class="paragraph paragraph-right"  data-paragraph="{{ i+1 }}">{{ paragraphs2[i] }}</textarea>
+                <div class="paragraph-container">
+                    <textarea lang="{{ lang2 }}" class="paragraph paragraph-right"  data-paragraph="{{ i+1 }}">{{ paragraphs2[i] }}</textarea>
+                </div>
                 
                 <div class="paragraph-panel paragraph-panel-right">
                     <p class="paragraph-number paragraph-number-right {{ 'paragraph-number-bookmark' if i+1 == bookmark else '' }}">{{ i+1 }}</p>

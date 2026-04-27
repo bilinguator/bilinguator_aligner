@@ -123,7 +123,7 @@ function getCurrentParagraphNumber () {
         return;
     }
 
-    const paragraphPanel = paragraph.parentElement.querySelector('.paragraph-panel');
+    const paragraphPanel = paragraph.parentElement.parentElement.querySelector('.paragraph-panel');
     const paragraphNumber = paragraphPanel.querySelector('.paragraph-number');
     return parseInt(paragraphNumber.innerHTML);
 }
@@ -577,6 +577,248 @@ function updateTextOnScreen () {
         });
     });
 }
+
+
+function downloadFile (filePath, fileName) {
+    const link = document.createElement('a');
+    link.href = filePath;
+    link.download = fileName || filePath.split('/').pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+
+function saveTxt () {
+    const mode = getMode();
+
+    if (mode !== 2) {
+        return;
+    }
+
+    const text1 = getTextBySide('left');
+    const text2 = getTextBySide('right');
+    const fileName = prompt('Please enter file name:', 'bilingual_book.txt');
+
+    if (!fileName) {
+        return;
+    }
+
+    $.ajax({
+        url: '/save_txt',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: text1,
+            text2: text2,
+            file_name: fileName
+        }),
+        success: function (response) {
+            const bookAddress = '/static/downloads/' + fileName;
+            downloadFile(bookAddress);
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function uploadIllustrations() {
+    const illustrationsPicker = document.querySelector('#illustrations-picker');
+    const files = illustrationsPicker.files;
+
+    if (files.length === 0) {
+        return;
+    }
+
+    const formData = new FormData();
+
+    $.each(files, function(i, file) {
+        formData.append('illustrations', file);
+    });
+
+
+    const bookAddressLeft = document.querySelector('#book-address-left').value;
+    const bookAddressRight = document.querySelector('#book-address-right').value;
+
+    formData.append('text1_path', bookAddressLeft);
+    formData.append('text2_path', bookAddressRight);
+
+    $.ajax({
+        url: '/upload_illustrations',
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+            showMessage('Successfuly uploaded: ' + response.count + ' illustration(s)!');
+            openIllustrationsRenamingPanel();
+        },
+        error: function(xhr, status, error) {
+            console.error('Ошибка:', error);
+            showMessage('An error occured!');
+        }
+    });
+}
+
+
+function openIllustrationsRenamingPanel (bookAddressLeft = null, bookAddressRight = null) {
+    bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
+    bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
+
+
+    $.ajax({
+        url: '/open_illustrations_renaming_panel',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1_path: bookAddressLeft,
+            text2_path: bookAddressRight,
+        }),
+        success: function (response) {
+            const mainArea = document.querySelector('.main-area');
+            mainArea.insertAdjacentHTML('afterbegin', response['template']);
+
+            const illustrationNames = document.querySelectorAll('.illustration-name');
+            illustrationNames.forEach((illustrationName) => {
+                illustrationName.addEventListener('blur', () => {
+                    illustrationName.value = illustrationName.value.trim();
+                    sortIllustrations();
+                });
+            });
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function sortIllustrations () {
+    const container = document.querySelector('.illustration-names-list');
+    const items = Array.from(container.querySelectorAll('.illustration-item'));
+
+    items.sort((a, b) => {
+    // Получаем значения и приводим к нижнему регистру для сравнения
+    const originalNameA = a.querySelector('.illustration-name').value.trim();
+    const originalNameB = b.querySelector('.illustration-name').value.trim();
+
+    const nameA = originalNameA.toLowerCase();
+    const nameB = originalNameB.toLowerCase();
+
+    const coverWord = 'cover';
+
+    // Проверяем наличие слова "cover"
+    const hasCoverA = originalNameA === coverWord;
+    const hasCoverB = originalNameB === coverWord;
+
+    // Логика приоритета:
+    if (hasCoverA && !hasCoverB) return -1; // A идет первым
+    if (!hasCoverA && hasCoverB) return 1;  // B идет первым
+
+    // Если оба с "cover" или оба без — сортируем по алфавиту
+    return nameA.localeCompare(nameB);
+    });
+
+    // Перерисовываем элементы в контейнере
+    items.forEach(item => container.appendChild(item));
+}
+
+
+function closeIllustrationsRenamingPanel () {
+    document.querySelector('.illustrations-renaming-panel').remove();
+}
+
+
+function renameIllustrations () {
+    const illustrationNames = document.querySelectorAll('.illustration-name');
+    let illustrationRenaming = Array();
+
+    illustrationNames.forEach((illustrationName) => {
+        illustrationRenaming[illustrationName.dataset.originalName] = illustrationName.value;
+    });
+
+    const newNames = Object.values(illustrationRenaming);
+
+    const hasDuplicates = newNames.some((item, index) => {
+        return newNames.indexOf(item) !== index;
+    });
+
+    if (hasDuplicates) {
+        showMessage('Avoid repeating file names!');
+        return false;
+    }
+
+    $.ajax({
+        url: '/rename_illustrations',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            renaming: Object.assign({}, illustrationRenaming),
+        }),
+        success: function (response) {
+            showMessage('Illustrations successfully renamed!');
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function removeIllustrationPreview (paragraph) {
+    const currentPreviews = paragraph.parentElement.querySelectorAll('.illustration-preview');
+    if (currentPreviews) {
+        currentPreviews.forEach((currentPreview) => {
+            currentPreview.remove();
+        });
+    }
+}
+
+
+function insertIllustrationPreview (paragraph) {
+    removeIllustrationPreview(paragraph);
+
+    const match = paragraph.value.match(/<img(\d+)>/);
+    const illustrationNumber = match ? match[1] : null;
+
+    if (!illustrationNumber) {
+        return;
+    }
+
+    const illustrationPath = `${illustrationsFolder}/${illustrationNumber}.png`;
+    const illustrationHTML = `<img class="illustration-preview" src="${illustrationPath}">`;
+
+    paragraph.insertAdjacentHTML('afterend', illustrationHTML);
+}
+
+
+function makeIllustrationPreviewsFunctional () {
+    document.querySelectorAll('.paragraph').forEach((paragraph) => {
+        insertIllustrationPreview(paragraph);
+
+        paragraph.addEventListener('input', () => {
+            insertIllustrationPreview(paragraph);
+        });
+    });
+}
+
+makeIllustrationPreviewsFunctional();
 
 
 equalizeParagraphCountsInTexts();

@@ -2,7 +2,9 @@
 <html>
     {% include 'blocks/head.html' %}
     <body>
+        <input type="file" id="illustrations-picker" multiple accept=".png" hidden>
         {% include 'blocks/header.html' %}
+        {{ cover_HTML | safe }}
         <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }}">
             {{ home_screen }}
             {{ paragraphs }}
@@ -20,6 +22,9 @@
     sessionStorage.text2 = {{ text2 | tojson }};
 
     rootFolder = {{ root_folder | tojson }};
+
+    hash = {{ hash | tojson }};
+    illustrationsFolder = hash !== '' ? `/static/storage/${hash}/illustrations` : '';
 
     paragraphsPerPage = {{ paragraphs_per_page | tojson }};
 
@@ -230,6 +235,32 @@
             success: function (response) {
                 document.querySelector('.bookmark-number').innerText = '∅';
                 updateBookmarkOnScreen();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function removeIllustrations (bookAddressLeft = null, bookAddressRight = null) {
+        bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
+        bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/remove_illustrations',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+            }),
+            success: function (response) {
+                console.log('Illustrations successfully removed!');
             },
             error: function(xhr, status, error) {
                 console.error('AJAX request failed:', status, error);
@@ -1092,6 +1123,31 @@
                 });
             });
         }
+        
+        const illustrationsDeleteButtons = document.querySelectorAll('.storage-item-delete-button-illustrations');
+        if (illustrationsDeleteButtons) {
+            illustrationsDeleteButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const storageItemPaths = button.parentElement.querySelectorAll('.storage-item-path')
+                    const bookAddressLeft = storageItemPaths[0].innerText;
+                    const bookAddressRight = storageItemPaths[1].innerText;
+                    removeIllustrations(bookAddressLeft, bookAddressRight);
+                    button.parentElement.remove();
+
+                    const illustrationsStorageItems = document.querySelector('.storage-item-illustrations');
+                    if (!illustrationsStorageItems) {
+                        document.querySelector('.storage-items-illustrations').remove();
+                    }
+                });
+            });
+        }
+
+        const panelButtonSaveTxt = document.querySelector('#panel-button-save_txt');
+        if (panelButtonSaveTxt) {
+            panelButtonSaveTxt.addEventListener('click', () => {
+                saveTxt();
+            });
+        }
 
         const panelButtonH = document.querySelector('#panel-button-h');
         if (panelButtonH) {
@@ -1105,7 +1161,7 @@
         
         const panelButtonB = document.querySelector('#panel-button-b');
         if (panelButtonB) {
-            panelButtonB.addEventListener('mousedown', () => {
+            panelButtonB.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     addTagsToParagraph('<b>', '</b>', document.activeElement);
@@ -1135,7 +1191,7 @@
 
         const panelButtonSwithCase = document.querySelector('#panel-button-switch_case');
         if (panelButtonSwithCase) {
-            panelButtonSwithCase.addEventListener('mousedown', () => {
+            panelButtonSwithCase.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
@@ -1145,17 +1201,31 @@
 
         const panelButtonInsertImage = document.querySelector('#panel-button-img');
         if (panelButtonInsertImage) {
-            panelButtonInsertImage.addEventListener('mousedown', () => {
+            panelButtonInsertImage.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     insertImage();
                 }
             });
+
+            panelButtonInsertImage.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+                const illustrationsPicker = document.querySelector('#illustrations-picker');
+                illustrationsPicker.click();
+            });
         }
+
+        const illustrationsPicker = document.querySelector('#illustrations-picker');
+        if (illustrationsPicker) {
+            illustrationsPicker.addEventListener('change', () => {
+                uploadIllustrations();
+            });
+        }
+
 
         const panelButtonDivision = document.querySelector('#panel-button-division');
         if (panelButtonDivision) {
-            panelButtonDivision.addEventListener('mousedown', () => {
+            panelButtonDivision.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     splitParagraph();
@@ -1165,7 +1235,7 @@
 
         const panelButtonDivisionByNewLine = document.querySelector('#panel-button-division_by_newline');
         if (panelButtonDivisionByNewLine) {
-            panelButtonDivisionByNewLine.addEventListener('click', () => {
+            panelButtonDivisionByNewLine.addEventListener('click', (event) => {
                 event.preventDefault();
                 updateAndReloadTexts();
             });
@@ -1173,7 +1243,7 @@
 
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {
-            panelButtonConcatenation.addEventListener('mousedown', () => {
+            panelButtonConcatenation.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     concatenateParagraphs('');
@@ -1183,7 +1253,7 @@
 
         const panelButtonConcatenationSpace = document.querySelector('#panel-button-concatenation_space');
         if (panelButtonConcatenationSpace) {
-            panelButtonConcatenationSpace.addEventListener('mousedown', () => {
+            panelButtonConcatenationSpace.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     concatenateParagraphs(' ');
@@ -1193,7 +1263,7 @@
 
         const panelButtonConcatenationDelimiter = document.querySelector('#panel-button-concatenation_delimiter');
         if (panelButtonConcatenationDelimiter) {
-            panelButtonConcatenationDelimiter.addEventListener('mousedown', () => {
+            panelButtonConcatenationDelimiter.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
                     concatenateParagraphs(delimiter);
@@ -1235,8 +1305,16 @@
                     const lang1 = document.querySelector('#languages-dropdown-list-left').value;
                     const lang2 = document.querySelector('#languages-dropdown-list-right').value;
 
-                    printBilingualPDF(sessionStorage.text1, sessionStorage.text2, lang1, lang2,
-                        mode = mode, cover = '', fileName = 'bilingual_book', illustrationsFolder = '/');
+                    printBilingualPDF(
+                        sessionStorage.text1,
+                        sessionStorage.text2,
+                        lang1,
+                        lang2,
+                        mode = mode,
+                        cover = `${illustrationsFolder}/cover.png`,
+                        fileName = 'bilingual_book',
+                        illustrationsFolder = illustrationsFolder
+                    );
                 });
             }
         });
@@ -1435,6 +1513,7 @@
         });
     }
 
+
     // TO DO - Fix error:
     // print_bilingual_pdf.js:1
     // Uncaught SyntaxError: Identifier 'scriptUrl' has already been declared
@@ -1448,4 +1527,3 @@
 {% elif mode == '1' %}
     <script src="{{ url_for('static', filename='scripts/monolingual_script.js') }}"></script>
 {% endif %}
-

@@ -7,11 +7,13 @@ from urllib.parse import unquote
 from markupsafe import Markup
 from flask import Flask, jsonify, request, render_template, url_for
 
-from storage import storage
-from mojification import fast_mojification
+from utils import storage, bilingual_formats, fast_mojification
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIRECTORY = Path(SCRIPT_DIRECTORY).as_posix()
+
+STORAGE_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/storage'
 PARAGRAPHS_PER_PAGE = 100
 
 LANGUAGES_JSON_PATH = os.path.normpath(f'{SCRIPT_DIRECTORY}/static/json/languages.json')
@@ -33,6 +35,7 @@ def render_partial_template(*args, **kwargs):
     """
 
     return Markup(render_template(*args, **kwargs))
+
 
 def get_mode(text1, text2):
     """
@@ -244,7 +247,7 @@ def render_storage_items(mode, storage_items, value_key, heading):
     storage_items:
         * path1
         * path2
-        * value: date for dump; page for bookmark
+        * value: date for dump; page for bookmark; number of illustrations
     """
 
     if (mode != '0') or (not storage_items):
@@ -269,10 +272,17 @@ def render_home_screen(mode):
         value_key='bookmark',
         heading='🔖 Bookmarks',
     )
+    
+    illustrations_list = render_storage_items(
+        mode=mode,
+        storage_items=storage.projects_with_attribute('illustrations'),
+        value_key='illustrations',
+        heading='🖼️ Illustrations',
+    )
 
     return render_partial_template(
         'blocks/home_screen.html',
-        storage_items_panel=bookmarks_list,
+        storage_items_panel=bookmarks_list + illustrations_list,
     )
 
 
@@ -435,6 +445,16 @@ def index():
 
     else:
         paragraphs = ''
+    
+
+    hash = storage.project_hash(text1_path, text2_path) if mode == '2' else None
+    cover_path = storage.get_cover_path(hash) if page == 1 else None
+
+    cover_HTML = f'<img class="cover-preview" src="{cover_path}">' if cover_path else ''
+
+
+    print(cover_path)
+    print(cover_HTML)
 
     return render_template(
         'index.html',
@@ -444,6 +464,8 @@ def index():
         lang2=lang2,
         text1_path=text1_path,
         text2_path=text2_path,
+        hash=hash,
+        cover_HTML=cover_HTML,
         page=page,
         mode=mode,
         languages=LANGUAGES,
@@ -479,24 +501,28 @@ def save_file():
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 
 
+@app.route('/save_txt', methods=['GET', 'POST'])
+def save_txt():
+    text1 = request.json.get('text1')
+    text2 = request.json.get('text2')
+    file_name = request.json.get('file_name')
+    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+
+    bilingual_formats.save_bilingual_txt(text1, text2, book_address)
+    
+    return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+
 @app.route('/mojify', methods=['GET', 'POST'])
 def mojify():
     text1_path = request.json.get('text1_path')
     text2_path = request.json.get('text2_path')
     hash = storage.project_hash(text1_path, text2_path)
 
-    project_folder = f'{SCRIPT_DIRECTORY}/storage/{hash}'
+    project_folder = f'{STORAGE_DIRECTORY}/{hash}'
 
     if not os.path.isdir(project_folder):
         os.mkdir(project_folder)
-
-    # storage.set_attribute(
-    #     path1=text1_path,
-    #     path2=text2_path,
-    #     attribute='alignment',
-    #     value=True,
-    #     set_date=False
-    # )
 
     db_path = f'{project_folder}/alignment.db'
     image_path = f'{project_folder}/alignment.png'
@@ -578,8 +604,109 @@ def go_to_page():
     })
 
 
-storage.garbage_collection()
+@app.route('/upload_illustrations', methods=['POST'])
+def upload_illustrations():
+    text1_path = request.form.get('text1_path')
+    text2_path = request.form.get('text2_path')
+    hash = storage.project_hash(text1_path, text2_path)
+   
+    project_folder = f'{STORAGE_DIRECTORY}/{hash}'
+    if not os.path.isdir(project_folder):
+        os.mkdir(project_folder)
 
+    illustrations_folder = f'{project_folder}/illustrations'
+    if not os.path.isdir(illustrations_folder):
+        os.mkdir(illustrations_folder)
+
+    illustrations = request.files.getlist('illustrations')
+
+    for file in illustrations:
+        if file.filename:
+            file.save(os.path.join(illustrations_folder, file.filename))
+    
+    
+    storage.set_attribute(text1_path, text2_path, 'illustrations', len(os.listdir(illustrations_folder)))
+
+    return jsonify({'status': 'done', 'count': len(illustrations)})
+
+
+@app.route('/remove_illustrations', methods=['POST'])
+def remove_illustrations():
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+
+    hash = storage.project_hash(text1_path, text2_path)
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+
+    if (os.path.isdir(illustrations_folder)):
+        for file in os.listdir(illustrations_folder):
+            os.remove(f'{illustrations_folder}/{file}')
+        
+        os.rmdir(illustrations_folder)
+
+    storage.unset_attribute(text1_path, text2_path, 'illustrations', unset_langs=False, unset_date=True)
+
+    return jsonify({'status': 'success'})
+
+
+def render_illustrations_renaming(text1_path, text2_path):
+    hash = storage.project_hash(text1_path, text2_path)
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+
+    illustration_names = [file_name[:-4] for file_name in os.listdir(illustrations_folder)
+                          if file_name.endswith('.png')]
+    if (not illustration_names):
+        return ''
+
+
+    return render_partial_template(
+        'blocks/illustrations_renaming.html',
+        illustration_names=illustration_names,
+        project=hash,
+    )
+
+
+@app.route('/open_illustrations_renaming_panel', methods=['POST'])
+def open_illustrations_renaming_panel():
+    return jsonify({
+        'template': render_illustrations_renaming(
+            request.json.get('text1_path'),
+            request.json.get('text2_path')
+        )
+    })
+
+
+@app.route('/rename_illustrations', methods=['POST'])
+def rename_illustrations():
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    renaming = request.json.get('renaming')
+
+    hash = storage.project_hash(text1_path, text2_path)
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+    tmp_folder = f'{illustrations_folder}/tmp'
+
+    if not os.path.isdir(tmp_folder):
+        os.mkdir(tmp_folder)
+
+    for old_name, new_name in renaming.items():
+        os.rename(
+            f'{illustrations_folder}/{old_name}.png',
+            f'{tmp_folder}/{new_name}.png',
+        )
+    
+    for old_name, new_name in renaming.items():
+        os.rename(
+            f'{tmp_folder}/{new_name}.png',
+            f'{illustrations_folder}/{new_name}.png',
+        )
+
+    os.rmdir(tmp_folder)
+
+    return jsonify({'status': 'success'})
+
+
+storage.garbage_collection()
 
 if __name__ == '__main__':
     webbrowser.open_new('http://127.0.0.1:2000/')

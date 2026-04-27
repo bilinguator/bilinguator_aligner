@@ -6,7 +6,8 @@ from pathlib import Path
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-PROJECTS_JSON =  os.path.normpath(f'{SCRIPT_DIRECTORY}/projects.json')
+PROJECTS_DIRECTORY = os.path.normpath(f'{SCRIPT_DIRECTORY}/../static/storage')
+PROJECTS_JSON =  os.path.normpath(f'{PROJECTS_DIRECTORY}/projects.json')
 
 
 def read_projects():
@@ -145,22 +146,44 @@ def get_attribute_value(path1, path2, attribute):
         return
 
 
+def get_cover_path(hash):
+    relative_illustrations_folder = f'/static/storage/{hash}/illustrations'
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/..{relative_illustrations_folder}'
+
+    if not os.path.isdir(illustrations_folder):
+        return None
+    
+    cover_path = f'{illustrations_folder}/cover.png'
+
+    if os.path.isfile(cover_path):
+        return f'{relative_illustrations_folder}/cover.png'
+
+
 def remove_alignments():
-    for item in os.listdir(SCRIPT_DIRECTORY):
-        item_folder = f'{SCRIPT_DIRECTORY}/{item}'
+    for item in os.listdir(PROJECTS_DIRECTORY):
+        item_folder = f'{PROJECTS_DIRECTORY}/{item}'
         if os.path.isdir(item_folder):
             for item_file in os.listdir(item_folder):
                 if item_file in ['alignment.db', 'alignment_0.png']:
                     os.remove(f'{item_folder}/{item_file}')
 
 
-def remove_empty_folders():
-    for item in os.listdir(SCRIPT_DIRECTORY):
-        item_folder = f'{SCRIPT_DIRECTORY}/{item}'
+def remove_empty_project_folders():
+    for item in os.listdir(PROJECTS_DIRECTORY):
+        item_folder = f'{PROJECTS_DIRECTORY}/{item}'
         if os.path.isdir(item_folder) and not os.listdir(item_folder):
             os.rmdir(item_folder)
 
 
+def remove_downloads():
+    downloads_folder = f'{SCRIPT_DIRECTORY}/../static/downloads'
+    
+    for file_name in os.listdir(downloads_folder):
+        os.remove(f'{downloads_folder}/{file_name}')
+
+
+
 def garbage_collection():
     remove_alignments()
-    remove_empty_folders()
+    remove_empty_project_folders()
+    remove_downloads()

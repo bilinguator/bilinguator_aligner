@@ -277,7 +277,7 @@ def get_emojis() -> str:
     Get all emojis as one string. Function gets no parameters and returns str containing emoji symbols.
     """
     
-    emojis_path = f'{SCRIPT_DIRECTORY}/emojis.txt'
+    emojis_path = f'{SCRIPT_DIRECTORY}/../static/emojis.txt'
     
     with open(emojis_path, 'r', encoding='utf-8') as handle:
         return handle.read()

@@ -1,0 +1,25 @@
+<div class="illustrations-renaming-panel">
+    <button class="explorer-close-button explorer-close-button-{{ side }}" onclick="closeIllustrationsRenamingPanel()">×</button>
+    <h2 class="illustrations-renaming-heading">Set names for illustrations</h2>
+    <p class="illustrations-message">Name the illustration assigned to be a cover as “cover”. The rest of illustrations should be named as numerals starting from one: “1”, “2”, etc.</p>
+    <div class="illustration-names-list">
+    {% for illustration_name in illustration_names %}
+        <div class="illustration-item">
+            <img src="{{ url_for('static', filename='storage/' + project + '/illustrations/' + illustration_name +'.png') }}"
+              class="illustration"
+              alt="{{ illustration_name }}"
+              title="{{ illustration_name }}">
+            
+            
+            <div class="illustration-name-panel">
+                <input class="illustration-name" type="text" value="{{ illustration_name }}" data-original-name="{{ illustration_name }}">
+                <!-- <textarea class="illustration-name">{{ illustration_name }}</textarea> -->
+                <p class="illustration-extension">.png</p>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    <button class="book-panel-button illustrations-renaming-button" onclick="renameIllustrations()">
+        Rename illustrations
+    </button>
+</div>
