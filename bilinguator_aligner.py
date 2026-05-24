@@ -548,6 +548,39 @@ def save_fb2():
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 
 
+@app.route('/save_epub', methods=['GET', 'POST'])
+def save_epub():
+    text1 = request.json.get('text1')
+    text2 = request.json.get('text2')
+    lang1 = request.json.get('lang1')
+    lang2 = request.json.get('lang2')
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    file_name = request.json.get('file_name')
+
+    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+
+    hash = storage.project_hash(text1_path, text2_path)
+    cover_path = storage.get_cover_path(hash)
+    cover_path = f'{SCRIPT_DIRECTORY}/{cover_path}' if cover_path else ''
+
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+    illustrations_folder = illustrations_folder if os.path.isdir(illustrations_folder) else illustrations_folder
+
+    bilingual_formats.save_bilingual_epub(
+        text1,
+        text2,
+        output_file_address=book_address, 
+        cover_address=cover_path,
+        pics_folder=illustrations_folder, 
+        lang1=lang1,
+        lang2=lang2,
+        book_id=hash
+    )
+    
+    return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+
 @app.route('/mojify', methods=['GET', 'POST'])
 def mojify():
     text1_path = request.json.get('text1_path')

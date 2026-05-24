@@ -1207,6 +1207,13 @@
             });
         }
 
+        const panelButtonSaveEpub = document.querySelector('#panel-button-save_epub');
+        if (panelButtonSaveEpub) {
+            panelButtonSaveEpub.addEventListener('click', () => {
+                saveEpub();
+            });
+        }
+
         const panelButtonH = document.querySelector('#panel-button-h');
         if (panelButtonH) {
             panelButtonH.addEventListener('mousedown', (event) => {

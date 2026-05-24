@@ -630,6 +630,41 @@ function saveFb2 () {
 }
 
 
+function saveEpub () {
+    const fileName = prompt('Please enter file name:', 'bilingual_book.epub');
+
+    if (!fileName) {
+        return;
+    }
+
+    $.ajax({
+        url: '/save_epub',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: getTextBySide('left'),
+            text2: getTextBySide('right'),
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            lang1: document.querySelector('#languages-dropdown-list-left').value,
+            lang2: document.querySelector('#languages-dropdown-list-right').value,
+            file_name: fileName
+        }),
+        success: function (response) {
+            const bookAddress = '/static/downloads/' + fileName;
+            downloadFile(bookAddress);
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
 function uploadIllustrations() {
     const illustrationsPicker = document.querySelector('#illustrations-picker');
     const files = illustrationsPicker.files;
