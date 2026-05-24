@@ -47,6 +47,12 @@
         history.replaceState(null, '', url.toString());
     }
 
+    function countSubstrings (string, substring) {
+        const regex = new RegExp(substring, 'g'); 
+        const matches = string.match(regex) || []; 
+        return matches.length;
+    }
+
     function makeProgressFunctional () {
         const percentProgress = document.querySelector('.percent');
     
@@ -59,8 +65,22 @@
                 const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
                 const value = 100 * progress;
     
-                percentProgress.textContent = Math.round(value) + '%';
+                percentProgress.innerText = Math.round(value) + '%';
             });
+
+            paragraph.addEventListener('input', () => {
+                const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
+                document.querySelector('.total-count').innerText = paragraphsCount;
+            });
+            
+            paragraph.addEventListener('selectionchange', () => {
+                const position = paragraph.selectionEnd;
+                const previousText = paragraph.value.substring(0, position);
+                const lineIndex = countSubstrings(previousText, '\n') + 1;
+
+                document.querySelector('.bookmark-number').innerText = lineIndex;
+            });
+
         {% elif mode == '2' %}
             document.addEventListener('scroll', () => {
     
@@ -947,11 +967,42 @@
             return false;
         }
     }
+
+
+    function indexOfNthSubstring(text, substring, n) {
+        let index = -1;
+        let fromIndex = 0;
+
+        for (let i = 0; i < n; i++) {
+            index = text.indexOf(substring, fromIndex);
+            
+            if (index === -1) {
+                return -1;
+            }
+
+            fromIndex = index + substring.length;
+        }
+
+        return index;
+    }
     
 
-    function toCurrentPosition(targetParagraphIndex = null) {
+    function toCurrentPosition (targetParagraphIndex = null) {
         const mode = getMode();
-        if (mode === 2) {
+
+
+        if (mode === 1) {
+            const paragraph = document.querySelector('.monolingual-paragraph');
+
+            targetParagraphIndex = targetParagraphIndex ? targetParagraphIndex : document.querySelector('.bookmark-number').innerText;
+            targetParagraphIndex = parseInt(targetParagraphIndex);
+
+            const position = targetParagraphIndex === 1 ? 0 : indexOfNthSubstring(paragraph.value, '\n', targetParagraphIndex - 1) + 1;
+            
+            paragraph.setSelectionRange(position, position);
+            paragraph.blur();
+            paragraph.focus();
+        } else if (mode === 2) {
 
             const paragraphsCount = parseInt(
                 document.querySelector('.total-count').innerText
@@ -1146,6 +1197,13 @@
         if (panelButtonSaveTxt) {
             panelButtonSaveTxt.addEventListener('click', () => {
                 saveTxt();
+            });
+        }
+
+        const panelButtonSaveFb2 = document.querySelector('#panel-button-save_fb2');
+        if (panelButtonSaveFb2) {
+            panelButtonSaveFb2.addEventListener('click', () => {
+                saveFb2();
             });
         }
 
@@ -1421,10 +1479,7 @@
 
     function setParagraphIndex (paragraphIndex, side = 'left') {
         const mode = getMode();
-        if (mode === 1) {
-            document.querySelector('#paragraph-index').value = paragraphIndex;
-            sessionStorage['paragraphIndex'] = paragraphIndex;
-        } else if (mode === 2) {
+        if (mode === 2) {
             document.querySelector('#paragraph-index-' + side).value = paragraphIndex;
             sessionStorage[side + 'ParagraphIndex'] = paragraphIndex;
         }
@@ -1458,9 +1513,7 @@
 
         const mode = getMode();
 
-        if (mode === 1) {
-            console.log('TO BE IMPLEMENTED!');
-        } else if (mode === 2) {
+        if (mode === 2) {
             document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
                 const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
                 const paragraphIndex = paragraphNumber.innerText;

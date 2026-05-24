@@ -1,15 +1,14 @@
 <div class="progress subpanel">
-    {% if mode == '2' %}
-        <p class="bookmark-number">
-            {{ bookmark }}
-        </p>
-        <p class="slash">
-            /
-        </p>
-        <p class="total-count">
-            {{ paragraphs_count }}
-        </p>
-    {% endif %}
+    <p class="bookmark-number">
+        {{ bookmark }}
+    </p>
+    <p class="slash">
+        /
+    </p>
+    <p class="total-count">
+        {{ paragraphs_count }}
+    </p>
+
     <p class="percent" min="{{ min_percent }}" max="{{ max_percent }}">
         {{ min_percent }}%
     </p>

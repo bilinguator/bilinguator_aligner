@@ -75,24 +75,6 @@ function getCurrentTextFromBilingualMode (side) {
 }
 
 
-function indexOfNthSubstring(text, substring, n) {
-    let index = -1;
-    let fromIndex = 0;
-
-    for (let i = 0; i < n; i++) {
-        index = text.indexOf(substring, fromIndex);
-        
-        if (index === -1) {
-            return -1;
-        }
-
-        fromIndex = index + substring.length;
-    }
-
-    return index;
-}
-
-
 function getFullTextFromBilingualMode (side) {
     let text = side == 'left' ? sessionStorage.text1 : sessionStorage.text2;
 
@@ -136,13 +118,6 @@ function getCurrentParagraphSide () {
     }
 
     return paragraph.classList.contains('paragraph-left') ? 'left' : 'right';
-}
-
-
-function countSubstrings (string, substring) {
-  const regex = new RegExp(substring, 'g'); 
-  const matches = string.match(regex) || []; 
-  return matches.length;
 }
 
 
@@ -590,14 +565,6 @@ function downloadFile (filePath, fileName) {
 
 
 function saveTxt () {
-    const mode = getMode();
-
-    if (mode !== 2) {
-        return;
-    }
-
-    const text1 = getTextBySide('left');
-    const text2 = getTextBySide('right');
     const fileName = prompt('Please enter file name:', 'bilingual_book.txt');
 
     if (!fileName) {
@@ -612,8 +579,43 @@ function saveTxt () {
         },
         contentType: 'application/json;charset=UTF-8',
         data: JSON.stringify({
-            text1: text1,
-            text2: text2,
+            text1: getTextBySide('left'),
+            text2: getTextBySide('right'),
+            file_name: fileName
+        }),
+        success: function (response) {
+            const bookAddress = '/static/downloads/' + fileName;
+            downloadFile(bookAddress);
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function saveFb2 () {
+    const fileName = prompt('Please enter file name:', 'bilingual_book.fb2');
+
+    if (!fileName) {
+        return;
+    }
+
+    $.ajax({
+        url: '/save_fb2',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: getTextBySide('left'),
+            text2: getTextBySide('right'),
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            lang1: document.querySelector('#languages-dropdown-list-left').value,
+            lang2: document.querySelector('#languages-dropdown-list-right').value,
             file_name: fileName
         }),
         success: function (response) {
@@ -708,28 +710,23 @@ function sortIllustrations () {
     const items = Array.from(container.querySelectorAll('.illustration-item'));
 
     items.sort((a, b) => {
-    // Получаем значения и приводим к нижнему регистру для сравнения
-    const originalNameA = a.querySelector('.illustration-name').value.trim();
-    const originalNameB = b.querySelector('.illustration-name').value.trim();
+        const originalNameA = a.querySelector('.illustration-name').value.trim();
+        const originalNameB = b.querySelector('.illustration-name').value.trim();
 
-    const nameA = originalNameA.toLowerCase();
-    const nameB = originalNameB.toLowerCase();
+        const nameA = originalNameA.toLowerCase();
+        const nameB = originalNameB.toLowerCase();
 
-    const coverWord = 'cover';
+        const coverWord = 'cover';
 
-    // Проверяем наличие слова "cover"
-    const hasCoverA = originalNameA === coverWord;
-    const hasCoverB = originalNameB === coverWord;
+        const hasCoverA = originalNameA === coverWord;
+        const hasCoverB = originalNameB === coverWord;
 
-    // Логика приоритета:
-    if (hasCoverA && !hasCoverB) return -1; // A идет первым
-    if (!hasCoverA && hasCoverB) return 1;  // B идет первым
+        if (hasCoverA && !hasCoverB) return -1; // A идет первым
+        if (!hasCoverA && hasCoverB) return 1;  // B идет первым
 
-    // Если оба с "cover" или оба без — сортируем по алфавиту
-    return nameA.localeCompare(nameB);
+        return nameA.localeCompare(nameB, undefined, {numeric: true, sensitivity: 'base'});
     });
 
-    // Перерисовываем элементы в контейнере
     items.forEach(item => container.appendChild(item));
 }
 

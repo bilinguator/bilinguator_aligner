@@ -20,9 +20,6 @@
             "concatenation_delimiter"
         ],
         [
-            "template:paragraph_number_inputs",
-            "focus",
-            "bookmark",
             "template:progress"
         ],
         [
@@ -32,6 +29,7 @@
     "2": [
         [
             "save",
+            "backup",
             "save_txt",
             "save_fb2",
             "save_epub"

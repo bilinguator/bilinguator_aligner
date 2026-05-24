@@ -166,13 +166,15 @@ def render_progress(mode, text1, text2, page=1, bookmark='∅'):
         return ''
     
     paragraphs_count = max(
-        len(str(text1).split('\n')),
-        len(str(text2).split('\n')),
+        len(str(text1).split('\n')) if text1 else 0,
+        len(str(text2).split('\n')) if text2 else 0,
     )
     
     if mode == '1':
         min_percent = 0
         max_percent = 100
+
+        bookmark = '1'
     elif mode == '2': 
 
         first_paragraph, last_paragraph = get_first_last_paragraphs(text1, text2, page)
@@ -509,6 +511,39 @@ def save_txt():
     book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
 
     bilingual_formats.save_bilingual_txt(text1, text2, book_address)
+    
+    return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+
+@app.route('/save_fb2', methods=['GET', 'POST'])
+def save_fb2():
+    text1 = request.json.get('text1')
+    text2 = request.json.get('text2')
+    lang1 = request.json.get('lang1')
+    lang2 = request.json.get('lang2')
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    file_name = request.json.get('file_name')
+
+    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+
+    hash = storage.project_hash(text1_path, text2_path)
+    cover_path = storage.get_cover_path(hash)
+    cover_path = f'{SCRIPT_DIRECTORY}/{cover_path}' if cover_path else ''
+
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+    illustrations_folder = illustrations_folder if os.path.isdir(illustrations_folder) else illustrations_folder
+
+    bilingual_formats.save_bilingual_fb2(
+        text1,
+        text2, 
+        output_file_address=book_address, 
+        cover_address=cover_path,
+        pics_folder=illustrations_folder, 
+        src_lang=lang1,
+        lang=lang2,
+        book_id=hash
+    )
     
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 

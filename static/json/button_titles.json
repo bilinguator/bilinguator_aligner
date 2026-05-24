@@ -5,6 +5,7 @@
     "mojification": "Mojify texts",
 
     "save": "Save texts (Ctrl+S)",
+    "backup": "Backup",
     "save_txt": "Save bilingual TXT",
     "save_fb2": "Save bilingual FB2",
     "save_epub": "Save bilingual EPUB",
