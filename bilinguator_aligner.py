@@ -249,7 +249,7 @@ def render_storage_items(mode, storage_items, value_key, heading):
     storage_items:
         * path1
         * path2
-        * value: date for dump; page for bookmark; number of illustrations
+        * value: date for page for bookmark; number of illustrations
     """
 
     if (mode != '0') or (not storage_items):
@@ -454,10 +454,6 @@ def index():
 
     cover_HTML = f'<img class="cover-preview" src="{cover_path}">' if cover_path else ''
 
-
-    print(cover_path)
-    print(cover_HTML)
-
     return render_template(
         'index.html',
         text1=text1,
@@ -500,6 +496,40 @@ def save_file():
     with open(book_address, 'w', encoding='utf-8') as file:
         file.write(text)
     
+    return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+import zipfile
+
+@app.route('/save_assets', methods=['GET', 'POST'])
+def save_assets():
+    text1_path = request.json.get('text1_path')
+    text2_path = request.json.get('text2_path')
+    lang1 = request.json.get('lang1')
+    lang2 = request.json.get('lang2')
+    file_name = request.json.get('file_name')
+
+    hash = storage.project_hash(text1_path, text2_path)
+    illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+    bookmark = storage.get_attribute_value(text1_path, text2_path, 'bookmark')
+
+    meta_data = f'lang1: {lang1}\nlang2: {lang2}'
+    meta_data += f'\nbookmark: {bookmark}' if bookmark else ''
+
+    zip_path = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(text1_path, arcname=os.path.basename(text1_path))
+        zipf.write(text2_path, arcname=os.path.basename(text2_path))
+
+        zipf.writestr('meta_data.txt', meta_data)
+
+        for root, dirs, files in os.walk(illustrations_folder):
+            for file in files:
+                full_path = os.path.join(root, file)
+
+                relative_path = os.path.relpath(full_path, start=os.path.dirname(illustrations_folder))
+                zipf.write(full_path, arcname=relative_path)
+
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 
 
@@ -577,6 +607,24 @@ def save_epub():
         lang2=lang2,
         book_id=hash
     )
+    
+    return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
+
+
+@app.route('/backup', methods=['GET', 'POST'])
+def backup():
+    text1 = request.json.get('text1', None)
+    text2 = request.json.get('text2', None)
+    text1_path = request.json.get('text1_path', None)
+    text2_path = request.json.get('text2_path', None)
+
+    for text, text_path in [(text1, text1_path), (text2, text2_path)]:
+        print(text_path)
+        if text and text_path:
+            text_path = text_path.split('.')[0] + '-dump.txt'
+
+            with open(text_path, 'w', encoding='utf-8') as file:
+                file.write(text)
     
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 

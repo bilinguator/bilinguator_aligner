@@ -577,8 +577,41 @@ function downloadFile (filePath, fileName) {
 }
 
 
+function saveAssets (side) {
+    const fileName = prompt('Please enter the name for your ZIP archive where to save all your assets:', 'bilingual_archive.zip');
+
+    if (!fileName) {
+        return;
+    }
+
+    $.ajax({
+        url: '/save_assets',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            lang1: document.querySelector('#languages-dropdown-list-left').value,
+            lang2: document.querySelector('#languages-dropdown-list-right').value,
+            file_name: fileName
+        }),
+        success: function (response) {
+            const archiveAddress = '/static/downloads/' + fileName;
+            downloadFile(archiveAddress);
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
 function saveTxt () {
-    const fileName = prompt('Please enter file name:', 'bilingual_book.txt');
+    const fileName = prompt('Please enter the name for your bilingual TXT file:', 'bilingual_book.txt');
 
     if (!fileName) {
         return;
@@ -609,7 +642,7 @@ function saveTxt () {
 
 
 function saveFb2 () {
-    const fileName = prompt('Please enter file name:', 'bilingual_book.fb2');
+    const fileName = prompt('Please enter the name for your bilingual FB2 file:', 'bilingual_book.fb2');
 
     if (!fileName) {
         return;
@@ -644,7 +677,7 @@ function saveFb2 () {
 
 
 function saveEpub () {
-    const fileName = prompt('Please enter file name:', 'bilingual_book.epub');
+    const fileName = prompt('Please enter the name for your bilingual EPUB file:', 'bilingual_book.epub');
 
     if (!fileName) {
         return;

@@ -603,6 +603,37 @@
     }
 
 
+    function backup () {
+        data = {};
+
+        ['1', '2'].forEach((index) => {
+            if (sessionStorage['text'+index]  && sessionStorage['text'+index] !== 'null') {
+                data['text'+index] = sessionStorage['text'+index]
+
+                const side = index === '1' ? 'left' : 'right';
+                data['text'+index+'_path'] = document.querySelector('#book-address-' + side).value;
+            }
+        });
+
+        $.ajax({
+            url: '/backup',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(data),
+            success: function (response) {
+                console.log('Backup successfully saved!');
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
     function isAnyFileChanged () {
         return sessionStorage.leftFileChanged === 'true' || sessionStorage.rightFileChanged === 'true';
     }
@@ -749,6 +780,13 @@
             document.querySelector('#panel-button-save').addEventListener('click', () => {
                 saveBook('both');
             });
+
+            if (getMode() === 2) {
+                document.querySelector('#panel-button-save').addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    saveAssets();
+                });
+            }
         }
     
         ['left', 'right'].forEach((side) => {
@@ -1193,6 +1231,13 @@
             });
         }
 
+        const panelButtonSaveDump = document.querySelector('#panel-button-backup');
+        if (panelButtonSaveDump) {
+            panelButtonSaveDump.addEventListener('click', () => {
+                backup();
+            });
+        }
+
         const panelButtonSaveTxt = document.querySelector('#panel-button-save_txt');
         if (panelButtonSaveTxt) {
             panelButtonSaveTxt.addEventListener('click', () => {
@@ -1287,7 +1332,6 @@
             });
         }
 
-
         const panelButtonDivision = document.querySelector('#panel-button-division');
         if (panelButtonDivision) {
             panelButtonDivision.addEventListener('mousedown', (event) => {
@@ -1297,14 +1341,6 @@
                 }
             });
         }
-
-        // const panelButtonDivisionByNewLine = document.querySelector('#panel-button-division_by_newline');
-        // if (panelButtonDivisionByNewLine) {
-        //     panelButtonDivisionByNewLine.addEventListener('click', (event) => {
-        //         event.preventDefault();
-        //         updateAndReloadTexts();
-        //     });
-        // }
 
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {

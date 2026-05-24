@@ -2,7 +2,8 @@ import os
 import re
 import base64
 from datetime import datetime
-
+import shutil
+import zipfile
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -29,11 +30,6 @@ def save_bilingual_txt(text1, text2, book_address):
 
     with open(book_address, 'w', encoding='utf-8') as file:
         file.write(bilingual_text)
-
-
-def save_bilingual_fb2(text1, text2):
-    pass
-
 
 
 
@@ -191,10 +187,6 @@ def save_bilingual_fb2(text1, text2, output_file_address,
         f.write(fb_content)
 
 
-
-
-import shutil
-import zipfile
 
 def save_bilingual_epub(text1, text2, output_file_address, 
                          cover_address='', pics_folder='', 
