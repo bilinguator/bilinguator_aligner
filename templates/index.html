@@ -1298,13 +1298,13 @@
             });
         }
 
-        const panelButtonDivisionByNewLine = document.querySelector('#panel-button-division_by_newline');
-        if (panelButtonDivisionByNewLine) {
-            panelButtonDivisionByNewLine.addEventListener('click', (event) => {
-                event.preventDefault();
-                updateAndReloadTexts();
-            });
-        }
+        // const panelButtonDivisionByNewLine = document.querySelector('#panel-button-division_by_newline');
+        // if (panelButtonDivisionByNewLine) {
+        //     panelButtonDivisionByNewLine.addEventListener('click', (event) => {
+        //         event.preventDefault();
+        //         updateAndReloadTexts();
+        //     });
+        // }
 
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {
@@ -1454,7 +1454,7 @@
                 insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
             }
             
-            if (event.ctrlKey && event.code === 'Enter' && !event.repeat) {
+            if (event.code === 'Enter' && !event.repeat) {
                 event.preventDefault();
 
                 if (getMode() === 2) {

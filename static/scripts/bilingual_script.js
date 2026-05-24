@@ -75,22 +75,35 @@ function getCurrentTextFromBilingualMode (side) {
 }
 
 
+function countExtraLineBreaks (side) {
+    const paragraphs = document.querySelectorAll('.paragraph-' + side);
+
+    let extraLineBreaksCount = 0;
+    paragraphs.forEach((paragraph) => {
+        extraLineBreaksCount += countSubstrings(paragraph.value, '\n');
+    });
+
+    return extraLineBreaksCount;
+}
+
+
 function getFullTextFromBilingualMode (side) {
     let text = side == 'left' ? sessionStorage.text1 : sessionStorage.text2;
 
     const paragraphNumberDivs = document.querySelectorAll('.paragraph-number-' + side);
     const paragraphStartIndex = parseInt(paragraphNumberDivs[0].innerHTML) - 1;
     const paragraphEndIndex = parseInt(paragraphNumberDivs[paragraphNumberDivs.length - 1].innerHTML);
-
+    console.log(paragraphEndIndex);
     const startIndex = indexOfNthSubstring(text, '\n', paragraphStartIndex);
     const endIndex = indexOfNthSubstring(text, '\n', paragraphEndIndex);
     
-    const firstPart = text.slice(0, startIndex+1);
+    const firstPart = text.slice(0, startIndex + 1);
     const secondPart = getCurrentTextFromBilingualMode(side);
     const thirdPart = endIndex === -1 ? '' : text.slice(endIndex);
     
     return firstPart + secondPart + thirdPart;
 }
+
 
 document.querySelector('.page-number').addEventListener('keydown', (event) => {
     if (event.code === 'Enter') {

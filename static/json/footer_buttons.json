@@ -48,7 +48,6 @@
         ],
         [
             "division",
-            "division_by_newline",
             "concatenation",
             "concatenation_space",
             "concatenation_delimiter"
