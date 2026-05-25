@@ -144,7 +144,6 @@
     function openExplorer (path = null, isFolder = true, side='left') {
 
         if (document.querySelector('.explorer')) {
-            console.log('Explorer open!');
             closeExplorer('both');
         }
 
@@ -553,7 +552,7 @@
         let text = '';
         const mode = getMode();
 
-        if (mode === 1 && sessionStorage[side + 'FileFound'] === 'true') {
+        if (mode === 1) {
             return document.querySelector('.monolingual-paragraph').value;
         } else if (mode === 2) {
             return getFullTextFromBilingualMode(side);
@@ -900,10 +899,6 @@
         if (paragraph.classList.contains('paragraph')) {
             const start = paragraph.selectionStart;
             const end = paragraph.selectionEnd;
-            
-            // if (start === end) {
-            //     return;
-            // }
 
             const paragraphValue = paragraph.value;
             let taggedParagraphValue = paragraphValue.substring(0, start) + tag1;
@@ -923,6 +918,7 @@
 
             if (getMode() === 2) {
                 fixTextAreas();
+                insertIllustrationPreview(paragraph);
             }
         }
     }
@@ -960,6 +956,7 @@
 
         if (getMode() === 2) {
             fixTextAreas();
+            insertIllustrationPreview(paragraph);
         }
     }
 
@@ -1144,7 +1141,6 @@
             shiftParagraphButtons.forEach((button) => {
                 button.addEventListener('click', (event) => {
                     const side = getSideByParagraphButton(button);
-                    console.log(side);
                     swapParagraphsByButton(button, side);
                 });
             });
@@ -1318,11 +1314,13 @@
                 }
             });
 
-            panelButtonInsertImage.addEventListener('contextmenu', (event) => {
-                event.preventDefault();
-                const illustrationsPicker = document.querySelector('#illustrations-picker');
-                illustrationsPicker.click();
-            });
+            if (getMode() === 2) {
+                panelButtonInsertImage.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    const illustrationsPicker = document.querySelector('#illustrations-picker');
+                    illustrationsPicker.click();
+                });
+            }
         }
 
         const illustrationsPicker = document.querySelector('#illustrations-picker');
@@ -1342,12 +1340,30 @@
             });
         }
 
+        const panelButtonDivisionByDelimiter = document.querySelector('#panel-button-division_by_delimiter');
+        if (panelButtonDivisionByDelimiter) {
+            panelButtonDivisionByDelimiter.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    applyToSelection(divideByDelimiter);
+                }
+            });
+        }
+
         const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
         if (panelButtonConcatenation) {
             panelButtonConcatenation.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
-                    concatenateParagraphs('');
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, '');
+                    } else if (mode === 2) {
+                        const paragraphNumber = document.activeElement.dataset.paragraph;
+                        concatenateParagraphs('');
+                    }
                 }
             });
         }
@@ -1357,7 +1373,14 @@
             panelButtonConcatenationSpace.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
-                    concatenateParagraphs(' ');
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, ' ');
+                    } else if (mode === 2) {
+                        concatenateParagraphs(' ');
+                    }
                 }
             });
         }
@@ -1367,7 +1390,14 @@
             panelButtonConcatenationDelimiter.addEventListener('mousedown', (event) => {
                 if (event.buttons === 1) {
                     event.preventDefault();
-                    concatenateParagraphs(delimiter);
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, delimiter);
+                    } else if (mode === 2) {
+                        concatenateParagraphs(delimiter);
+                    }
                 }
             });
         }

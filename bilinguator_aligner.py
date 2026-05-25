@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import json
+import zipfile
 from time import sleep
 import webbrowser
 from urllib.parse import unquote
@@ -498,7 +499,6 @@ def save_file():
     
     return json.dumps({'success': True}), 200, {'ContentType':'application/json'}
 
-import zipfile
 
 @app.route('/save_assets', methods=['GET', 'POST'])
 def save_assets():

@@ -93,7 +93,7 @@ function getFullTextFromBilingualMode (side) {
     const paragraphNumberDivs = document.querySelectorAll('.paragraph-number-' + side);
     const paragraphStartIndex = parseInt(paragraphNumberDivs[0].innerHTML) - 1;
     const paragraphEndIndex = parseInt(paragraphNumberDivs[paragraphNumberDivs.length - 1].innerHTML);
-    console.log(paragraphEndIndex);
+
     const startIndex = indexOfNthSubstring(text, '\n', paragraphStartIndex);
     const endIndex = indexOfNthSubstring(text, '\n', paragraphEndIndex);
     
@@ -207,12 +207,17 @@ function concatenateParagraphs (separator = '') {
             equalizeParagraphCountsInTexts();
             rerenderAllByTexts();
             enableSaveButtons(side);
-
+            
             break
         };
         
         positionInText++;
     }
+}
+
+
+function focusParagraph () {
+
 }
 
 
@@ -439,11 +444,8 @@ function shiftParagraphs () {
     const smallerIndex = Math.min(...paragraphIndexes);
     const biggerIndex = Math.max(...paragraphIndexes);
     const lineBreakIndex = indexOfNthSubstring(text, '\n', smallerIndex);
-    console.log('lineBreakIndex', lineBreakIndex);
 
     const paragraphsDifference = biggerIndex - smallerIndex;
-
-    console.log('paragraphsDifference', paragraphsDifference);
 
     text = text.slice(0, lineBreakIndex) + '\n'.repeat(paragraphsDifference) + text.slice(lineBreakIndex);
 
