@@ -4,6 +4,8 @@
     "statistics": "Statistics",
     "mojification": "Mojify texts",
 
+    "trim_tailing_characters": "Trim leading and trailing characters",
+
     "save": "Save texts (Ctrl+S)",
     "backup": "Backup",
     "save_txt": "Save bilingual TXT",

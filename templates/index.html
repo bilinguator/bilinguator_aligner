@@ -71,6 +71,8 @@
             paragraph.addEventListener('input', () => {
                 const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
                 document.querySelector('.total-count').innerText = paragraphsCount;
+
+                enableMonolingualChangeStatus();
             });
             
             paragraph.addEventListener('selectionchange', () => {
@@ -567,6 +569,10 @@
         if (side === 'both') {
             saveBook('left');
             saveBook('right');
+            return;
+        }
+
+        if (sessionStorage[side + 'FileFound'] !== 'true') {
             return;
         }
 
