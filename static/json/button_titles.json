@@ -4,6 +4,7 @@
     "statistics": "Statistics",
     "mojification": "Mojify texts",
 
+    "remove_linebreaks": "Merge orphan lines",
     "trim_tailing_characters": "Trim leading and trailing characters",
 
     "save": "Save texts (Ctrl+S)",

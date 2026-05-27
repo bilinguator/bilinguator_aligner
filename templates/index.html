@@ -116,7 +116,12 @@
     
         if (scrollToTopArrow) {
             document.querySelector('#panel-button-scroll_to_top_arrow').addEventListener('click', () => {
-                window.scrollTo(0, 0)
+                const mode = getMode();
+                if (mode === 2) {
+                    window.scrollTo(0, 0)
+                } else if (mode === 1) {
+                    document.querySelector('.monolingual-paragraph').scrollTop = 0;
+                }
             });
         }
     }
@@ -1527,9 +1532,8 @@
             }
             
             if (event.code === 'Enter' && !event.repeat) {
-                event.preventDefault();
-
                 if (getMode() === 2) {
+                    event.preventDefault();
                     splitParagraph();
                 }
             }

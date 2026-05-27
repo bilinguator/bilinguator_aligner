@@ -70,7 +70,31 @@ function trimParagraphs () {
 }
 
 
+function mergeOrphans () {
+    const defaultCharacters = '.!?…:;<>-–—‒؟؛।。！？：；一፡።፣፤፥፦፧፨፠';
+    const characters = prompt('Enter characters specifying sentence ending.', defaultCharacters);
+
+    if (!characters) {
+        return;
+    }
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    const safeChars = characters.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`([^${safeChars}])\\r?\\n`, 'g');
+    paragraph.value = paragraph.value.replace(regex, '$1 ');
+
+    enableMonolingualChangeStatus();
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
+
+    const removeLineBreaksButton = document.querySelector('#panel-button-remove_linebreaks');
+    if (removeLineBreaksButton) {
+        removeLineBreaksButton.addEventListener('click', () => {
+            mergeOrphans();
+        });
+    }
 
     const trimButton = document.querySelector('#panel-button-trim_tailing_characters');
     if (trimButton) {
