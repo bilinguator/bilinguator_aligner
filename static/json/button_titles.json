@@ -4,8 +4,23 @@
     "statistics": "Statistics",
     "mojification": "Mojify texts",
 
-    "remove_linebreaks": "Merge orphan lines",
+    "remove_linebreaks": "Merge orphans",
+    "remove_page_numbers": "Remove page numbers",
+    "remove_footnotes": "Remove footnotes",
+    "remove_repetitions": "Remove repetitions",
     "trim_tailing_characters": "Trim leading and trailing characters",
+
+    "quotation_marks": "Fix quotation marks",
+    "apostroph": "Fix apostrophes",
+    "dashes": "Fix dashes",
+    "ellipsis": "Fix ellipsises",
+    "tag_headings": "Tag headings",
+
+    "merge_strophes_by_delimiter": "Merge strophes by delimiter",
+    "tag_characters_in_the_play": "Tag characters in the play",
+    "yoditor": "Dot the the \u0401\u2019s",
+
+    "search_replace": "Search/Replace",
 
     "save": "Save texts (Ctrl+S)",
     "backup": "Backup",
