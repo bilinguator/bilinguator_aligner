@@ -436,11 +436,13 @@ def index():
     page_config = {}
     page_config['paragraph_number_inputs'] = render_paragraph_number_inputs(mode, paragraph1=bookmark)
     page_config['progress'] = render_progress(mode, text1, text2, page, bookmark)
-    page_config['pagination'] = render_pagination(mode, page, pages_count)
 
     if mode == '2':
         paragraphs = render_bilingual_paragraphs(text1, text2, page, lang1, lang2, bookmark)
+        page_config['pagination'] = render_pagination(mode, page, pages_count)
     elif mode == '1':
+        page_config['search_replace_inputs'] = render_partial_template('blocks/search_replace_inputs.html')
+        
         if text1:
             paragraphs = render_monongual_paragraph(text1, lang1)
         else:
@@ -476,6 +478,7 @@ def index():
         upper_panel=render_panel(
             panel_class='upper-panel',
             mode=mode,
+            page_config=page_config,
             additional_panel_class='horizontal-panel',
         ),
         paragraphs=paragraphs,

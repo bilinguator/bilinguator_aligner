@@ -667,6 +667,30 @@ h1 {
 	max-width: 130px;
 }
 
+#search-replace-container {
+	display: flex;
+	flex-direction: row;
+}
+
+#search-count {
+	height: calc(var(--panel-button-width) / 2);
+	width: 40px;
+	color: white;
+	text-align: right;
+	margin-right: 4px;
+}
+
+.search-replace-inputs {
+	display: flex;
+	flex-direction: column;
+	width: 150px;
+}
+
+.search-replace-input {
+	width: 100%;
+	height: calc(var(--panel-button-width) / 2);
+	padding: 6px 0;
+}
 
 
 .paragraph[lang="ar"],

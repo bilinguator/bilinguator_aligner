@@ -13,14 +13,15 @@
     "quotation_marks": "Fix quotation marks",
     "apostroph": "Fix apostrophes",
     "dashes": "Fix dashes",
-    "ellipsis": "Fix ellipsises",
+    "ellipsis": "Fix ellipses",
     "tag_headings": "Tag headings",
 
     "merge_strophes_by_delimiter": "Merge strophes by delimiter",
     "tag_characters_in_the_play": "Tag characters in the play",
     "yoditor": "Dot the the \u0401\u2019s",
 
-    "search_replace": "Search/Replace",
+    "replace": "Replace",
+    "search": "Search",
 
     "save": "Save texts (Ctrl+S)",
     "backup": "Backup",

@@ -48,6 +48,8 @@
     }
 
     function countSubstrings (string, substring) {
+        substring = substring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
         const regex = new RegExp(substring, 'g'); 
         const matches = string.match(regex) || []; 
         return matches.length;
@@ -763,6 +765,7 @@
                     sessionStorage[side + 'FileChanged'] = 'true';
                     updateTextsInSessionStorage(side);
                     enableSaveButtons(side);
+                    updateSearchCount();
                 } else {
                     const side = paragraph.classList.contains('paragraph-left') ? 'left' : 'right';    
                     sessionStorage[side + 'FileChanged'] = 'true';
@@ -927,9 +930,13 @@
             updateTextsInSessionStorage(side);
             enableSaveButtons(side);
 
-            if (getMode() === 2) {
+            const mode = getMode();
+
+            if (mode === 2) {
                 fixTextAreas();
                 insertIllustrationPreview(paragraph);
+            } else if (mode === 1) {
+                updateSearchCount();
             }
         }
     }
@@ -965,9 +972,13 @@
         updateTextsInSessionStorage(side);
         enableSaveButtons(side);
 
-        if (getMode() === 2) {
+        const mode = getMode();
+
+        if (mode === 2) {
             fixTextAreas();
             insertIllustrationPreview(paragraph);
+        } else if (mode === 1) {
+            updateSearchCount();
         }
     }
 
@@ -1117,7 +1128,6 @@
 
 
     function insertImage () {
-        const mode = getMode();
         const paragraph = document.activeElement;
 
         if (!paragraph.classList.contains('paragraph')) {
@@ -1129,6 +1139,7 @@
         const position = getPositionInText();
         const imageNumber = getImageNumberByPosition(text, position);
         const imageTag = `<img${imageNumber}>`;
+
         insertTextToParagraph(imageTag, document.activeElement, isSubstituted = false);
     }
 
@@ -1524,6 +1535,13 @@
             if (event.ctrlKey && event.code === 'KeyD' && !event.repeat) {
                 event.preventDefault();
                 insertTextToParagraph(delimiter, document.activeElement, false);
+            }
+            
+            if (event.ctrlKey && event.shiftKey && event.code === 'KeyF' && !event.repeat) {
+                if (getMode() === 1) {
+                    updateSearchFromSelection();
+                    document.querySelector('#search-input').focus();
+                }
             }
             
             if (event.ctrlKey && event.code === 'KeyQ' && !event.repeat) {

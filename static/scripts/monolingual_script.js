@@ -32,6 +32,8 @@ function applyToSelection (foo, ...args) {
 
     paragraph.value = part1 + part2 + part3;
     paragraph.setSelectionRange(start, start + part2.length)
+
+    updateSearchCount();
 }
 
 
@@ -87,7 +89,95 @@ function mergeOrphans () {
 }
 
 
+function updateSearchCount () {
+    const searchInput = document.querySelector('#search-input');
+    const searchString = searchInput.value;
+    const searchCount = document.querySelector('#search-count');
+
+    if (!searchString) {
+        searchCount.innerText = '';
+        return;
+    }
+
+    const text = document.querySelector('.monolingual-paragraph').value;
+    searchCount.innerText = countSubstrings(text, searchString) + ' ×';
+}
+
+
+function updateSearchFromSelection () {
+    if (document.activeElement.classList.contains('monolingual-paragraph')) {
+        const paragraph = document.activeElement;
+        const selectedText = paragraph.value.slice(paragraph.selectionStart, paragraph.selectionEnd);
+        document.querySelector('#search-input').value = selectedText;
+        updateSearchCount();
+    }
+}
+
+
+function setSelectionRange(textarea, selectionStart, selectionEnd) {
+    const fullText = textarea.value;
+    textarea.value = fullText.substring(0, selectionEnd);
+
+    const scrollHeight = textarea.scrollHeight
+    textarea.value = fullText;
+    let scrollTop = scrollHeight;
+    const textareaHeight = textarea.clientHeight;
+    if (scrollTop > textareaHeight){
+
+        scrollTop -= textareaHeight / 2;
+    } else{
+        scrollTop = 0;
+    }
+    textarea.scrollTop = scrollTop;
+
+    textarea.setSelectionRange(selectionStart, selectionEnd);
+}
+
+
+function search (searchString) {
+    if (!searchString) {
+        searchString = document.querySelector('#search-input').value;
+
+        if (!searchString) {
+            return;
+        }
+    }
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+
+    if (!searchString) {
+        return;
+    }
+
+    let startIndex = paragraph.selectionEnd;
+    let matchIndex = paragraph.value.indexOf(searchString, startIndex);
+
+    if (matchIndex === -1) {
+        matchIndex = paragraph.value.indexOf(searchString, 0);
+    }
+
+    if (matchIndex !== -1) {
+        paragraph.blur();
+        setSelectionRange(paragraph, matchIndex, matchIndex + searchString.length);
+        paragraph.focus();
+    } else {
+        return;
+    }
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
+
+
+    const searchInput = document.querySelector('#search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', updateSearchCount);
+    }
+
+    const searchButton = document.querySelector('#panel-button-search');
+    if (searchButton) {
+        searchButton.addEventListener('click', () => {search()});
+    }
 
     const removeLineBreaksButton = document.querySelector('#panel-button-remove_linebreaks');
     if (removeLineBreaksButton) {

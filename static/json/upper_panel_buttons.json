@@ -21,7 +21,9 @@
             "yoditor"
         ],
         [
-            "search_replace"
+            "template:search_replace_inputs",
+            "replace",
+            "search"
         ]
     ],
     "2": []
