@@ -149,8 +149,7 @@ function search (searchString) {
         return;
     }
 
-    let startIndex = paragraph.selectionEnd;
-    let matchIndex = paragraph.value.indexOf(searchString, startIndex);
+    let matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
 
     if (matchIndex === -1) {
         matchIndex = paragraph.value.indexOf(searchString, 0);
@@ -166,6 +165,74 @@ function search (searchString) {
 }
 
 
+function replace () {
+    const searchString = document.querySelector('#search-input').value;
+    
+    if (!searchString) {
+        return;
+    }
+    
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    const text = paragraph.value;
+    const selectionString = text.slice(paragraph.selectionStart, paragraph.selectionEnd);
+    
+    if (selectionString !== searchString) {
+        search();
+        return;
+    }
+    
+    const replacementString = document.querySelector('#replace-input').value;
+
+    const selectionStart = paragraph.selectionStart;
+    const selectionEnd = paragraph.selectionEnd;
+
+    const part1 = text.slice(0, selectionStart);
+    const part3 = text.slice(selectionEnd);
+
+    paragraph.value = part1 + replacementString + part3;
+
+    const newSelection = selectionStart + replacementString.length;
+    paragraph.setSelectionRange(newSelection, newSelection);
+
+    console.log(selectionStart);
+    console.log(selectionEnd);
+    console.log(newSelection);
+    search();
+
+    updateSearchCount();
+    enableMonolingualChangeStatus();
+}
+
+
+function replaceAll () {
+    
+    const searchString = document.querySelector('#search-input').value;
+    
+    if (!searchString) {
+        return;
+    }
+    
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    const text = paragraph.value;
+    
+    if (text.indexOf(searchString) === -1) {
+        return;
+    }
+    
+    const replacementString = document.querySelector('#replace-input').value;
+    const confirmation = confirm(`Replace all «${searchString}» with «${replacementString}»?`);
+    
+    if (!confirmation) {
+        return;
+    }
+
+    paragraph.value = text.replaceAll(searchString, replacementString);
+
+    updateSearchCount();
+    enableMonolingualChangeStatus();
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
 
 
@@ -176,7 +243,21 @@ function makeMonolingualPanelButtonsFunctional () {
 
     const searchButton = document.querySelector('#panel-button-search');
     if (searchButton) {
-        searchButton.addEventListener('click', () => {search()});
+        searchButton.addEventListener('click', () => {
+            search();
+        });
+    }
+
+    const replaceButton = document.querySelector('#panel-button-replace');
+    if (replaceButton) {
+        replaceButton.addEventListener('click', () => {
+            replace();
+        });
+        
+        replaceButton.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+            replaceAll();
+        });
     }
 
     const removeLineBreaksButton = document.querySelector('#panel-button-remove_linebreaks');

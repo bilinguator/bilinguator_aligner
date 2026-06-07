@@ -910,41 +910,53 @@
     
     
     function addTagsToParagraph (tag1, tag2, paragraph) {
-        if (paragraph.classList.contains('paragraph')) {
-            const start = paragraph.selectionStart;
-            const end = paragraph.selectionEnd;
+        const isParagraph = paragraph.classList.contains('paragraph')
+        const isSearchReplaceInput = paragraph.classList.contains('search-replace-input');
 
-            const paragraphValue = paragraph.value;
-            let taggedParagraphValue = paragraphValue.substring(0, start) + tag1;
-            taggedParagraphValue += paragraphValue.substring(start, end) + tag2;
-            taggedParagraphValue += paragraphValue.substring(end);
-            paragraph.value = taggedParagraphValue;
-            
-            paragraph.selectionStart = end + tag1.length + tag2.length;
-            paragraph.selectionEnd = end + tag1.length + tag2.length;
-            paragraph.focus();
-
-            const side = getSideByParagraph(paragraph);
-            
-            sessionStorage[side + 'FileChanged'] = 'true'
-            updateTextsInSessionStorage(side);
-            enableSaveButtons(side);
-
-            const mode = getMode();
-
-            if (mode === 2) {
-                fixTextAreas();
-                insertIllustrationPreview(paragraph);
-            } else if (mode === 1) {
-                updateSearchCount();
-            }
+        if (!(isParagraph || isSearchReplaceInput)) {
+            return;
         }
+
+        const start = paragraph.selectionStart;
+        const end = paragraph.selectionEnd;
+
+        const paragraphValue = paragraph.value;
+        let taggedParagraphValue = paragraphValue.substring(0, start) + tag1;
+        taggedParagraphValue += paragraphValue.substring(start, end) + tag2;
+        taggedParagraphValue += paragraphValue.substring(end);
+        paragraph.value = taggedParagraphValue;
+        
+        paragraph.selectionStart = end + tag1.length + tag2.length;
+        paragraph.selectionEnd = end + tag1.length + tag2.length;
+        paragraph.focus();
+
+        if (isSearchReplaceInput) {
+            return;
+        }
+
+        const side = getSideByParagraph(paragraph);
+        
+        sessionStorage[side + 'FileChanged'] = 'true'
+        updateTextsInSessionStorage(side);
+        enableSaveButtons(side);
+
+        const mode = getMode();
+
+        if (mode === 2) {
+            fixTextAreas();
+            insertIllustrationPreview(paragraph);
+        } else if (mode === 1) {
+            updateSearchCount();
+        }
+
     }
 
 
     function insertTextToParagraph (text, paragraph, isSubstituted = true) {
-            
-        if (!paragraph.classList.contains('paragraph') || text === '') {
+        const isParagraph = paragraph.classList.contains('paragraph')
+        const isSearchReplaceInput = paragraph.classList.contains('search-replace-input');
+
+        if (!(isParagraph || isSearchReplaceInput) ||  text === '') {
             return;
         }
 
@@ -965,6 +977,10 @@
         paragraph.selectionStart = isSubstituted ? start : end + text.length;
         paragraph.selectionEnd = isSubstituted ? end : end + text.length;
         paragraph.focus();
+
+        if (isSearchReplaceInput) {
+            return;
+        }
 
         const side = getSideByParagraph(paragraph);
             
@@ -1002,11 +1018,10 @@
 
 
     function switchCase (text) {
-        let textLowered = text.toLowerCase();
-        let textUppered = text.toUpperCase();
-        
+        const textUppered = text.toUpperCase();
+
         if (text === textUppered) {
-            return textLowered;
+            return text.toLowerCase();
         } else {
             return textUppered;
         }
@@ -1014,7 +1029,10 @@
 
 
     function getSelectedText () {
-        if (document.activeElement.classList.contains('paragraph')) {
+        const isParagraph = document.activeElement.classList.contains('paragraph')
+        const isSearchReplaceInput = document.activeElement.classList.contains('search-replace-input');
+
+        if (isParagraph || isSearchReplaceInput) {
             let paragraph = document.activeElement;
             let start = paragraph.selectionStart;
             let end = paragraph.selectionEnd;
