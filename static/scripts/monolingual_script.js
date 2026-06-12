@@ -233,6 +233,11 @@ function replaceAll () {
 }
 
 
+function showSidebar (show) {
+    document.querySelector('#sidebar').hidden = !show;
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
 
 

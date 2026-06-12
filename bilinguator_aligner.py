@@ -315,6 +315,16 @@ def escape_paths(paths):
     return [path.encode('unicode_escape').decode('ascii') for path in paths]
 
 
+def render_sidebar_templates(mode):
+    if mode != '1':
+        return ''
+
+    return render_partial_template(
+        'blocks/sidebar_templates.html',
+        button_titles=BUTTONS_TITLES,
+    )
+
+
 @app.route('/open_explorer', methods=['POST'])
 def render_explorer():
     """
@@ -487,6 +497,7 @@ def index():
             mode=mode,
             page_config=page_config,
         ),
+        sidebar_templates=render_sidebar_templates(mode),
         paragraphs_per_page=PARAGRAPHS_PER_PAGE,
         home_screen=render_home_screen(mode),
     )

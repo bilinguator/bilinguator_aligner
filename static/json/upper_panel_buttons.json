@@ -4,7 +4,7 @@
         [
             "remove_linebreaks",
             "remove_page_numbers",
-            "remove_footnotes",
+            "remove_notes",
             "remove_repetitions",
             "trim_tailing_characters"
         ],

@@ -6,7 +6,7 @@
 
     "remove_linebreaks": "Merge orphans",
     "remove_page_numbers": "Remove page numbers",
-    "remove_footnotes": "Remove footnotes",
+    "remove_notes": "Remove notes",
     "remove_repetitions": "Remove repetitions",
     "trim_tailing_characters": "Trim leading and trailing characters",
 

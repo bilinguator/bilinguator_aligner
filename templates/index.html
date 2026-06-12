@@ -5,11 +5,12 @@
         <input type="file" id="illustrations-picker" multiple accept=".png" hidden>
         {% include 'blocks/header.html' %}
         {{ cover_HTML | safe }}
-        <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }}">
+        <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }} {{ 'main-area-monolingual' if mode == '1' else '' }}">
             {{ home_screen }}
             {{ paragraphs }}
             {{ footer | safe }}
         </div>
+        {{ sidebar_templates }}
         {% include 'blocks/screen_block.html' %}
     </body>
 </html>
