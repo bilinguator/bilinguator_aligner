@@ -1,3 +1,6 @@
+SIDEBAR_BUTTON_HTML = '<button class="sidebar-close-button" onclick="showSidebar(false)">×</button>';
+
+
 if (getURLParameter('focus') === 'true') {
     document.querySelector('.monolingual-paragraph').focus();
     unsetURLParameter('focus');
@@ -234,26 +237,59 @@ function replaceAll () {
 
 
 function showSidebar (show) {
-    document.querySelector('#sidebar').hidden = !show;
+    const sidebar = document.getElementById('sidebar');
+    sidebar.hidden = !show;
+
+    if (!show) {
+        sidebar.innerHTML = SIDEBAR_BUTTON_HTML;
+    }
+}
+
+
+function showSidebarTemplate (templateName) {
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebar.hidden) {
+        return;
+    }
+
+    sidebar.innerHTML = sidebar.innerHTML = SIDEBAR_BUTTON_HTML;
+    
+    const template = document.getElementById(templateName);
+    const templateContent = template.content.cloneNode(true);
+    
+    const title = document.getElementById('panel-button-' + templateName).title;
+    templateContent.querySelector('.sidebar-heading').textContent = title;
+    
+    sidebar.appendChild(templateContent);
+}
+
+
+function detectNotes () {
+    alert('detectNotes();');
+}
+
+
+function removeNotes () {
+    alert('removeNotes();');
 }
 
 
 function makeMonolingualPanelButtonsFunctional () {
 
-
-    const searchInput = document.querySelector('#search-input');
+    const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', updateSearchCount);
     }
 
-    const searchButton = document.querySelector('#panel-button-search');
+    const searchButton = document.getElementById('panel-button-search');
     if (searchButton) {
         searchButton.addEventListener('click', () => {
             search();
         });
     }
 
-    const replaceButton = document.querySelector('#panel-button-replace');
+    const replaceButton = document.getElementById('panel-button-replace');
     if (replaceButton) {
         replaceButton.addEventListener('click', () => {
             replace();
@@ -265,17 +301,106 @@ function makeMonolingualPanelButtonsFunctional () {
         });
     }
 
-    const removeLineBreaksButton = document.querySelector('#panel-button-remove_linebreaks');
+    const removeLineBreaksButton = document.getElementById('panel-button-remove_linebreaks');
     if (removeLineBreaksButton) {
         removeLineBreaksButton.addEventListener('click', () => {
             mergeOrphans();
         });
     }
 
-    const trimButton = document.querySelector('#panel-button-trim_tailing_characters');
+    const trimButton = document.getElementById('panel-button-trim_tailing_characters');
     if (trimButton) {
         trimButton.addEventListener('click', () => {
             trimParagraphs();
+        });
+    }
+
+    const removePageNumbersButton = document.getElementById('panel-button-remove_page_numbers');
+    if (removePageNumbersButton) {
+        removePageNumbersButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('remove_page_numbers')
+        });
+    }
+
+    const removeNotesButton = document.getElementById('panel-button-remove_notes');
+    if (removeNotesButton) {
+        removeNotesButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('remove_notes');
+            detectNotes();
+        });
+    }
+
+    const removeRepetitionsButton = document.getElementById('panel-button-remove_repetitions');
+    if (removeRepetitionsButton) {
+        removeRepetitionsButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('remove_repetitions')
+        });
+    }
+
+    const quotationMarksButton = document.getElementById('panel-button-quotation_marks');
+    if (quotationMarksButton) {
+        quotationMarksButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('quotation_marks')
+        });
+    }
+
+    const apostrophButton = document.getElementById('panel-button-apostroph');
+    if (apostrophButton) {
+        apostrophButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('apostroph')
+        });
+    }
+
+    const dashesButton = document.getElementById('panel-button-dashes');
+    if (dashesButton) {
+        dashesButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('dashes')
+        });
+    }
+
+    const ellipsisButton = document.getElementById('panel-button-ellipsis');
+    if (ellipsisButton) {
+        ellipsisButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('ellipsis')
+        });
+    }
+
+    const tagHeadingsButton = document.getElementById('panel-button-tag_headings');
+    if (tagHeadingsButton) {
+        tagHeadingsButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('tag_headings')
+        });
+    }
+
+    const mergeStrophesButton = document.getElementById('panel-button-merge_strophes_by_delimiter');
+    if (mergeStrophesButton) {
+        mergeStrophesButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('merge_strophes_by_delimiter')
+        });
+    }
+
+    const tagCharactersButton = document.getElementById('panel-button-tag_characters_in_the_play');
+    if (tagCharactersButton) {
+        tagCharactersButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('tag_characters_in_the_play')
+        });
+    }
+
+    const yoditorButton = document.getElementById('panel-button-yoditor');
+    if (yoditorButton) {
+        yoditorButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('yoditor')
         });
     }
 }

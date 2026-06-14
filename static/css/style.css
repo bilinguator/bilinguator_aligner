@@ -707,6 +707,52 @@ h1 {
 	background-color: var(--dark-blue);
 	width: 400px;
 	overflow-y: scroll;
+	text-align: left;
+}
+
+.sidebar-close-button {
+	position: absolute;
+    top: 5px;
+    right: 20px;
+    color: var(--orange);
+	font-size: 20px;
+}
+
+.sidebar-close-button:hover {
+	cursor: pointer;
+}
+
+.sidebar-header {
+	display: flex;
+	align-items: center;
+	background-color: var(--blue);
+	width: 100%;
+	padding: 10px;
+}
+
+.sidebar-heading {
+	color: white;
+	margin-left: 10px;
+}
+
+.sidebar-p {
+	color: white;
+}
+
+.sidebar-main-area {
+	padding: 0 10px;
+}
+
+.sidebar-textarea {
+	width: 100%;
+}
+
+.sidebar-margin-top {
+	margin-top: 5px;
+}
+
+#note-numberings-textarea {
+	height: 200px;
 }
 
 

@@ -1,64 +1,95 @@
 <template id="remove_page_numbers">
-    <img src="{{ url_for('static', filename='img/remove_page_numbers.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['remove_page_numbers'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_page_numbers.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="remove_notes">
-    <img src="{{ url_for('static', filename='img/remove_notes.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['remove_notes'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_notes.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Note numberings detected</p>
+        <textarea class="sidebar-textarea sidebar-margin-top" id="note-numberings-textarea"></textarea>
+        <p class="sidebar-message sidebar-margin-top"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectNotes()">Detect</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeNotes()">Remove</button>
+        </div>
+    </div>
 </template>
 
 
 <template id="remove_repetitions">
-    <img src="{{ url_for('static', filename='img/remove_repetitions.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['remove_repetitions'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_repetitions.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="quotation_marks">
-    <img src="{{ url_for('static', filename='img/quotation_marks.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['quotation_marks'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/quotation_marks.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="apostroph">
-    <img src="{{ url_for('static', filename='img/apostroph.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['apostroph'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/apostroph.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="dashes">
-    <img src="{{ url_for('static', filename='img/dashes.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['dashes'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/dashes.png') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="ellipsis">
-    <img src="{{ url_for('static', filename='img/ellipsis.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['ellipsis'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/ellipsis.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="tag_headings">
-    <img src="{{ url_for('static', filename='img/tag_headings.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['tag_headings'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/tag_headings.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="merge_strophes_by_delimiter">
-    <img src="{{ url_for('static', filename='img/merge_strophes_by_delimiter.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['merge_strophes_by_delimiter'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/merge_strophes_by_delimiter.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="tag_characters_in_the_play">
-    <img src="{{ url_for('static', filename='img/tag_characters_in_the_play.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['tag_characters_in_the_play'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/tag_characters_in_the_play.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
 </template>
 
 
 <template id="yoditor">
-    <img src="{{ url_for('static', filename='img/yoditor.png') }}" class="panel-button-img">
-    <h1>{{ button_titles['yoditor'] }}</h1>
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/yoditor.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
 </template>
