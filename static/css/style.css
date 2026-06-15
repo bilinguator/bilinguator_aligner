@@ -755,6 +755,10 @@ h1 {
 	height: 200px;
 }
 
+.sidebar-message {
+	color: var(--orange);
+}
+
 
 .paragraph[lang="ar"],
 .paragraph[lang="fa"],

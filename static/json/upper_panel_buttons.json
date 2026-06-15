@@ -2,11 +2,11 @@
     "0": [],
     "1": [
         [
-            "remove_linebreaks",
+            "trim_tailing_characters",
             "remove_page_numbers",
             "remove_notes",
             "remove_repetitions",
-            "trim_tailing_characters"
+            "remove_linebreaks"
         ],
         [
             "quotation_marks",

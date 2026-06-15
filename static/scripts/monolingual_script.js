@@ -50,8 +50,11 @@ function concatenateSelection (text, delimiter) {
 }
 
 
-function trimParagraphs () {
-    const characters = prompt('Enter characters to be trimmed from both sides of each line (default: space).', ' ');
+function trimParagraphs (characters) {
+    if (!characters) {
+        showSidebar(false);
+        characters = prompt('Enter characters to be trimmed from both sides of each line (default: space).', ' ');
+    }
 
     if (!characters) {
         return;
@@ -76,6 +79,8 @@ function trimParagraphs () {
 
 
 function mergeOrphans () {
+    showSidebar(false);
+    
     const defaultCharacters = '.!?…:;<>-–—‒؟؛।。！？：；一፡።፣፤፥፦፧፨፠';
     const characters = prompt('Enter characters specifying sentence ending.', defaultCharacters);
 
@@ -266,12 +271,75 @@ function showSidebarTemplate (templateName) {
 
 
 function detectNotes () {
-    alert('detectNotes();');
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const regex = /\{\d+\}|\[\d+\]|\(\d+\)/g;
+    const hits = [...new Set(text.match(regex))];
+    
+    const message = hits.length === 0 ? 'Notes not found!' : `${hits.length} notes found!`;
+    const sidebarMesage = document.querySelector('.sidebar-message');
+    sidebarMesage.innerText = message;
+
+    const noteNumberingsTextarea = document.getElementById('note-numberings-textarea');
+    noteNumberingsTextarea.value = hits.sort().join('\n');
 }
 
 
 function removeNotes () {
-    alert('removeNotes();');
+    const noteNumberingsTextarea = document.getElementById('note-numberings-textarea');
+    let hits = noteNumberingsTextarea.value.trim();
+
+    if (hits === '') {
+        return;
+    }
+
+    hits = hits.split('\n');
+
+    const pattern = hits
+        .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|');
+
+    const regex1 = new RegExp(`(^(?:${pattern}) *)|( *(?:${pattern})$)`, 'g');
+    const regex2 = new RegExp(`\\n+(?:${pattern})\\n+`, 'g');
+    const regex3 = new RegExp(`( *(?:${pattern})\\n+)|(\\n+(?:${pattern}) *)`, 'g');
+    const regex4 = new RegExp(` *(?:${pattern}) *`, 'g');
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    paragraph.value = paragraph.value
+        .replace(regex1, '')
+        .replace(regex2, '\n')
+        .replace(regex3, '\n')
+        .replace(regex4, ' ');
+
+    detectNotes();
+    enableMonolingualChangeStatus();
+}
+
+
+function searchLineFromTextarea () {
+    const textarea = document.activeElement;
+
+    if (!(textarea instanceof HTMLTextAreaElement)) {
+        return;
+    }
+
+    const selectionEnd = textarea.selectionEnd;
+
+    if (selectionEnd !== textarea.selectionStart) {
+        return;
+    }
+
+    const text = textarea.value;
+
+    const lineStart = text.lastIndexOf('\n', selectionEnd - 1) + 1;
+    const lineEnd = text.indexOf('\n', selectionEnd);
+
+    const currentLineText = text.slice(
+        lineStart,
+        lineEnd === -1 ? text.length : lineEnd
+    );
+
+    search(currentLineText);
+    document.activeElement.focus();
 }
 
 
