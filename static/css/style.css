@@ -747,12 +747,12 @@ h1 {
 	width: 100%;
 }
 
-.sidebar-margin-top {
-	margin-top: 5px;
+.sidebar-multiline-textarea {
+	height: 200px;
 }
 
-#note-numberings-textarea {
-	height: 200px;
+.sidebar-margin-top {
+	margin-top: 5px;
 }
 
 .sidebar-message {

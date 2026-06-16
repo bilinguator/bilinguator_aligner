@@ -3,6 +3,15 @@
         <img src="{{ url_for('static', filename='img/remove_page_numbers.png') }}" class="panel-button-img">
         <h2 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Page numbers detected</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="page-numbers-textarea" onclick="searchLineFromTextarea(fullLineMatch = true);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectPageNumbers()">Detect</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removePageNumbers()">Remove</button>
+        </div>
+    </div>
 </template>
 
 
@@ -13,7 +22,7 @@
     </div>
     <div class="sidebar-main-area">
         <p class="sidebar-p sidebar-margin-top">Note numberings detected</p>
-        <textarea class="sidebar-textarea sidebar-margin-top" id="note-numberings-textarea" onclick="searchLineFromTextarea();this.focus();"></textarea>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="note-numberings-textarea" onclick="searchLineFromTextarea(fullLineMatch = false);this.focus();"></textarea>
         <p class="sidebar-message sidebar-margin-top"></p>
         <div class="sidebar-vertical-container sidebar-margin-top">
             <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectNotes()">Detect</button>

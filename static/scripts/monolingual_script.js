@@ -270,6 +270,11 @@ function showSidebarTemplate (templateName) {
 }
 
 
+function numberSorting (a, b) {
+        return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+    }
+
+
 function detectNotes () {
     const text = document.querySelector('.monolingual-paragraph').value;
     const regex = /\{\d+\}|\[\d+\]|\(\d+\)/g;
@@ -280,7 +285,7 @@ function detectNotes () {
     sidebarMesage.innerText = message;
 
     const noteNumberingsTextarea = document.getElementById('note-numberings-textarea');
-    noteNumberingsTextarea.value = hits.sort().join('\n');
+    noteNumberingsTextarea.value = hits.sort(numberSorting).join('\n');
 }
 
 
@@ -292,9 +297,8 @@ function removeNotes () {
         return;
     }
 
-    hits = hits.split('\n');
-
     const pattern = hits
+        .split('\n')
         .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
         .join('|');
 
@@ -315,7 +319,50 @@ function removeNotes () {
 }
 
 
-function searchLineFromTextarea () {
+function detectPageNumbers () {
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const regex = /^\d+$/gm;
+    const hits = [...new Set(text.match(regex))];
+
+    const message = hits.length === 0 ? 'Page numbers not found!' : `${hits.length} page numbers found!`;
+    const sidebarMesage = document.querySelector('.sidebar-message');
+    sidebarMesage.innerText = message;
+
+    const pageNumbersTextarea = document.getElementById('page-numbers-textarea');
+    pageNumbersTextarea.value = hits.sort(numberSorting).join('\n');
+}
+
+
+function removePageNumbers () {
+    const pageNumbersTextarea = document.getElementById('page-numbers-textarea');
+    let hits = pageNumbersTextarea.value.trim();
+
+    if (hits === '') {
+        return;
+    }
+
+    const pattern = hits
+        .split('\n')
+        .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|');
+
+    const regex1 = new RegExp(`\\n+(?:${pattern})\\n+`, 'g');
+    const regex2 = new RegExp(`^(?:${pattern})\\n+`, 'g');
+    const regex3 = new RegExp(`\\n+(?:${pattern})$`, 'g');
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    
+    paragraph.value = paragraph.value
+        .replace(regex1, '\n')
+        .replace(regex2, '')
+        .replace(regex3, '')
+
+    detectPageNumbers();
+    enableMonolingualChangeStatus();
+}
+
+
+function searchLineFromTextarea (fullLineMatch = false) {
     const textarea = document.activeElement;
 
     if (!(textarea instanceof HTMLTextAreaElement)) {
@@ -333,10 +380,12 @@ function searchLineFromTextarea () {
     const lineStart = text.lastIndexOf('\n', selectionEnd - 1) + 1;
     const lineEnd = text.indexOf('\n', selectionEnd);
 
-    const currentLineText = text.slice(
+    let currentLineText = text.slice(
         lineStart,
         lineEnd === -1 ? text.length : lineEnd
     );
+
+    currentLineText = fullLineMatch ? '\n'+currentLineText+'\n' : currentLineText;
 
     search(currentLineText);
     document.activeElement.focus();
@@ -388,6 +437,7 @@ function makeMonolingualPanelButtonsFunctional () {
         removePageNumbersButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('remove_page_numbers')
+            detectPageNumbers();
         });
     }
 
