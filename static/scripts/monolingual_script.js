@@ -279,10 +279,15 @@ function detectNotes () {
     const text = document.querySelector('.monolingual-paragraph').value;
     const regex = /\{\d+\}|\[\d+\]|\(\d+\)/g;
     const hits = [...new Set(text.match(regex))];
-    
-    const message = hits.length === 0 ? 'Notes not found!' : `${hits.length} notes found!`;
+
     const sidebarMesage = document.querySelector('.sidebar-message');
-    sidebarMesage.innerText = message;
+    if (hits.length === 0) {
+        sidebarMesage.innerText = 'Notes not found!';
+    } else if (hits.length === 1) {
+        sidebarMesage.innerText = 'One note found!';
+    } else {
+        sidebarMesage.innerText = `${hits.length} notes found!`;
+    }
 
     const noteNumberingsTextarea = document.getElementById('note-numberings-textarea');
     noteNumberingsTextarea.value = hits.sort(numberSorting).join('\n');
@@ -316,6 +321,7 @@ function removeNotes () {
 
     detectNotes();
     enableMonolingualChangeStatus();
+    updateSearchCount();
 }
 
 
@@ -324,40 +330,76 @@ function detectPageNumbers () {
     const regex = /^\d+$/gm;
     const hits = [...new Set(text.match(regex))];
 
-    const message = hits.length === 0 ? 'Page numbers not found!' : `${hits.length} page numbers found!`;
     const sidebarMesage = document.querySelector('.sidebar-message');
-    sidebarMesage.innerText = message;
+    if (hits.length === 0) {
+        sidebarMesage.innerText = 'Page numbers not found!';
+    } else if (hits.length === 1) {
+        sidebarMesage.innerText = 'One page number found!';
+    } else {
+        sidebarMesage.innerText = `${hits.length} page numbers found!`;
+    }
 
     const pageNumbersTextarea = document.getElementById('page-numbers-textarea');
     pageNumbersTextarea.value = hits.sort(numberSorting).join('\n');
 }
 
 
-function removePageNumbers () {
-    const pageNumbersTextarea = document.getElementById('page-numbers-textarea');
-    let hits = pageNumbersTextarea.value.trim();
+function removeLinesByHitsInTextarea (textareaID) {
+    const textarea = document.getElementById(textareaID);
+    let hits = textarea.value;
 
     if (hits === '') {
         return;
     }
 
-    const pattern = hits
-        .split('\n')
-        .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-        .join('|');
-
-    const regex1 = new RegExp(`\\n+(?:${pattern})\\n+`, 'g');
-    const regex2 = new RegExp(`^(?:${pattern})\\n+`, 'g');
-    const regex3 = new RegExp(`\\n+(?:${pattern})$`, 'g');
-
     const paragraph = document.querySelector('.monolingual-paragraph');
-    
-    paragraph.value = paragraph.value
-        .replace(regex1, '\n')
-        .replace(regex2, '')
-        .replace(regex3, '')
 
+    paragraph.value = paragraph.value
+        .split('\n')
+        .filter(line => !hits.includes(line))
+        .join('\n');
+
+    updateSearchCount();
+}
+
+function removePageNumbers () {
+    removeLinesByHitsInTextarea('page-numbers-textarea');
     detectPageNumbers();
+    enableMonolingualChangeStatus();
+}
+
+
+function detectRepeatedLines () {
+    const textLines = document.querySelector('.monolingual-paragraph').value.split('\n');
+    let repeatedLines = [];
+
+    textLines.forEach((line) => {
+        const count = textLines.filter(thisLine => thisLine === line).length;
+
+        if (count > 1) {
+            repeatedLines.push(line);
+        }
+    });
+
+    repeatedLines = [...new Set(repeatedLines)].sort(numberSorting);
+
+    const sidebarMesage = document.querySelector('.sidebar-message');
+    if (repeatedLines.length === 0) {
+        sidebarMesage.innerText = 'Repeated lines not found!';
+    } else if (repeatedLines.length === 1) {
+        sidebarMesage.innerText = 'One repeated line found!';
+    } else {
+        sidebarMesage.innerText = `${repeatedLines.length} repeated lines found!`;
+    }
+
+    const textarea = document.getElementById('repeated-lines-textarea');
+    textarea.value = repeatedLines.join('\n');
+}
+
+
+function removeRepeatedLines () {
+    removeLinesByHitsInTextarea('repeated-lines-textarea');
+    detectRepeatedLines();
     enableMonolingualChangeStatus();
 }
 
@@ -436,7 +478,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (removePageNumbersButton) {
         removePageNumbersButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('remove_page_numbers')
+            showSidebarTemplate('remove_page_numbers');
             detectPageNumbers();
         });
     }
@@ -450,11 +492,12 @@ function makeMonolingualPanelButtonsFunctional () {
         });
     }
 
-    const removeRepetitionsButton = document.getElementById('panel-button-remove_repetitions');
-    if (removeRepetitionsButton) {
-        removeRepetitionsButton.addEventListener('click', () => {
+    const removeRepeatedLinesButton = document.getElementById('panel-button-remove_repeated_lines');
+    if (removeRepeatedLinesButton) {
+        removeRepeatedLinesButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('remove_repetitions')
+            showSidebarTemplate('remove_repeated_lines');
+            detectRepeatedLines();
         });
     }
 
@@ -462,7 +505,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (quotationMarksButton) {
         quotationMarksButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('quotation_marks')
+            showSidebarTemplate('quotation_marks');
         });
     }
 
@@ -470,7 +513,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (apostrophButton) {
         apostrophButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('apostroph')
+            showSidebarTemplate('apostroph');
         });
     }
 
@@ -478,7 +521,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (dashesButton) {
         dashesButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('dashes')
+            showSidebarTemplate('dashes');
         });
     }
 
@@ -486,7 +529,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (ellipsisButton) {
         ellipsisButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('ellipsis')
+            showSidebarTemplate('ellipsis');
         });
     }
 
@@ -494,7 +537,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (tagHeadingsButton) {
         tagHeadingsButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('tag_headings')
+            showSidebarTemplate('tag_headings');
         });
     }
 
@@ -502,7 +545,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (mergeStrophesButton) {
         mergeStrophesButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('merge_strophes_by_delimiter')
+            showSidebarTemplate('merge_strophes_by_delimiter');
         });
     }
 
@@ -510,7 +553,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (tagCharactersButton) {
         tagCharactersButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('tag_characters_in_the_play')
+            showSidebarTemplate('tag_characters_in_the_play');
         });
     }
 
@@ -518,7 +561,7 @@ function makeMonolingualPanelButtonsFunctional () {
     if (yoditorButton) {
         yoditorButton.addEventListener('click', () => {
             showSidebar(true);
-            showSidebarTemplate('yoditor')
+            showSidebarTemplate('yoditor');
         });
     }
 }

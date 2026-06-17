@@ -5,7 +5,7 @@
             "trim_tailing_characters",
             "remove_page_numbers",
             "remove_notes",
-            "remove_repetitions",
+            "remove_repeated_lines",
             "remove_linebreaks"
         ],
         [
