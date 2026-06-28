@@ -17,6 +17,12 @@ function enableMonolingualChangeStatus () {
 }
 
 
+function updateParagraphsCount () {
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
+    document.querySelector('.total-count').innerText = paragraphsCount;
+}
+
 function applyToSelection (foo, ...args) {
     const paragraph = document.querySelector('.monolingual-paragraph');
 
@@ -37,6 +43,7 @@ function applyToSelection (foo, ...args) {
     paragraph.setSelectionRange(start, start + part2.length)
 
     updateSearchCount();
+    updateParagraphsCount();
 }
 
 
@@ -75,11 +82,14 @@ function trimParagraphs (characters) {
                           .join('\n');
 
     enableMonolingualChangeStatus();
+    updateSearchCount();
 }
 
 
 function mergeOrphans () {
     showSidebar(false);
+
+    const currentPosition = getCurretPosition();
     
     const defaultCharacters = '.!?…:;<>-–—‒؟؛।。！？：；一፡።፣፤፥፦፧፨፠';
     const characters = prompt('Enter characters specifying sentence ending.', defaultCharacters);
@@ -93,7 +103,10 @@ function mergeOrphans () {
     const regex = new RegExp(`([^${safeChars}])\\r?\\n`, 'g');
     paragraph.value = paragraph.value.replace(regex, '$1 ');
 
+    updateParagraphsCount();
     enableMonolingualChangeStatus();
+
+    toCurrentPosition(currentPosition);
 }
 
 
@@ -130,10 +143,9 @@ function setSelectionRange(textarea, selectionStart, selectionEnd) {
     textarea.value = fullText;
     let scrollTop = scrollHeight;
     const textareaHeight = textarea.clientHeight;
-    if (scrollTop > textareaHeight){
-
+    if (scrollTop > textareaHeight) {
         scrollTop -= textareaHeight / 2;
-    } else{
+    } else {
         scrollTop = 0;
     }
     textarea.scrollTop = scrollTop;
@@ -208,11 +220,13 @@ function replace () {
     search();
 
     updateSearchCount();
+    updateParagraphsCount();
     enableMonolingualChangeStatus();
 }
 
 
 function replaceAll () {
+    const currentPosition = getCurretPosition();
     
     const searchString = document.querySelector('#search-input').value;
     
@@ -237,7 +251,10 @@ function replaceAll () {
     paragraph.value = text.replaceAll(searchString, replacementString);
 
     updateSearchCount();
+    updateParagraphsCount();
     enableMonolingualChangeStatus();
+
+    toCurrentPosition(currentPosition);
 }
 
 
@@ -345,8 +362,10 @@ function detectPageNumbers () {
 
 
 function removeLinesByHitsInTextarea (textareaID) {
+    const currentPosition = getCurretPosition();
+
     const textarea = document.getElementById(textareaID);
-    let hits = textarea.value;
+    let hits = textarea.value.split('\n');
 
     if (hits === '') {
         return;
@@ -359,13 +378,20 @@ function removeLinesByHitsInTextarea (textareaID) {
         .filter(line => !hits.includes(line))
         .join('\n');
 
+    updateParagraphsCount();
     updateSearchCount();
+
+    toCurrentPosition(currentPosition);
 }
 
 function removePageNumbers () {
+    const currentPosition = getCurretPosition();
+
     removeLinesByHitsInTextarea('page-numbers-textarea');
     detectPageNumbers();
     enableMonolingualChangeStatus();
+
+    toCurrentPosition(currentPosition);
 }
 
 
@@ -398,9 +424,13 @@ function detectRepeatedLines () {
 
 
 function removeRepeatedLines () {
+    const currentPosition = getCurretPosition();
+
     removeLinesByHitsInTextarea('repeated-lines-textarea');
     detectRepeatedLines();
     enableMonolingualChangeStatus();
+
+    toCurrentPosition(currentPosition);
 }
 
 
@@ -431,6 +461,86 @@ function searchLineFromTextarea (fullLineMatch = false) {
 
     search(currentLineText);
     document.activeElement.focus();
+}
+
+
+function checkMergeStrophesArguments () {
+    const delimiter = document.getElementById('delimiter-textarea').value;
+
+    if (delimiter === '') {
+        return false;
+    }
+
+    const minimumLinebreaks = document.getElementById('minimum-line-breaks-textarea').value;
+    const isNumericMinimumLinebreaks = minimumLinebreaks.match(/^\d+$/);
+    
+    if (!isNumericMinimumLinebreaks) {
+        return false;
+    }
+
+    const startLineNumber = document.getElementById('start-line-textarea').value;
+    const isNumericStartLineNumber = startLineNumber.match(/^\d+$/);
+
+    if (!isNumericStartLineNumber) {
+        return false;
+    }
+
+    return true;
+}
+
+
+function mergeStrophesByDelimiter (test = false) {
+    
+    let text = document.querySelector('.monolingual-paragraph').value;
+    const paragraphsCountBefore = countSubstrings(text, '\n') + 1;
+
+    if (!checkMergeStrophesArguments()) {
+        setParagraphNumbersInMergingStrophes(paragraphsCountBefore, '∅');
+        return;
+    }
+
+    const delimiter = document.getElementById('delimiter-textarea').value;
+    const minimumLinebreaks = parseInt(document.getElementById('minimum-line-breaks-textarea').value);
+    const startLineNumber = parseInt(document.getElementById('start-line-textarea').value) - 1;
+
+
+    const LineBreakPosition = startLineNumber === 0 ? 0 : indexOfNthSubstring(text, '\n', startLineNumber);
+    
+    const untouchedPart = text.slice(0, LineBreakPosition);
+    let processedPart = text.slice(LineBreakPosition + 1);
+
+    const maxNewlinesToReplace = minimumLinebreaks - 1;
+
+    const regex = new RegExp(`(?<!\\n)\\n{1,${maxNewlinesToReplace}}(?!\\n)`, 'g');
+    processedPart = processedPart.replace(regex, delimiter)
+                                 .replace(/<delimiter><(h1|i|b|img\d+)>/g, '\n<$1>')
+                                 .replace(/<\/(h1|i|b)><delimiter>/g, '</$1>\n');
+
+    text = untouchedPart + '\n' + processedPart;
+
+    if (test) {
+        const paragraphsCountAfter = countSubstrings(text, '\n') + 1;
+        setParagraphNumbersInMergingStrophes(paragraphsCountBefore, paragraphsCountAfter);
+        return;
+    }
+    
+    const currentPosition = getCurretPosition();
+
+    document.querySelector('.monolingual-paragraph').value = text;
+    enableMonolingualChangeStatus();
+    updateParagraphsCount();
+    updateSearchCount();
+    mergeStrophesByDelimiter(test = true);
+
+    toCurrentPosition(currentPosition);
+
+    return;
+}
+
+
+function setParagraphNumbersInMergingStrophes (before, after) {
+    document.getElementById('paragraphs-number-before').innerText = before;
+    document.getElementById('paragraphs-number-after').innerText = after;
 }
 
 
@@ -546,6 +656,7 @@ function makeMonolingualPanelButtonsFunctional () {
         mergeStrophesButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('merge_strophes_by_delimiter');
+            mergeStrophesByDelimiter(test = true);
         });
     }
 

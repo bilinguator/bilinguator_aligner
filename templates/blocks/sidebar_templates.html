@@ -94,6 +94,19 @@
         <img src="{{ url_for('static', filename='img/merge_strophes_by_delimiter.png') }}" class="panel-button-img">
         <h1 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Delimiter</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="delimiter-textarea" rows="1"><delimiter></textarea>
+        <p class="sidebar-p sidebar-margin-top">Minimum line breaks among strophes</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="minimum-line-breaks-textarea" oninput="mergeStrophesByDelimiter(test = true);" rows="1">2</textarea>
+        <p class="sidebar-p sidebar-margin-top">Start line</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="start-line-textarea" oninput="mergeStrophesByDelimiter(test = true);" rows="1">3</textarea>
+        
+        <p class="sidebar-p sidebar-margin-top">Paragraphs number before: <span class="sidebar-message" id="paragraphs-number-before"></span></p>
+        <p class="sidebar-p sidebar-margin-top">Paragraphs number after: <span class="sidebar-message" id="paragraphs-number-after"></span></p>
+
+        <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeStrophesByDelimiter(test = false);">Apply</button>
+    </div>
 </template>
 
 

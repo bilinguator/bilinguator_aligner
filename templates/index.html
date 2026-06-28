@@ -72,9 +72,7 @@
             });
 
             paragraph.addEventListener('input', () => {
-                const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
-                document.querySelector('.total-count').innerText = paragraphsCount;
-
+                updateParagraphsCount();
                 enableMonolingualChangeStatus();
             });
             
@@ -1061,6 +1059,17 @@
 
         return index;
     }
+
+
+    function getCurretPosition () {
+        let currentPosition = document.querySelector('.bookmark-number').innerText;
+
+        if (currentPosition.match(/^\d+$/)) {
+            return parseInt(currentPosition);
+        }
+
+        return 1;
+    }
     
 
     function toCurrentPosition (targetParagraphIndex = null) {
@@ -1710,6 +1719,8 @@
     // Change encoding
 
     // Search/replace by regex
+
+    // Adjust scroll width
 </script>
 
 {% if mode == '2' %}

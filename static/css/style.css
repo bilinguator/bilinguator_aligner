@@ -751,6 +751,13 @@ h1 {
 	height: 200px;
 }
 
+.sidebar-oneline-textarea {
+	height: calc(var(--panel-button-width) / 2);
+	height: 17px;
+    border-radius: 1px;
+    padding: 1px;
+}
+
 .sidebar-margin-top {
 	margin-top: 5px;
 }
