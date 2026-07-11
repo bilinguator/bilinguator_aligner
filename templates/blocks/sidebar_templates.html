@@ -62,6 +62,30 @@
         <img src="{{ url_for('static', filename='img/apostroph.png') }}" class="panel-button-img">
         <h2 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-margin-top">Typewriter apostrophes</p>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count" id="typewriter-apostrophes-count"></p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea" onclick="search('\'');copyToClipboard('\'');" readonly>'</textarea>
+            </div>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-margin-top">Punctuation apostrophes</p>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count" id="punctuation-apostrophes-count"></p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea" onclick="search('’');copyToClipboard('’');" readonly>’</textarea>
+            </div>
+        </div>
+        
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = 'en');">Replace English apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = 'fr');">Replace French apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = null);">Replace in-word apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllApostrophes();">Replace all</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toManualReplacement('\'', '’')">Replace manually</button>
+        </div>
+    </div>
 </template>
 
 
@@ -105,7 +129,9 @@
         <p class="sidebar-p sidebar-margin-top">Paragraphs number before: <span class="sidebar-message" id="paragraphs-number-before"></span></p>
         <p class="sidebar-p sidebar-margin-top">Paragraphs number after: <span class="sidebar-message" id="paragraphs-number-after"></span></p>
 
-        <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeStrophesByDelimiter(test = false);">Apply</button>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeStrophesByDelimiter(test = false);">Apply</button>
+        </div>
     </div>
 </template>
 

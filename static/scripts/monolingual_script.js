@@ -17,6 +17,78 @@ function enableMonolingualChangeStatus () {
 }
 
 
+// function getLang () {
+//     const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
+//     return document.getElementById(`languages-dropdown-list-${side}`).value;
+// }
+
+
+function replaceByRegex (text, regexStr, oldStr, newStr) {
+    const regex = new RegExp(regexStr, 'ug');
+    const matches = text.match(regex);
+    
+    if (!matches) return text;
+
+    // Получаем уникальные совпадения (аналог set() в Python)
+    const uniqueHits = Array.from(new Set(matches));
+
+    for (const hit of uniqueHits) {
+        const hitReplace = hit.replaceAll(oldStr, newStr);
+        text = text.replaceAll(hit, hitReplace);
+    }
+    
+    return text;
+}
+
+
+function recoverApostrophesByLang (text, lang) {
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+    console.log(lang);
+    if (lang === 'en') {
+        let queries = ["I'm", "o'clock", "ma'am", "Qur'an", "ne'er-do-well", "'twere"];
+        for (const query of queries) {
+            for (const q of [query, query.toUpperCase(), capitalize(query)]) {
+                text = replaceByRegex(text, `\\b${q}\\b`, "'", "’");
+            }
+        }
+        
+        queries = ['s', 'll', 'd', 've', 're'];
+        for (const query of queries) {
+            for (const q of [query, query.toUpperCase()]) {
+                text = replaceByRegex(text, `\\w'${q}\\b`, "'", "’");
+            }
+        }
+        
+        const queryStr = "n't"; 
+        for (const q of [queryStr, queryStr.toUpperCase()]) {
+            text = replaceByRegex(text, `\\w${q}\\b`, "'", "’");
+        }
+        
+    } else if (lang === 'fr') {
+        const queries = ["aujourd'hui"];
+        for (const query of queries) {
+            for (const q of [query, query.toUpperCase(), capitalize(query)]) {
+                const regex = `\\b${q}\\b`;
+                text = replaceByRegex(text, regex, "'", "’");
+            }
+        }
+        
+        const frPrefixes = ['c', 'd', 'j', 'l', 'n', 'qu', 't', 'm', 's', 'quelqu', 'quoiqu', 'lorsqu', 'puisqu', 'jusqu'];
+        for (const query of frPrefixes) {
+            for (const q of [query, query.toUpperCase(), capitalize(query)]) {
+                const regex = `\\b${q}'\\p{L}`;
+                text = replaceByRegex(text, regex, "'", "’");
+            }
+        }  
+    } else if (!lang) {
+        const regex = "\\p{L}+'\\p{L}";
+        text = replaceByRegex(text, regex, "'", "’");
+    }
+    
+    return text;
+}
+
+
 function updateParagraphsCount () {
     const paragraph = document.querySelector('.monolingual-paragraph');
     const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
@@ -111,17 +183,26 @@ function mergeOrphans () {
 
 
 function updateSearchCount () {
-    const searchInput = document.querySelector('#search-input');
-    const searchString = searchInput.value;
-    const searchCount = document.querySelector('#search-count');
+    const text = document.querySelector('.monolingual-paragraph').value;
+
+    const searchString = document.getElementById('search-input').value;
+    const searchCount = document.getElementById('search-count');
 
     if (!searchString) {
         searchCount.innerText = '';
-        return;
+    } else {
+        searchCount.innerText = countSubstrings(text, searchString) + ' ×';
     }
 
-    const text = document.querySelector('.monolingual-paragraph').value;
-    searchCount.innerText = countSubstrings(text, searchString) + ' ×';
+    const replaceString = document.getElementById('replace-input').value;
+    const replaceCount = document.getElementById('replace-count');
+
+    if (!replaceString) {
+        replaceCount.innerText = '';
+        return;
+    } else {
+        replaceCount.innerText = countSubstrings(text, replaceString) + ' ×';
+    }
 }
 
 
@@ -255,6 +336,15 @@ function replaceAll () {
     enableMonolingualChangeStatus();
 
     toCurrentPosition(currentPosition);
+}
+
+
+function toManualReplacement (searchString, replaceString) {
+    showSidebar(false);
+    document.getElementById('search-input').value = searchString;
+    document.getElementById('replace-input').value = replaceString;
+    search(searchString);
+    updateSearchCount();
 }
 
 
@@ -544,11 +634,49 @@ function setParagraphNumbersInMergingStrophes (before, after) {
 }
 
 
+function countApostrophes () {
+    const text = document.querySelector('.monolingual-paragraph').value;
+
+    document.getElementById('typewriter-apostrophes-count').innerText = countSubstrings(text, "'") + ' ×';
+    document.getElementById('punctuation-apostrophes-count').innerText = countSubstrings(text, "’") + ' ×';
+}
+
+
+function replaceApostrophesAutomatically (lang = null) {
+    const paragraph = document.querySelector('.monolingual-paragraph');
+
+    paragraph.value = recoverApostrophesByLang(
+        paragraph.value,
+        lang = lang
+    );
+
+    countApostrophes();
+    enableMonolingualChangeStatus();
+    updateSearchCount();
+}
+
+
+function replaceAllApostrophes () {
+    const paragraph = document.querySelector('.monolingual-paragraph');
+
+    paragraph.value = paragraph.value.replaceAll("'", '’');
+
+    countApostrophes();
+    enableMonolingualChangeStatus();
+    updateSearchCount();
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
 
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
         searchInput.addEventListener('input', updateSearchCount);
+    }
+
+    const replaceInput = document.getElementById('replace-input');
+    if (replaceInput) {
+        replaceInput.addEventListener('input', updateSearchCount);
     }
 
     const searchButton = document.getElementById('panel-button-search');
@@ -624,6 +752,7 @@ function makeMonolingualPanelButtonsFunctional () {
         apostrophButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('apostroph');
+            countApostrophes();
         });
     }
 

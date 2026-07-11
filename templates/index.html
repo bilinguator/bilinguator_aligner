@@ -56,6 +56,10 @@
         return matches.length;
     }
 
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+    }
+
     function makeProgressFunctional () {
         const percentProgress = document.querySelector('.percent');
     
