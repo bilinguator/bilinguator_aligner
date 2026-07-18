@@ -703,6 +703,23 @@ h1 {
 	padding: 6px 0;
 }
 
+#regex-checkbox {
+	margin: 0 6px;
+}
+
+#regex-checkbox:hover {
+	cursor: pointer;
+}
+
+#regex-checkbox-label {
+	color: white;
+	text-align: center;
+}
+
+#regex-checkbox-label:hover {
+	cursor: pointer;
+}
+
 .monolingual-container {
 	display: flex;
     width: 100%;
@@ -714,6 +731,7 @@ h1 {
 	width: 400px;
 	overflow-y: scroll;
 	text-align: left;
+	padding-bottom: 20px;
 }
 
 .sidebar-close-button {
@@ -753,8 +771,8 @@ h1 {
 	width: 100%;
 }
 
-.sidebar-textarea:disabled {
-	color: black;
+.sidebar-textarea-readonly:hover {
+	cursor: pointer;
 }
 
 .sidebar-multiline-textarea {
@@ -774,10 +792,6 @@ h1 {
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
-}
-
-.sidebar-mini-textarea:hover {
-	cursor: pointer;
 }
 
 .sidebar-margin-top {
@@ -802,6 +816,8 @@ h1 {
 
 .sidebar-count {
 	margin-right: 4px;
+	min-width: 40px;
+    text-align: right;
 }
 
 

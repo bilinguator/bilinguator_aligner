@@ -48,12 +48,16 @@
         history.replaceState(null, '', url.toString());
     }
 
-    function countSubstrings (string, substring) {
-        substring = substring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    function countSubstrings (string, substring, isRegex = false) {
+        substring = isRegex ? substring : substring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        const regex = new RegExp(substring, 'g'); 
-        const matches = string.match(regex) || []; 
-        return matches.length;
+        try {
+            const regex = new RegExp(substring, 'gm'); 
+            const matches = string.match(regex) || []; 
+            return matches.length;
+        } catch {
+            return 0;
+        }
     }
 
     function copyToClipboard(text) {
@@ -83,7 +87,7 @@
             paragraph.addEventListener('selectionchange', () => {
                 const position = paragraph.selectionEnd;
                 const previousText = paragraph.value.substring(0, position);
-                const lineIndex = countSubstrings(previousText, '\n') + 1;
+                const lineIndex = countSubstrings(previousText, '\n', false) + 1;
 
                 document.querySelector('.bookmark-number').innerText = lineIndex;
             });
@@ -934,6 +938,7 @@
         paragraph.focus();
 
         if (isSearchReplaceInput) {
+            updateSearchCount();
             return;
         }
 
@@ -948,10 +953,7 @@
         if (mode === 2) {
             fixTextAreas();
             insertIllustrationPreview(paragraph);
-        } else if (mode === 1) {
-            updateSearchCount();
         }
-
     }
 
 
@@ -1042,7 +1044,7 @@
             let paragraphContent = paragraph.value;
             return paragraphContent.substring(start, end);
         } else {
-            return false;
+            return '';
         }
     }
 

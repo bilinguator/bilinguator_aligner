@@ -67,14 +67,14 @@
             <p class="sidebar-p sidebar-margin-top">Typewriter apostrophes</p>
             <div class="sidebar-horizontal-container">
                 <p class="sidebar-p sidebar-count" id="typewriter-apostrophes-count"></p>
-                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea" onclick="search('\'');copyToClipboard('\'');" readonly>'</textarea>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search('\'', isRegex=false);copyToClipboard('\'');" readonly>'</textarea>
             </div>
         </div>
         <div class="sidebar-horizontal-container sidebar-margin-top">
             <p class="sidebar-p sidebar-margin-top">Punctuation apostrophes</p>
             <div class="sidebar-horizontal-container">
                 <p class="sidebar-p sidebar-count" id="punctuation-apostrophes-count"></p>
-                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea" onclick="search('’');copyToClipboard('’');" readonly>’</textarea>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search('’', isRegex=false);copyToClipboard('’');" readonly>’</textarea>
             </div>
         </div>
         
@@ -132,6 +132,12 @@
         <div class="sidebar-vertical-container sidebar-margin-top">
             <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeStrophesByDelimiter(test = false);">Apply</button>
         </div>
+        
+        <p class="sidebar-p sidebar-margin-top">Other functions</p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeEmptyLines();">Remove empty lines</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeLinesWithoutOpeningTags();">Merge lines without opening tags</button>
+        </div>
     </div>
 </template>
 
@@ -140,6 +146,18 @@
     <div class="sidebar-header">
         <img src="{{ url_for('static', filename='img/tag_characters_in_the_play.png') }}" class="panel-button-img">
         <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Character names, each on a new line:</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="characters-textarea" onclick="searchLineFromTextarea(fullLineMatch = false);this.focus();"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Dialogue delimiter:</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="characters-delimiter-textarea" onclick=""></textarea>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="showCharactersCounts();">Search</button>
+        </div>
+    </div>
+    <div class="sidebar-main-area sidebar-search-area" id="characters-search-results">
+
     </div>
 </template>
 

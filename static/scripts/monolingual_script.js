@@ -91,7 +91,7 @@ function recoverApostrophesByLang (text, lang) {
 
 function updateParagraphsCount () {
     const paragraph = document.querySelector('.monolingual-paragraph');
-    const paragraphsCount = countSubstrings(paragraph.value, '\n') + 1;
+    const paragraphsCount = countSubstrings(paragraph.value, '\n', false) + 1;
     document.querySelector('.total-count').innerText = paragraphsCount;
 }
 
@@ -188,10 +188,12 @@ function updateSearchCount () {
     const searchString = document.getElementById('search-input').value;
     const searchCount = document.getElementById('search-count');
 
+    const isRegex = document.getElementById('regex-checkbox').checked;
+
     if (!searchString) {
         searchCount.innerText = '';
     } else {
-        searchCount.innerText = countSubstrings(text, searchString) + ' ×';
+        searchCount.innerText = countSubstrings(text, searchString, isRegex) + ' ×';
     }
 
     const replaceString = document.getElementById('replace-input').value;
@@ -201,7 +203,7 @@ function updateSearchCount () {
         replaceCount.innerText = '';
         return;
     } else {
-        replaceCount.innerText = countSubstrings(text, replaceString) + ' ×';
+        replaceCount.innerText = countSubstrings(text, replaceString, false) + ' ×';
     }
 }
 
@@ -235,7 +237,37 @@ function setSelectionRange(textarea, selectionStart, selectionEnd) {
 }
 
 
-function search (searchString) {
+// function search (searchString, isRegex = false) {
+//     if (!searchString) {
+//         searchString = document.querySelector('#search-input').value;
+
+//         if (!searchString) {
+//             return;
+//         }
+//     }
+
+//     const paragraph = document.querySelector('.monolingual-paragraph');
+
+//     if (!searchString) {
+//         return;
+//     }
+
+//     let matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
+
+//     if (matchIndex === -1) {
+//         matchIndex = paragraph.value.indexOf(searchString, 0);
+//     }
+
+//     if (matchIndex !== -1) {
+//         paragraph.blur();
+//         setSelectionRange(paragraph, matchIndex, matchIndex + searchString.length);
+//         paragraph.focus();
+//     } else {
+//         return;
+//     }
+// }
+
+function search (searchString, isRegex) {
     if (!searchString) {
         searchString = document.querySelector('#search-input').value;
 
@@ -244,60 +276,162 @@ function search (searchString) {
         }
     }
 
+    if (isRegex === undefined) {
+        isRegex = document.getElementById('regex-checkbox').checked;
+    }
+
     const paragraph = document.querySelector('.monolingual-paragraph');
 
-    if (!searchString) {
-        return;
+    // Переменные для хранения позиции совпадения и длины найденной строки
+    let matchIndex = -1;
+    let matchLength = 0;
+
+    if (isRegex) {
+        try {
+            // Создаем регулярное выражение с флагами g (глобальный) и, например, u (юникод)
+            // Если нужно игнорировать регистр, можно добавить флаг 'gi'
+            const regex = new RegExp(searchString, 'gm');
+            
+            // Начинаем поиск с конца текущего выделения
+            regex.lastIndex = paragraph.selectionEnd;
+            let match = regex.exec(paragraph.value);
+
+            // Если с текущей позиции ничего не нашли, ищем сначала текста (зацикливание)
+            if (!match) {
+                regex.lastIndex = 0;
+                match = regex.exec(paragraph.value);
+            }
+
+            if (match) {
+                matchIndex = match.index;
+                matchLength = match[0].length;
+            }
+        } catch (e) {
+            console.error("Некорректное регулярное выражение", e);
+            return; // Завершаем, если регулярка написана с синтаксической ошибкой
+        }
+    } else {
+        // Стандартный поиск обычной подстроки
+        matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
+
+        if (matchIndex === -1) {
+            matchIndex = paragraph.value.indexOf(searchString, 0);
+        }
+        
+        matchLength = searchString.length;
     }
 
-    let matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
-
-    if (matchIndex === -1) {
-        matchIndex = paragraph.value.indexOf(searchString, 0);
-    }
-
+    // Если совпадение найдено, выделяем его
     if (matchIndex !== -1) {
         paragraph.blur();
-        setSelectionRange(paragraph, matchIndex, matchIndex + searchString.length);
+        // Используем matchLength, так как длина совпадения в RegExp может отличаться от длины самого паттерна
+        setSelectionRange(paragraph, matchIndex, matchIndex + matchLength);
         paragraph.focus();
-    } else {
-        return;
     }
 }
 
 
-function replace () {
+// function replace () {
+//     const searchString = document.querySelector('#search-input').value;
+    
+//     if (!searchString) {
+//         return;
+//     }
+    
+//     const paragraph = document.querySelector('.monolingual-paragraph');
+//     const text = paragraph.value;
+//     const selectionString = text.slice(paragraph.selectionStart, paragraph.selectionEnd);
+    
+//     if (selectionString !== searchString) {
+//         search();
+//         return;
+//     }
+    
+//     const replacementString = document.querySelector('#replace-input').value;
+
+//     const selectionStart = paragraph.selectionStart;
+//     const selectionEnd = paragraph.selectionEnd;
+
+//     const part1 = text.slice(0, selectionStart);
+//     const part3 = text.slice(selectionEnd);
+
+//     paragraph.value = part1 + replacementString + part3;
+
+//     const newSelection = selectionStart + replacementString.length;
+//     paragraph.setSelectionRange(newSelection, newSelection);
+
+//     console.log(selectionStart);
+//     console.log(selectionEnd);
+//     console.log(newSelection);
+//     search();
+
+//     updateSearchCount();
+//     updateParagraphsCount();
+//     enableMonolingualChangeStatus();
+// }
+
+
+function replace(isRegex) {
     const searchString = document.querySelector('#search-input').value;
     
     if (!searchString) {
         return;
     }
+
+    if (isRegex === undefined) {
+        isRegex = document.getElementById('regex-checkbox').checked;
+    }
     
     const paragraph = document.querySelector('.monolingual-paragraph');
     const text = paragraph.value;
-    const selectionString = text.slice(paragraph.selectionStart, paragraph.selectionEnd);
+    const selectionStart = paragraph.selectionStart;
+    const selectionEnd = paragraph.selectionEnd;
     
-    if (selectionString !== searchString) {
-        search();
-        return;
+    // Берем то, что сейчас выделено в тексте
+    const selectionString = text.slice(selectionStart, selectionEnd);
+    
+    // Проверка на совпадение выделения с поисковым запросом
+    if (isRegex) {
+        try {
+            // Создаем регулярное выражение. 
+            // Используем только флаг 'u' (unicode), так как глобальный 'g' или регистронезависимый 'i' 
+            // должны управляться отдельно, если это нужно для вашей функции search().
+            const regex = new RegExp(`^${searchString}$`, 'u');
+            
+            // Проверяем, что выделенный текст ПОЛНОСТЬЮ соответствует регулярному выражению
+            if (!regex.test(selectionString)) {
+                search(isRegex = true);
+                return;
+            }
+        } catch (e) {
+            console.error("Некорректное регулярное выражение", e);
+            return;
+        }
+    } else {
+        // Обычный поиск по строке, как и был
+        if (selectionString !== searchString) {
+            search();
+            return;
+        }
     }
     
     const replacementString = document.querySelector('#replace-input').value;
 
-    const selectionStart = paragraph.selectionStart;
-    const selectionEnd = paragraph.selectionEnd;
-
     const part1 = text.slice(0, selectionStart);
     const part3 = text.slice(selectionEnd);
 
+    // Заменяем выделенный кусок текста
     paragraph.value = part1 + replacementString + part3;
 
+    // Сдвигаем курсор в конец вставленной строки
     const newSelection = selectionStart + replacementString.length;
     paragraph.setSelectionRange(newSelection, newSelection);
 
     console.log(selectionStart);
     console.log(selectionEnd);
     console.log(newSelection);
+    
+    // Вызываем поиск для перехода к следующему совпадению
     search();
 
     updateSearchCount();
@@ -305,28 +439,52 @@ function replace () {
     enableMonolingualChangeStatus();
 }
 
+// const regex = new RegExp(searchString, 'gm');
+            
+//             // Начинаем поиск с конца текущего выделения
+//             regex.lastIndex = paragraph.selectionEnd;
+//             let match = regex.exec(paragraph.value);
 
-function replaceAll () {
-    const currentPosition = getCurretPosition();
-    
-    const searchString = document.querySelector('#search-input').value;
-    
-    if (!searchString) {
-        return;
+//             // Если с текущей позиции ничего не нашли, ищем сначала текста (зацикливание)
+//             if (!match) {
+//                 regex.lastIndex = 0;
+//                 match = regex.exec(paragraph.value);
+//             }
+
+function replaceAll (searchString, replacementString, isRegex, withConfirmation = true) {
+    if (searchString === undefined) {
+        searchString = document.querySelector('#search-input').value;
+
+        if (!searchString) {
+            return;
+        }
     }
+    
+    if (replacementString === undefined) {
+        replacementString = document.querySelector('#replace-input').value;
+    }
+    
+    const currentPosition = getCurretPosition();
+
+    if (isRegex === undefined) {
+        isRegex = document.getElementById('regex-checkbox').checked;
+    }
+
+    searchString = isRegex ? new RegExp(searchString, 'gm') : searchString;
     
     const paragraph = document.querySelector('.monolingual-paragraph');
     const text = paragraph.value;
     
-    if (text.indexOf(searchString) === -1) {
+    if (text.match(searchString).length === 0) {
         return;
     }
     
-    const replacementString = document.querySelector('#replace-input').value;
-    const confirmation = confirm(`Replace all «${searchString}» with «${replacementString}»?`);
-    
-    if (!confirmation) {
-        return;
+    if (withConfirmation) {
+        const confirmation = confirm(`Replace all «${searchString}» with «${replacementString}»?`);
+        
+        if (!confirmation) {
+            return;
+        }
     }
 
     paragraph.value = text.replaceAll(searchString, replacementString);
@@ -343,7 +501,7 @@ function toManualReplacement (searchString, replaceString) {
     showSidebar(false);
     document.getElementById('search-input').value = searchString;
     document.getElementById('replace-input').value = replaceString;
-    search(searchString);
+    search(searchString, isRegex = false);
     updateSearchCount();
 }
 
@@ -549,7 +707,7 @@ function searchLineFromTextarea (fullLineMatch = false) {
 
     currentLineText = fullLineMatch ? '\n'+currentLineText+'\n' : currentLineText;
 
-    search(currentLineText);
+    search(currentLineText, isRegex = false);
     document.activeElement.focus();
 }
 
@@ -582,7 +740,7 @@ function checkMergeStrophesArguments () {
 function mergeStrophesByDelimiter (test = false) {
     
     let text = document.querySelector('.monolingual-paragraph').value;
-    const paragraphsCountBefore = countSubstrings(text, '\n') + 1;
+    const paragraphsCountBefore = countSubstrings(text, '\n', false) + 1;
 
     if (!checkMergeStrophesArguments()) {
         setParagraphNumbersInMergingStrophes(paragraphsCountBefore, '∅');
@@ -609,7 +767,7 @@ function mergeStrophesByDelimiter (test = false) {
     text = untouchedPart + '\n' + processedPart;
 
     if (test) {
-        const paragraphsCountAfter = countSubstrings(text, '\n') + 1;
+        const paragraphsCountAfter = countSubstrings(text, '\n', false) + 1;
         setParagraphNumbersInMergingStrophes(paragraphsCountBefore, paragraphsCountAfter);
         return;
     }
@@ -623,8 +781,43 @@ function mergeStrophesByDelimiter (test = false) {
     mergeStrophesByDelimiter(test = true);
 
     toCurrentPosition(currentPosition);
+}
 
-    return;
+
+function removeEmptyLines () {
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    paragraph.value = paragraph.value.replace(/^\s*[\r\n]/gm, '');
+
+    const currentPosition = getCurretPosition();
+
+    enableMonolingualChangeStatus();
+    updateParagraphsCount();
+    updateSearchCount();
+
+    toCurrentPosition(currentPosition);
+}
+
+
+function mergeLinesWithoutOpeningTags () {
+    let text = document.querySelector('.monolingual-paragraph').value;
+    const paragraphsCountBefore = countSubstrings(text, '\n', false) + 1;
+    const delimiter = document.getElementById('delimiter-textarea').value;
+    
+    if (delimiter === '') {
+        return;
+    }
+
+    const currentPosition = getCurretPosition();
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    paragraph.value = paragraph.value.replace(/\n(?!<b>|<h1>|<i>)/g, delimiter);
+
+    enableMonolingualChangeStatus();
+    updateParagraphsCount();
+    updateSearchCount();
+    mergeStrophesByDelimiter(test = true);
+
+    toCurrentPosition(currentPosition);
 }
 
 
@@ -637,8 +830,116 @@ function setParagraphNumbersInMergingStrophes (before, after) {
 function countApostrophes () {
     const text = document.querySelector('.monolingual-paragraph').value;
 
-    document.getElementById('typewriter-apostrophes-count').innerText = countSubstrings(text, "'") + ' ×';
-    document.getElementById('punctuation-apostrophes-count').innerText = countSubstrings(text, "’") + ' ×';
+    document.getElementById('typewriter-apostrophes-count').innerText = countSubstrings(text, "'", false) + ' ×';
+    document.getElementById('punctuation-apostrophes-count').innerText = countSubstrings(text, "’", false) + ' ×';
+}
+
+
+function clearSearchResults () {
+    const searchArea = document.querySelector('.sidebar-search-area');
+
+    if (searchArea) {
+        searchArea.innerHTML = '';
+    }
+}
+
+
+function searchCharactersInThePlay () {
+    // regexes = getRegexesForCharacters();
+
+    // if (regexes.length === 0) {
+    //     return {};
+    // }
+
+    let characters = document.getElementById('characters-textarea').value
+        .trim()
+        .split('\n')
+        .filter(Boolean);
+    characters = [...new Set(characters)];
+
+    const charactersDelimiter = document.getElementById('characters-delimiter-textarea').value;
+    const lineEnd = charactersDelimiter === '' ? '$' : '';
+
+    regexes = characters
+        .map(character => '^' + (character + charactersDelimiter).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + lineEnd);
+
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const characterCounts = {};
+
+    for (let i = 0; i < characters.length; i++) {
+        const characterCount = (text.match(new RegExp(regexes[i], 'ugm')) || []).length;
+
+        if (!characterCount) {
+            continue;
+        }
+
+        characterCounts[characters[i]] = characterCount;
+    }
+
+    return [characterCounts, regexes];
+}
+
+
+function showCharactersCounts () {
+    clearSearchResults();
+
+    const [characterCounts, regexes] = searchCharactersInThePlay();
+    const searchResultsArea = document.getElementById('characters-search-results');
+
+    console.log(characterCounts);
+
+    if (Object.keys(characterCounts).length === 0) {
+        console.log('Characters not found!');
+        const messageHTML = '<p class="sidebar-message sidebar-margin-top">Characters not found!</p>'
+        searchResultsArea.insertAdjacentHTML('afterbegin', messageHTML);
+        return;
+    }
+
+    const charactersDelimiter = document.getElementById('characters-delimiter-textarea').value;
+    const lineEnd = charactersDelimiter === '' ? '$' : '';
+    const characterValues = Object.keys(characterCounts);
+    const textareaClasses = 'sidebar-textarea sidebar-oneline-textarea sidebar-textarea-readonly sidebar-hit-textarea sidebar-margin-top';
+    
+    for (let i = 0; i < characterValues.length; i++) {
+        const characterCount = characterCounts[characterValues[i]] + ' ×';
+        const escapedPart = (characterValues[i] + charactersDelimiter).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regexAttribute = '^' + escapedPart + lineEnd;
+        const regex = regexes[i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        const itemHTML = `<div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-count">${characterCount}</p>
+            <textarea class="${textareaClasses}" rows="1" data-regex="${regexAttribute}" onclick="search('${regex}', isRegex=true)" readonly>${characterValues[i] + charactersDelimiter}</textarea>
+        </div>`;
+
+        searchResultsArea.insertAdjacentHTML('beforeend', itemHTML);
+    }
+       
+    const tagButtonHTML = `<div class="sidebar-vertical-container sidebar-margin-top">
+        <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="tagCharacters()">Tag characters</button>
+    </div>`;
+
+    searchResultsArea.insertAdjacentHTML('beforeend', tagButtonHTML);
+}
+
+
+function tagCharacters () {
+    const hitTextareas = document.querySelectorAll('.sidebar-hit-textarea');
+    const regexes = Array.from(hitTextareas).map(hitTextarea => hitTextarea.dataset.regex);
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    let text = paragraph.value;
+
+    regexes.forEach(regex => {
+        console.log(regex);
+        regex = new RegExp(regex.replace(/\\\\/g, '\\'), 'gm');
+        text = text.replace(regex, '<b>$&</b>');
+    });
+
+    paragraph.value = text;
+
+    enableMonolingualChangeStatus();
+    showCharactersCounts();
+    updateSearchCount();
 }
 
 
@@ -668,6 +969,10 @@ function replaceAllApostrophes () {
 
 
 function makeMonolingualPanelButtonsFunctional () {
+    const regexCheckbox = document.getElementById('regex-checkbox');
+    if (regexCheckbox) {
+        regexCheckbox.addEventListener('change', updateSearchCount);
+    }
 
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
@@ -791,9 +1096,10 @@ function makeMonolingualPanelButtonsFunctional () {
 
     const tagCharactersButton = document.getElementById('panel-button-tag_characters_in_the_play');
     if (tagCharactersButton) {
-        tagCharactersButton.addEventListener('click', () => {
+        tagCharactersButton.addEventListener('mousedown', () => {
             showSidebar(true);
             showSidebarTemplate('tag_characters_in_the_play');
+            document.getElementById('characters-textarea').value = getSelectedText();
         });
     }
 

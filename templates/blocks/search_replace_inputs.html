@@ -1,10 +1,15 @@
 <div id="search-replace-container">
     <div class="search-replace-subpanel search-replace-counts">
-    <p id="search-count" class="search-replace-count"></p>
-    <p id="replace-count" class="search-replace-count"></p>
+        <p id="search-count" class="search-replace-count"></p>
+        <p id="replace-count" class="search-replace-count"></p>
     </div>
+    
     <div class="search-replace-subpanel search-replace-inputs">
         <input type="text" class="search-replace-input" id="search-input" placeholder="Search" rows="1">
         <input type="text" class="search-replace-input" id="replace-input" placeholder="Replacement" rows="1">
+    </div>
+    <div class="search-replace-subpanel">
+        <input type="checkbox" id="regex-checkbox" name="regex-checkbox" title="Regular expression">
+        <label for="regex-checkbox" id="regex-checkbox-label" title="Regular expression">/.*/</label>
     </div>
 </div>
