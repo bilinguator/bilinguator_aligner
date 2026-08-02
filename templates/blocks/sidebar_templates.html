@@ -110,6 +110,55 @@
         <img src="{{ url_for('static', filename='img/tag_headings.png') }}" class="panel-button-img">
         <h1 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Chapter word</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="chapter-word-textarea" rows="1" oninput="updateHeadingExample()"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Numbering</p>
+        <select class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="numbering-select" onchange="updateHeadingExample()">
+            <option value="arabic">Arabic: 0123456789</option>
+            <option value="abjad">Abjad: أبجدﻩوﺯﺡﻁﻱﻙﻝﻡﻥﺱﻉﻑصﻕﺭﺵﺕﺙﺥﺫﺽﻅﻍ</option>
+            <option value="amharic">Amharic: ፩፪፫፬፭፮፯፰፱፲፳፴፵፶፷፸፹፺፻፼</option>
+            <option value="bengali">Bengali: ০১২৩৪৫৬৭৮৯</option>
+            <option value="burmese">Burmese: ၀၁၂၃၄၅၆၇၈၉</option>
+            <option value="chinese">Chinese: 一二三四五六七八九十</option>
+            <option value="devanagari">Devanagari: ०१२३४५६७८९</option>
+            <option value="eastern-arabic">Eastern Arabic: ۱۲۳٤۴٥۵</option>
+            <option value="kannada">Kannada: ೦೧೨೩೪೫೬೭೮೯</option>
+            <option value="khmer">Khmer: ០១២៣៤៥៦៧៨៩</option>
+            <option value="lao">Lao: ໐໑໒໓໔໕໖໗໘໙</option>
+            <option value="malayalam">Malayalam: ൦൧൨൩൪൫൬൭൮൯൰൱൲</option>
+            <option value="mongolian">Mongolian: ᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙</option>
+            <option value="odia">Odia: ୦୧୨୩୪୫୬୭୮୯</option>
+            <option value="roman">Roman: IVXLCDM</option>
+            <option value="tamil">Tamil: ௦௧௨௩௪௫௬௭௮௯</option>
+            <option value="telugu">Telugu: ౦౧౨౩౪౫౬౭౮౯</option>
+            <option value="text">Text: one, two, three, four, five, six, seven, eight, nine</option>
+            <option value="tibetan">Tibetan: ༠༡༢༣༤༥༦༧༨༩</option>
+            <option value="thai">Thai: ๐๑๒๓๔๕๖๗๘๙</option>
+            <option value="limbu">Limbu: ᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏</option>
+        </select>
+        <p class="sidebar-p sidebar-margin-top">Delimiter between numbering and title</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="numbering-delimiter-textarea" rows="1" oninput="updateHeadingExample()"></textarea>
+        
+        <input type="checkbox" class="sidebar-margin-top" id="with-title-checkbox" name="with-title-checkbox" onchange="updateHeadingExample()">
+        <label for="with-title-checkbox" class="sidebar-p" id="with-title-checkbox-label">With title</label>
+        
+        <input type="checkbox" class="sidebar-margin-top" id="numbering-first-checkbox" name="numbering-first-checkbox" onchange="updateHeadingExample()">
+        <label for="numbering-first-checkbox" class="sidebar-p" id="numbering-first-checkbox-label">Numbering first</label>
+        
+        <p class="sidebar-p sidebar-margin-top">Example: <span class="sidebar-message" id="heading-example"></span></p>
+        
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectHeadingsByParameters()">Search by parameters</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="searchUpperCaseHeadings()">Search uppercase headings</button>
+        </div>
+
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="headings-textarea" onclick="searchLineFromTextarea(fullLineMatch = true);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top" id="headings-count-message"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="tagHeadings()">Tag headings</button>
+        </div>
+    </div>
 </template>
 
 
@@ -156,9 +205,7 @@
             <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="showCharactersCounts();">Search</button>
         </div>
     </div>
-    <div class="sidebar-main-area sidebar-search-area" id="characters-search-results">
-
-    </div>
+    <div class="sidebar-main-area sidebar-search-area" id="characters-search-results"></div>
 </template>
 
 

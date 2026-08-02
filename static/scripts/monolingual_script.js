@@ -182,6 +182,224 @@ function mergeOrphans () {
 }
 
 
+function updateHeadingExample () {
+    const numbering = document.getElementById('numbering-select').value;
+    
+    const numberingExample = {
+        'arabic': '5',
+        'roman': 'V',
+        'chinese': '五',
+        'eastern-arabic': '۵',
+        'abjad': 'ه',
+        'devanagari': '५',
+        'bengali': '৫',
+        'odia': '୫',
+        'tamil': '௫',
+        'telugu': '౫',
+        'kannada': '೫',
+        'malayalam': '൫',
+        'thai': '๕',
+        'amharic': '፭',
+        'lao': '໕',
+        'tibetan': '༥',
+        'text': 'Five',
+        'burmese': '၅',
+        'khmer': '၅',
+        'mongolian': '᠕',
+        'limbu': '᥋'
+    }[numbering];
+
+    const chapterWord = document.getElementById('chapter-word-textarea').value;
+    const numberingDelimiter = document.getElementById('numbering-delimiter-textarea').value;
+    const title = document.getElementById('with-title-checkbox').checked ? ' <TITLE>' : '';
+    const numberingFirst = document.getElementById('numbering-first-checkbox').checked;
+
+    let headingExample;
+
+    if (numberingFirst) {
+        headingExample = numberingExample + numberingDelimiter + chapterWord + title;
+    } else {
+        headingExample = chapterWord + numberingDelimiter + numberingExample + title;
+    }
+
+    document.getElementById('heading-example').innerText = headingExample;
+}
+
+
+function updateHeadingsCountMessage () {
+    const headingsInput = document.getElementById('headings-textarea');
+    const headingsCountMessage = document.getElementById('headings-count-message');
+    
+    if (headingsInput.value.trim() === '') {
+        headingsCountMessage.innerText = 'Headings not found!';
+        return;
+    }
+    
+    const headingsCount = headingsInput.value.split('\n').length
+    headingsCountMessage.innerText = headingsCount + ' headings found.';
+}
+
+
+function searchHeadingsByParameters (
+    text,
+    chapterWord = '',
+    numbering = 'arabic',
+    numberingDelimiter = '',
+    withTitle = false,
+    numberingFirst = false
+) {
+    let regex = numberingFirst ? '' : chapterWord + numberingDelimiter;
+
+    if (numbering === 'arabic') {
+        regex += '[0-9１２３４５６７８９①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇⒈⒉⒊⒋⒌⒍⒎⒏⒐⒑⒒⒓⒔⒕⒖⒗⒘⒙⒚⒛⓪⓫⓬⓭⓮⓯⓰⓱⓲⓳⓴⓵⓶⓷⓸⓹⓺⓻⓼⓽⓾⓿0⃣1⃣2⃣3⃣4⃣5⃣6⃣7⃣8⃣9⃣🔟]+';
+    } else if (numbering === 'roman') {
+        regex += '[IVXLCDMivxlcdmⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅬⅭⅮⅯⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹⅺⅻⅼⅽⅾⅿ]+';
+    } else if (numbering === 'text') {
+        regex += '\\D+';
+    } else if (numbering === 'chinese') {
+        regex += '[〇一七万三丗两九二五亿仟伍佰億兆兩八六十千卄卅卌叁四廾廿念拾捌柒玖百皕肆萬貳贰陆陸零]+';
+    } else if (numbering === 'eastern-arabic') {
+        regex += '[۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩]+';
+    } else if (numbering === 'abjad') {
+        regex += '[أبجدﻩوﺯﺡﻁﻱﻙﻝﻡﻥﺱﻉﻑصﻕﺭﺵﺕﺙﺥﺫﺽﻅﻍ]+';
+    } else if (numbering === 'devanagari') {
+        regex += '[०१२३४५६७८९]+';
+    } else if (numbering === 'bengali') {
+        regex += '[০১২৩৪৫৬৭৮৯]+';
+    } else if (numbering === 'odia') {
+        regex += '[୦୧୨୩୪୫୬୭୮୯]+';
+    } else if (numbering === 'tamil') {
+        regex += '[௦௧௨௩௪௫௬௭௮௯]+';
+    } else if (numbering === 'telugu') {
+        regex += '[౦౧౨౩౪౫౬౭౮౯]+';
+    } else if (numbering === 'kannada') {
+        regex += '[೦೧೨೩೪೫೬೭೮೯]+';
+    } else if (numbering === 'malayalam') {
+        regex += '[൦൧൨൩൪൫൬൭൮൯൰൱൲]+';
+    } else if (numbering === 'thai') {
+        regex += '[๐๑๒๓๔๕๖๗๘๙]+';
+    } else if (numbering === 'amharic') {
+        regex += '[፩፪፫፬፭፮፯፰፱፲፳፴፵፶፷፸፹፺፻፼]+';
+    } else if (numbering === 'lao') {
+        regex += '[໐໑໒໓໔໕໖໗໘໙]+';
+    } else if (numbering === 'tibetan') {
+        regex += '[༠༡༢༣༤༥༦༧༨༩]+';
+    } else if (numbering === 'burmese') {
+        regex += '[၀၁၂၃၄၅၆၇၈၉]+';
+    } else if (numbering === 'khmer') {
+        regex += '[០១២៣៤៥៦៧៨៩]+';
+    } else if (numbering === 'mongolian') {
+        regex += '[᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙]+';
+    } else if (numbering === 'limbu') {
+        regex += '[᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏]+';
+    }
+
+    if (numberingFirst) {
+        regex += numberingDelimiter + chapterWord;
+    }
+
+    if (withTitle) {
+        regex += '.+';
+    }
+
+    const re = new RegExp(`^${regex}$`);
+    const paragraphs = text.split('\n');
+    const detected = [];
+
+    for (const paragraph of paragraphs) {
+        if (re.test(paragraph.trim())) {
+            detected.push(paragraph);
+        }
+    }
+
+    if (detected.length === 0) {
+        return [];
+    }
+
+    return detected;
+}
+
+
+function detectHeadingsByParameters () {
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const chapterWord = document.getElementById('chapter-word-textarea').value;
+    const numbering = document.getElementById('numbering-select').value;
+    const numberingDelimiter = document.getElementById('numbering-delimiter-textarea').value;
+    const withTitle = document.getElementById('with-title-checkbox').checked;
+    const numberingFirst = document.getElementById('numbering-first-checkbox').checked;
+    
+    const headingsTextarea = document.getElementById('headings-textarea');
+    const headings = searchHeadingsByParameters (
+        text,
+        chapterWord,
+        numbering,
+        numberingDelimiter,
+        withTitle,
+        numberingFirst
+    )
+    
+    headingsTextarea.value = headings.join('\n');
+    updateHeadingsCountMessage();
+}
+
+
+function tagHeadings () {
+    const textInput = document.querySelector('.monolingual-paragraph');
+    const headingsInput = document.getElementById('headings-textarea');
+
+    if (!textInput || !headingsInput) return;
+
+    const text = textInput.value;
+    
+    const headingsList = headingsInput.value
+        .split('\n')
+        .map(h => h.trim())
+        .filter(Boolean);
+
+    const headingSet = new Set(headingsList);
+
+    const processedText = text
+        .split('\n')
+        .map(line => {
+            if (headingSet.has(line.trim())) {
+                return `<h1>${line}</h1>`;
+            }
+            return line;
+        })
+        .join('\n');
+
+    textInput.value = processedText;
+
+    detectHeadingsByParameters();
+}
+
+
+function getUniqueUpperCaseLines (text) {
+    if (typeof text !== 'string') {
+        return [];
+    }
+
+    const hasUpperCaseRegex = /\p{Lu}/u;
+    const hasNoLowerCaseRegex = /^[^\p{Ll}]*$/u;
+
+    const matchedLines = text.split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(line => line.length > 0 && hasUpperCaseRegex.test(line) && hasNoLowerCaseRegex.test(line));
+
+    return Array.from(new Set(matchedLines));
+}
+
+
+function searchUpperCaseHeadings () {
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const upperCaseHeadings = getUniqueUpperCaseLines(text);
+
+    const headingsTextarea = document.getElementById('headings-textarea');
+    headingsTextarea.value = upperCaseHeadings.join('\n');
+    updateHeadingsCountMessage();
+}
+
+
 function updateSearchCount () {
     const text = document.querySelector('.monolingual-paragraph').value;
 
@@ -886,7 +1104,6 @@ function showCharactersCounts () {
     const [characterCounts, regexes] = searchCharactersInThePlay();
     const searchResultsArea = document.getElementById('characters-search-results');
 
-    console.log(characterCounts);
 
     if (Object.keys(characterCounts).length === 0) {
         console.log('Characters not found!');
