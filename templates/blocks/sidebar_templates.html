@@ -102,6 +102,32 @@
         <img src="{{ url_for('static', filename='img/ellipsis.png') }}" class="panel-button-img">
         <h1 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('. . .', isRegex=false);copyToClipboard('. . .');" title="Three dots with spaces" readonly>. . .</textarea>
+            <p class="sidebar-p sidebar-count" id="three-dots-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('...', isRegex=false);copyToClipboard('...');" title="Three dots" readonly>...</textarea>
+            <p class="sidebar-p sidebar-count" id="midline-ellipses-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('⋯', isRegex=false);copyToClipboard('⋯');" title="Midline ellipsis" readonly>⋯</textarea>
+            <p class="sidebar-p sidebar-count" id="ellipses-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('…', isRegex=false);copyToClipboard('…');" title="Ellipsis" readonly>…</textarea>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Search</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="ellipses-search-textarea" rows="1">...</textarea>
+            </div>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Replace</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="ellipses-replace-textarea" rows="1">…</textarea>
+            </div>
+        </div>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllEllipses()">Replace automatically</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toEllipsisManualReplacement()">Replace manually</button>
+        </div>
+    </div>
 </template>
 
 

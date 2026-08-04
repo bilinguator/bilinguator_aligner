@@ -17,12 +17,6 @@ function enableMonolingualChangeStatus () {
 }
 
 
-// function getLang () {
-//     const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
-//     return document.getElementById(`languages-dropdown-list-${side}`).value;
-// }
-
-
 function replaceByRegex (text, regexStr, oldStr, newStr) {
     const regex = new RegExp(regexStr, 'ug');
     const matches = text.match(regex);
@@ -89,11 +83,17 @@ function recoverApostrophesByLang (text, lang) {
 }
 
 
+function searchEllipsis () {
+
+}
+
+
 function updateParagraphsCount () {
     const paragraph = document.querySelector('.monolingual-paragraph');
     const paragraphsCount = countSubstrings(paragraph.value, '\n', false) + 1;
     document.querySelector('.total-count').innerText = paragraphsCount;
 }
+
 
 function applyToSelection (foo, ...args) {
     const paragraph = document.querySelector('.monolingual-paragraph');
@@ -715,12 +715,53 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
 }
 
 
+function replaceAllEllipses () {
+    const ellipsisSearch = document.getElementById('ellipses-search-textarea').value;
+    const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
+    
+    replaceAll(ellipsisSearch, ellipsisReplacement, isRegex = false, withConfirmation = true);
+    updateEllipsesCounts();
+}
+
+
 function toManualReplacement (searchString, replaceString) {
     showSidebar(false);
     document.getElementById('search-input').value = searchString;
     document.getElementById('replace-input').value = replaceString;
     search(searchString, isRegex = false);
     updateSearchCount();
+}
+
+
+function toEllipsisManualReplacement () {
+    const ellipsisSearch = document.getElementById('ellipses-search-textarea').value;
+    const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
+
+    toManualReplacement(ellipsisSearch, ellipsisReplacement);
+    updateEllipsesCounts();
+}
+
+
+function getPreviousElementByClass(currentElement, className) {
+    let prev = currentElement.previousElementSibling;
+    
+    while (prev) {
+    if (prev.classList.contains(className)) {
+        return prev;
+    }
+        prev = prev.previousElementSibling;
+    }
+    return null;
+}
+
+
+function updateEllipsesCounts () {
+    const text = document.querySelector('.monolingual-paragraph').value;
+
+    document.querySelectorAll('.ellipsis-textarea').forEach((textarea) => {
+        const ellipsisCountElement = getPreviousElementByClass(textarea, 'sidebar-count');
+        ellipsisCountElement.innerText = countSubstrings(text, textarea.value, false) + ' ×';
+    });
 }
 
 
@@ -1291,6 +1332,7 @@ function makeMonolingualPanelButtonsFunctional () {
         ellipsisButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('ellipsis');
+            updateEllipsesCounts();
         });
     }
 

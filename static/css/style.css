@@ -786,9 +786,10 @@ h1 {
 }
 
 .sidebar-mini-textarea {
-	width: 20px;
-	text-align: center;
-	user-select: none;
+    width: 20px;
+    text-align: center;
+    user-select: none;
+    overflow-y: hidden;
 	-webkit-user-select: none;
 	-moz-user-select: none;
 	-ms-user-select: none;
