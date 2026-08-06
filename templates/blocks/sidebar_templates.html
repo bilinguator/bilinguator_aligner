@@ -94,6 +94,38 @@
         <img src="{{ url_for('static', filename='img/dashes.png') }}" class="panel-button-img">
         <h2 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('-', isRegex=false);copyToClipboard('-');" title="Hyphen" readonly>-</textarea>
+            <p class="sidebar-p sidebar-count" id="minus-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('−', isRegex=false);copyToClipboard('−');" title="Minus" readonly>−</textarea>
+            <p class="sidebar-p sidebar-count" id="en-dash-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('–', isRegex=false);copyToClipboard('–');" title="En dash" readonly>–</textarea>
+            <p class="sidebar-p sidebar-count" id="em-dash-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('—', isRegex=false);copyToClipboard('—');" title="Em dash" readonly>—</textarea>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Search</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="dash-search-textarea" rows="1">-</textarea>
+            </div>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Replace</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="dash-replace-textarea" rows="1">—</textarea>
+            </div>
+        </div>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllDashes()">Replace all</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement()">Replace manually</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '^[-−–]', dashReplacement = '—')">Leading dialogue dashes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '[-−–]$', dashReplacement = '—')">Tailing dashes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=\\d)[-−—](?=\\d)', dashReplacement = '–')">Number intervals</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=[^\\S\\r\\n])[-−–—](?=[^\\S\\r\\n])')">Dashes surrounded by spaces</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=[ \\t])[-−–—](?=[^\\s])|(?<=[^\\s])[-−–—](?=[ \\t])')">Dashes with a space on one side</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=\\p{L})[-−–—](?=\\p{L})', dashReplacement = '-')">Dashes surrounded by letters</button>
+        </div>
+    </div>
 </template>
 
 
@@ -124,7 +156,7 @@
             </div>
         </div>
         <div class="sidebar-vertical-container sidebar-margin-top">
-            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllEllipses()">Replace automatically</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllEllipses()">Replace all</button>
             <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toEllipsisManualReplacement()">Replace manually</button>
         </div>
     </div>

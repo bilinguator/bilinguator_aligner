@@ -422,6 +422,8 @@ function updateSearchCount () {
         return;
     } else {
         replaceCount.innerText = countSubstrings(text, replaceString, false) + ' ×';
+        updateSidebarTextareasCounts('ellipsis-textarea');
+        updateSidebarTextareasCounts('dash-textarea');
     }
 }
 
@@ -508,7 +510,7 @@ function search (searchString, isRegex) {
         try {
             // Создаем регулярное выражение с флагами g (глобальный) и, например, u (юникод)
             // Если нужно игнорировать регистр, можно добавить флаг 'gi'
-            const regex = new RegExp(searchString, 'gm');
+            const regex = new RegExp(searchString, 'ugm');
             
             // Начинаем поиск с конца текущего выделения
             regex.lastIndex = paragraph.selectionEnd;
@@ -525,7 +527,7 @@ function search (searchString, isRegex) {
                 matchLength = match[0].length;
             }
         } catch (e) {
-            console.error("Некорректное регулярное выражение", e);
+            console.error('Incorrect regular expression!', e);
             return; // Завершаем, если регулярка написана с синтаксической ошибкой
         }
     } else {
@@ -589,7 +591,8 @@ function search (searchString, isRegex) {
 // }
 
 
-function replace(isRegex) {
+function replace (isRegex) {
+    const force = !document.getElementById('sidebar').hidden;
     const searchString = document.querySelector('#search-input').value;
     
     if (!searchString) {
@@ -604,6 +607,11 @@ function replace(isRegex) {
     const text = paragraph.value;
     const selectionStart = paragraph.selectionStart;
     const selectionEnd = paragraph.selectionEnd;
+
+    if (selectionStart == selectionEnd) {
+        search();
+        return;
+    }
     
     // Берем то, что сейчас выделено в тексте
     const selectionString = text.slice(selectionStart, selectionEnd);
@@ -611,23 +619,34 @@ function replace(isRegex) {
     // Проверка на совпадение выделения с поисковым запросом
     if (isRegex) {
         try {
+            const testRegex = new RegExp(searchString, 'um');
+        
+            if (!testRegex.test(text)) {
+                console.log('!testRegex.test(text)');
+                return;
+            }
+
             // Создаем регулярное выражение. 
             // Используем только флаг 'u' (unicode), так как глобальный 'g' или регистронезависимый 'i' 
             // должны управляться отдельно, если это нужно для вашей функции search().
-            const regex = new RegExp(`^${searchString}$`, 'u');
-            
+            let cleanedSearch = searchString;
+            if (cleanedSearch.startsWith('^')) cleanedSearch = cleanedSearch.slice(1);
+            if (cleanedSearch.endsWith('$')) cleanedSearch = cleanedSearch.slice(0, -1);
+
+            const regex = new RegExp(`^${cleanedSearch}$`, 'u');
+
             // Проверяем, что выделенный текст ПОЛНОСТЬЮ соответствует регулярному выражению
-            if (!regex.test(selectionString)) {
+            if (!regex.test(selectionString) && !force) {
                 search(isRegex = true);
                 return;
             }
         } catch (e) {
-            console.error("Некорректное регулярное выражение", e);
+            console.log('Wrong regular expression!');
             return;
         }
     } else {
         // Обычный поиск по строке, как и был
-        if (selectionString !== searchString) {
+        if ((selectionString !== searchString) && !force) {
             search();
             return;
         }
@@ -644,10 +663,6 @@ function replace(isRegex) {
     // Сдвигаем курсор в конец вставленной строки
     const newSelection = selectionStart + replacementString.length;
     paragraph.setSelectionRange(newSelection, newSelection);
-
-    console.log(selectionStart);
-    console.log(selectionEnd);
-    console.log(newSelection);
     
     // Вызываем поиск для перехода к следующему совпадению
     search();
@@ -715,21 +730,46 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
 }
 
 
+function replaceAllDashes () {
+    const dashSearch = document.getElementById('dash-search-textarea').value;
+    const dashReplacement = document.getElementById('dash-replace-textarea').value;
+    
+    replaceAll(dashSearch, dashReplacement, isRegex = false, withConfirmation = true);
+    updateSidebarTextareasCounts('dash-textarea');
+}
+
+
 function replaceAllEllipses () {
     const ellipsisSearch = document.getElementById('ellipses-search-textarea').value;
     const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
     
     replaceAll(ellipsisSearch, ellipsisReplacement, isRegex = false, withConfirmation = true);
-    updateEllipsesCounts();
+    updateSidebarTextareasCounts('ellipsis-textarea');
 }
 
 
 function toManualReplacement (searchString, replaceString) {
-    showSidebar(false);
+    // showSidebar(false);
     document.getElementById('search-input').value = searchString;
     document.getElementById('replace-input').value = replaceString;
     search(searchString, isRegex = false);
     updateSearchCount();
+}
+
+
+function toDashesManualReplacement (regex = null, dashReplacement = null) {
+    const isRegex = !!regex;
+    const dashInSearchTextarea = document.getElementById('dash-search-textarea').value;
+    const dashSearch = isRegex ? regex.replace('<>', dashInSearchTextarea) : dashInSearchTextarea;
+
+    if (isRegex) {
+        document.getElementById('regex-checkbox').checked = true;
+    }
+
+    dashReplacement = !!dashReplacement ? dashReplacement : document.getElementById('dash-replace-textarea').value;
+
+    toManualReplacement(dashSearch, dashReplacement);
+    updateSidebarTextareasCounts('dash-textarea');
 }
 
 
@@ -738,7 +778,7 @@ function toEllipsisManualReplacement () {
     const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
 
     toManualReplacement(ellipsisSearch, ellipsisReplacement);
-    updateEllipsesCounts();
+    updateSidebarTextareasCounts('ellipsis-textarea');
 }
 
 
@@ -755,10 +795,16 @@ function getPreviousElementByClass(currentElement, className) {
 }
 
 
-function updateEllipsesCounts () {
+function updateSidebarTextareasCounts (textareaClass) {
     const text = document.querySelector('.monolingual-paragraph').value;
 
-    document.querySelectorAll('.ellipsis-textarea').forEach((textarea) => {
+    const textAreas = document.querySelectorAll('.' + textareaClass);
+    
+    if (textAreas.length === 0) {
+        return;
+    }
+
+    textAreas.forEach((textarea) => {
         const ellipsisCountElement = getPreviousElementByClass(textarea, 'sidebar-count');
         ellipsisCountElement.innerText = countSubstrings(text, textarea.value, false) + ' ×';
     });
@@ -1324,6 +1370,7 @@ function makeMonolingualPanelButtonsFunctional () {
         dashesButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('dashes');
+            updateSidebarTextareasCounts('dash-textarea')
         });
     }
 
@@ -1332,7 +1379,7 @@ function makeMonolingualPanelButtonsFunctional () {
         ellipsisButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('ellipsis');
-            updateEllipsesCounts();
+            updateSidebarTextareasCounts('ellipsis-textarea');
         });
     }
 
