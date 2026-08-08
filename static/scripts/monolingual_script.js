@@ -457,36 +457,6 @@ function setSelectionRange(textarea, selectionStart, selectionEnd) {
 }
 
 
-// function search (searchString, isRegex = false) {
-//     if (!searchString) {
-//         searchString = document.querySelector('#search-input').value;
-
-//         if (!searchString) {
-//             return;
-//         }
-//     }
-
-//     const paragraph = document.querySelector('.monolingual-paragraph');
-
-//     if (!searchString) {
-//         return;
-//     }
-
-//     let matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
-
-//     if (matchIndex === -1) {
-//         matchIndex = paragraph.value.indexOf(searchString, 0);
-//     }
-
-//     if (matchIndex !== -1) {
-//         paragraph.blur();
-//         setSelectionRange(paragraph, matchIndex, matchIndex + searchString.length);
-//         paragraph.focus();
-//     } else {
-//         return;
-//     }
-// }
-
 function search (searchString, isRegex) {
     if (!searchString) {
         searchString = document.querySelector('#search-input').value;
@@ -551,49 +521,9 @@ function search (searchString, isRegex) {
 }
 
 
-// function replace () {
-//     const searchString = document.querySelector('#search-input').value;
-    
-//     if (!searchString) {
-//         return;
-//     }
-    
-//     const paragraph = document.querySelector('.monolingual-paragraph');
-//     const text = paragraph.value;
-//     const selectionString = text.slice(paragraph.selectionStart, paragraph.selectionEnd);
-    
-//     if (selectionString !== searchString) {
-//         search();
-//         return;
-//     }
-    
-//     const replacementString = document.querySelector('#replace-input').value;
-
-//     const selectionStart = paragraph.selectionStart;
-//     const selectionEnd = paragraph.selectionEnd;
-
-//     const part1 = text.slice(0, selectionStart);
-//     const part3 = text.slice(selectionEnd);
-
-//     paragraph.value = part1 + replacementString + part3;
-
-//     const newSelection = selectionStart + replacementString.length;
-//     paragraph.setSelectionRange(newSelection, newSelection);
-
-//     console.log(selectionStart);
-//     console.log(selectionEnd);
-//     console.log(newSelection);
-//     search();
-
-//     updateSearchCount();
-//     updateParagraphsCount();
-//     enableMonolingualChangeStatus();
-// }
-
-
-function replace (isRegex) {
+function replace (isRegex, matchCase = false) {
     const force = !document.getElementById('sidebar').hidden;
-    const searchString = document.querySelector('#search-input').value;
+    const searchString = document.getElementById('search-input').value;
     
     if (!searchString) {
         return;
@@ -626,9 +556,6 @@ function replace (isRegex) {
                 return;
             }
 
-            // Создаем регулярное выражение. 
-            // Используем только флаг 'u' (unicode), так как глобальный 'g' или регистронезависимый 'i' 
-            // должны управляться отдельно, если это нужно для вашей функции search().
             let cleanedSearch = searchString;
             if (cleanedSearch.startsWith('^')) cleanedSearch = cleanedSearch.slice(1);
             if (cleanedSearch.endsWith('$')) cleanedSearch = cleanedSearch.slice(0, -1);
@@ -652,7 +579,26 @@ function replace (isRegex) {
         }
     }
     
-    const replacementString = document.querySelector('#replace-input').value;
+    const replaceInput = document.getElementById('replace-input')
+    let replacementString = replaceInput.value;
+
+    // ЛОГИКА ПОДСТРОЙКИ ПОД РЕГИСТР:
+    // Работает только если matchCase === true
+
+    if (replaceInput.dataset.mode = 'yoditor') {
+        matchCase = true;
+    }
+
+    if (matchCase && replacementString && selectionString) {
+        const isUpperCase = selectionString === selectionString.toUpperCase() && 
+                            selectionString !== selectionString.toLowerCase();
+
+        if (isUpperCase) {
+            replacementString = replacementString.toUpperCase();
+        } else {
+            replacementString = replacementString.toLowerCase();
+        }
+    }
 
     const part1 = text.slice(0, selectionStart);
     const part3 = text.slice(selectionEnd);
@@ -749,7 +695,6 @@ function replaceAllEllipses () {
 
 
 function toManualReplacement (searchString, replaceString) {
-    // showSidebar(false);
     document.getElementById('search-input').value = searchString;
     document.getElementById('replace-input').value = replaceString;
     search(searchString, isRegex = false);
@@ -814,8 +759,13 @@ function updateSidebarTextareasCounts (textareaClass) {
 function showSidebar (show) {
     const sidebar = document.getElementById('sidebar');
     sidebar.hidden = !show;
+    
+    if (sidebar.querySelector('#dot-unambiguous-yos-button')) {
+        unescapeUnambiguousYes('Removing unambiguous Е’s tags…');
+    }
 
     if (!show) {
+
         sidebar.innerHTML = SIDEBAR_BUTTON_HTML;
     }
 }
@@ -1247,6 +1197,244 @@ function tagCharacters () {
 }
 
 
+function processText (url, message = null) {
+    if (message !== null) {
+        showLoading(enable = true, message = message);
+    }
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+
+    let xhr = $.ajax({
+        url: url,
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text: paragraph.value
+        }),
+        success: function(response) {
+            paragraph.value = response['text'];
+            enableMonolingualChangeStatus();
+            updateSearchCount();
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+        complete: function() {
+            if (message !== null) {
+                showLoading(false);
+            }
+        },
+    });
+
+    document.querySelector('.screen-block-abort-button').addEventListener('click', () => {
+        xhr.abort();
+    });
+}
+
+
+function dotUnambiguousYos () {
+    // dotAmbiguousYos(switchMode = false, quiet = true);
+    processText('/dot_unambiguous_yos', 'Dotting unambiguous Ё’s in progress…')
+}
+
+
+function escapeUnambiguousYes () {
+    processText('/escape_unambiguous_yes', 'Marking unambiguous Е’s in progress…')
+}
+
+
+function unescapeUnambiguousYes (message) {
+    processText('/unescape_unambiguous_yes', message);
+}
+
+
+function generateYoRegex (yoWords) {
+  const prefixToSuffixes = new Map();
+  const letterBoundary = '[а-яА-ЯёЁ]';
+
+  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  // Делает подстроку регистронезависимой без использования флага 'i'
+  // Пример: "бер" -> "[бБ][еЕ][рР]"
+  const makeCaseInsensitive = (str) => {
+    return str
+      .split('')
+      .map((char) => {
+        const lower = char.toLowerCase();
+        const upper = char.toUpperCase();
+        if (lower !== upper) {
+          return `[${lower}${upper}]`;
+        }
+        return escapeRegExp(char);
+      })
+      .join('');
+  };
+
+  // 1. Разбираем слова (ищем и 'ё', и 'Ё')
+  for (const word of yoWords) {
+    const trimmed = word.trim();
+    // Ищем индекс первой 'ё' или 'Ё'
+    const yoIndex = trimmed.search(/[ёЁ]/);
+    if (yoIndex === -1) continue;
+
+    const prefix = trimmed.slice(0, yoIndex);
+    const suffix = trimmed.slice(yoIndex + 1);
+
+    if (!prefixToSuffixes.has(prefix)) {
+      prefixToSuffixes.set(prefix, new Set());
+    }
+    prefixToSuffixes.get(prefix).add(suffix);
+  }
+
+  const branches = [];
+
+  // 2. Собираем ветки
+  for (const [prefix, suffixesSet] of prefixToSuffixes.entries()) {
+    const suffixes = Array.from(suffixesSet).sort();
+    
+    // Делаем префикс регистронезависимым
+    const ciPrefix = makeCaseInsensitive(prefix);
+
+    // Проверка начала слова
+    const lookbehind = prefix
+      ? `(?<=(?<!${letterBoundary})${ciPrefix})`
+      : `(?<!${letterBoundary})`;
+
+    // Анализ суффиксов
+    const hasEmpty = suffixes.includes('');
+    const nonEmpty = suffixes
+      .filter((s) => s !== '')
+      .map(makeCaseInsensitive); // Делаем суффиксы регистронезависимыми
+
+    let sufPattern = '';
+    if (nonEmpty.length === 1) {
+      sufPattern = hasEmpty ? `${nonEmpty[0]}?` : nonEmpty[0];
+    } else if (nonEmpty.length > 1) {
+      sufPattern = `(?:${nonEmpty.join('|')})`;
+      if (hasEmpty) sufPattern += '?';
+    }
+
+    // Проверка конца слова
+    const lookahead = `(?=${sufPattern}(?!${letterBoundary}))`;
+
+    // Ищем и 'е', и 'Е'
+    branches.push(`${lookbehind}[еЕ]${lookahead}`);
+  }
+
+  return `(?:${branches.join('|')})`;
+}
+
+
+function getAmbiguousYos () {
+    let xhr = $.ajax({
+        url: '/get_ambiguous_yos',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text: document.querySelector('.monolingual-paragraph').value
+        }),
+        success: function(response) {
+            const regex = generateYoRegex(response['ambiguous_yos']);
+            document.getElementById('search-input').value = regex;
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function dotAmbiguousYos (switchMode, quiet = false) {
+    const replaceInput = document.getElementById('search-input');
+    const dotUnambiguousYosButton = document.getElementById('dot-unambiguous-yos-button');
+    const sidebarMessage = document.querySelector('.sidebar-message');
+
+    if (switchMode === true) {
+        getAmbiguousYos();
+        escapeUnambiguousYes();
+        document.getElementById('regex-checkbox').checked = true;
+        replaceInput.dataset.mode = 'yoditor'
+        sidebarMessage.innerText = 'Unambiguous Е / е letters are tagged as <Е> / <е>. ☝️';
+        document.getElementById('replace-input').value = 'ё';
+        
+        dotUnambiguousYosButton.innerText = 'Stop dotting ambiguous Ё’s';
+        dotUnambiguousYosButton.setAttribute('onclick', 'dotAmbiguousYos(false)')
+    }
+    
+    if (switchMode === false) {
+        const message = quiet ? null : 'Removing unambiguous Е’s tags…';
+        unescapeUnambiguousYes(quiet);
+        replaceInput.removeAttribute('data-mode');
+        dotUnambiguousYosButton.innerText = 'Dot ambiguous Ё’s';
+        sidebarMessage.innerText = '';
+        dotUnambiguousYosButton.setAttribute('onclick', 'dotAmbiguousYos(true)')
+    }
+}
+
+
+function mojify () {
+    demojify(withMessage = false);
+
+    showLoading(enable = true, message = 'Mojification in progress…');
+    enableSaveButtons('both');
+
+    let xhr = $.ajax({
+        url: '/mojify',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            text1: getCurrentTextFromBilingualMode('left'),
+            text2: getCurrentTextFromBilingualMode('right'),
+            text1_path: document.querySelector('#book-address-left').value,
+            text2_path: document.querySelector('#book-address-right').value,
+            lang1: document.querySelector('#languages-dropdown-list-left').value,
+            lang2: document.querySelector('#languages-dropdown-list-right').value
+        }),
+        success: function (response) {
+            text1 = response['text1'].split('\n');
+            text2 = response['text2'].split('\n');
+
+            const leftParagraphs = document.querySelectorAll('.paragraph-left');
+            const rightParagraphs = document.querySelectorAll('.paragraph-right');
+
+            for (let i = 0; i < text1.length; i++) {
+                leftParagraphs[i].value = text1[i];
+                rightParagraphs[i].value = text2[i];
+            }
+
+            updateTextsInSessionStorage('both');
+            enableSaveButtons('both');
+            fixTextAreas();
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+        complete: function() {
+            showLoading(false);
+        },
+    });
+
+    document.querySelector('.screen-block-abort-button').addEventListener('click', () => {
+        xhr.abort();
+    });
+}
+
+
 function replaceApostrophesAutomatically (lang = null) {
     const paragraph = document.querySelector('.monolingual-paragraph');
 
@@ -1419,3 +1607,8 @@ function makeMonolingualPanelButtonsFunctional () {
 }
 
 makeMonolingualPanelButtonsFunctional();
+
+
+// TO DO
+// * Add placeholder while counting search strings
+// * Place sure E escaping in approproate places

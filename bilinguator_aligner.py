@@ -8,7 +8,7 @@ from urllib.parse import unquote
 from markupsafe import Markup
 from flask import Flask, jsonify, request, render_template, url_for
 
-from utils import storage, bilingual_formats, fast_mojification
+from utils import storage, bilingual_formats, fast_mojification, yoditor
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -834,6 +834,54 @@ def rename_illustrations():
     os.rmdir(tmp_folder)
 
     return jsonify({'status': 'success'})
+
+
+@app.route('/dot_unambiguous_yos', methods=['GET', 'POST'])
+def dot_unambiguous_yos():
+    text = request.json.get('text')
+
+    response = {
+        'text': yoditor.recover_yo_sure(text),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/escape_unambiguous_yes', methods=['GET', 'POST'])
+def escape_unambiguous_yes():
+    text = request.json.get('text')
+
+    response = {
+        'text': yoditor.escape_ye_sure(text),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/unescape_unambiguous_yes', methods=['GET', 'POST'])
+def unescape_unambiguous_yes():
+    text = request.json.get('text')
+
+    response = {
+        'text': yoditor.unescape_ye_sure(text),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/get_ambiguous_yos', methods=['GET', 'POST'])
+def get_ambiguous_yos():
+    text = request.json.get('text')
+    yobase_path = SCRIPT_DIRECTORY + '/utils/yobase/yo_unsure.txt'
+
+    with open(yobase_path, 'r', encoding='utf-8') as file:
+        yobase = [line.strip() for line in file.readlines()]
+
+    response = {
+        'ambiguous_yos': yoditor.yobase_text_intersection(yobase, text),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
 
 
 storage.garbage_collection()

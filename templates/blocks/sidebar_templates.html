@@ -272,4 +272,11 @@
         <img src="{{ url_for('static', filename='img/yoditor.png') }}" class="panel-button-img">
         <h1 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="dotUnambiguousYos();">Dot unambiguous Ё’s</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" id="dot-unambiguous-yos-button" onclick="dotAmbiguousYos(true);">Dot ambiguous Ё’s</button>
+        </div>
+        <p class="sidebar-message sidebar-margin-top"></p>
+    </div>
 </template>

@@ -484,7 +484,7 @@ function mojify () {
             lang1: document.querySelector('#languages-dropdown-list-left').value,
             lang2: document.querySelector('#languages-dropdown-list-right').value
         }),
-        success: function (response) {
+        success: function(response) {
             text1 = response['text1'].split('\n');
             text2 = response['text2'].split('\n');
 
