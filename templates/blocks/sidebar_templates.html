@@ -280,3 +280,22 @@
         <p class="sidebar-message sidebar-margin-top"></p>
     </div>
 </template>
+
+
+<template id="statistics">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/statistics.png') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Unique characters of the text</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="unique-characters-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top"><span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="alphabet-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Characters of the text subtracted by the <span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="characters-without-alphabet-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Unused characters of the <span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="unused-characters-textarea"></textarea>
+        <p class="sidebar-message sidebar-margin-top">All characters changed to uppercase.</p>
+    </div>
+</template>

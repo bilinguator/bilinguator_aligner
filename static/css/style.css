@@ -775,8 +775,16 @@ h1 {
 	cursor: pointer;
 }
 
+.sidebar-textarea-nobreaks {
+	word-break: break-all;
+}
+
 .sidebar-multiline-textarea {
 	height: 200px;
+}
+
+.sidebar-small-multiline-textarea {
+	height: 60px;
 }
 
 .sidebar-oneline-textarea {

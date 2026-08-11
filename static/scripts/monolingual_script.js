@@ -17,6 +17,64 @@ function enableMonolingualChangeStatus () {
 }
 
 
+function getLanguage () {
+    for (const side of ['left', 'right']) {
+        if (sessionStorage[side + 'FileFound'] === 'true') {
+            const element = document.getElementById('languages-dropdown-list-' + side);
+            return element ? element.value : null;
+        }
+    }
+}
+
+
+function updateLanguageAlphabet (lang = null) {
+    $.ajax({
+        url: 'get_language_alphabet',
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            lang: lang === null ? getLanguage() : lang
+        }),
+        success: function(response) {
+            const lang = getLanguage();
+            const alphabet = [...response['alphabet']].sort((a, b) => a.localeCompare(b, lang)).join('');
+            document.getElementById('alphabet-textarea').value = alphabet;
+            
+            const text = document.querySelector('.monolingual-paragraph').value.toUpperCase();
+            
+            const textCharacters = [...new Set(text)]
+                .sort((a, b) => a.localeCompare(b, lang))
+                .filter(char => char !== '\n')
+                .join('');
+            document.getElementById('unique-characters-textarea').value = textCharacters;
+            
+            const textSubtractedByAlphabet = [...new Set(textCharacters)]
+                .filter(char => !alphabet.includes(char))
+                .join('');
+            document.getElementById('characters-without-alphabet-textarea').value = textSubtractedByAlphabet;
+            
+            const unusedAlphabet = [...new Set(alphabet)]
+                .filter(char => !textCharacters.includes(char))
+                .join('');
+            document.getElementById('unused-characters-textarea').value = unusedAlphabet;
+        },
+        error: function(xhr, status, error) {
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
+function updateStatisticsFields () {
+    updateLanguageAlphabet();
+}
+
+
 function replaceByRegex (text, regexStr, oldStr, newStr) {
     const regex = new RegExp(regexStr, 'ug');
     const matches = text.match(regex);
@@ -1460,6 +1518,16 @@ function replaceAllApostrophes () {
 }
 
 
+function updateLanguageNamesInStatistics () {
+    const side = sessionStorage.leftFileFound ? 'left' : 'right';
+    const languageName = document.getElementById('languages-dropdown-list-' + side).selectedOptions[0].text;
+
+    document.querySelectorAll('.language-name').forEach((element) => {
+        element.innerText = languageName;
+    });
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
     const regexCheckbox = document.getElementById('regex-checkbox');
     if (regexCheckbox) {
@@ -1602,6 +1670,16 @@ function makeMonolingualPanelButtonsFunctional () {
         yoditorButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('yoditor');
+        });
+    }
+
+    const statisticsButton = document.getElementById('panel-button-statistics');
+    if (statisticsButton) {
+        statisticsButton.addEventListener('click', () => {
+            showSidebar(true);
+            showSidebarTemplate('statistics');
+            updateLanguageNamesInStatistics();
+            updateStatisticsFields();
         });
     }
 }

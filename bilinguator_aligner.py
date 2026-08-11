@@ -8,7 +8,7 @@ from urllib.parse import unquote
 from markupsafe import Markup
 from flask import Flask, jsonify, request, render_template, url_for
 
-from utils import storage, bilingual_formats, fast_mojification, yoditor
+from utils import storage, bilingual_formats, fast_mojification, yoditor, alphabets
 
 
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -842,6 +842,28 @@ def dot_unambiguous_yos():
 
     response = {
         'text': yoditor.recover_yo_sure(text),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/get_language_alphabet', methods=['GET', 'POST'])
+def get_language_alphabet():
+    lang = request.json.get('lang')
+
+    response = {
+        'alphabet': ''.join(sorted(alphabets.get_alphabet(lang))),
+    }
+    
+    return json.dumps(response), 200, {'ContentType':'application/json'}
+
+
+@app.route('/get_text_alphabet', methods=['GET', 'POST'])
+def get_text_alphabet():
+    text = request.json.get('text')
+
+    response = {
+        'alphabet': alphabets.get_text_alphabet(text),
     }
     
     return json.dumps(response), 200, {'ContentType':'application/json'}
