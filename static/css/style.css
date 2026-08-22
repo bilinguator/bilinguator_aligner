@@ -8,7 +8,10 @@
 
 	--paragraph-number-height: 15px;
 	--paragraph-number-margin-bottom: 3px;
-	--footer-height: 37px;
+	--footer-height: 38px;
+	--horizontal-panel-height: 38px;
+	--header-container-height: 90px;
+	--working-area-height: calc(100vh - var(--footer-height) - var(--horizontal-panel-height) - var(--header-container-height));
 }
 
 * {
@@ -39,7 +42,7 @@ header {
 
 .header-container {
 	width: 100%;
-	height: auto;
+	height: var(--header-container-height);
 	background-color: var(--dark-blue);
 	display: flex;
 	justify-content: space-around;
@@ -133,6 +136,7 @@ button {
 	justify-content: space-between;
 	align-items: center;
 	padding: 5px;
+	height: var(--horizontal-panel-height);
 }
 
 .explorer {
@@ -414,10 +418,6 @@ input::-moz-placeholder{
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% var(--paragraph-number-height), 0 100%);
 }
 
-.paragraphs-padding {
-	height: 40px;
-}
-
 textarea {
 	display: block;
 	box-sizing: border-box;
@@ -436,7 +436,7 @@ h1 {
 	position: fixed;
 	height: var(--footer-height);
 	background-color: #222A35;
-	margin-top: 10px;
+	/* margin-top: 10px; */
 	padding: 5px;
 	vertical-align: middle;
 	display: flex;
@@ -537,6 +537,7 @@ h1 {
 
 .paragraphs {
 	width: 100%;
+	margin-bottom: var(--footer-height);
 }
 
 .paragraph-index {
@@ -563,7 +564,7 @@ h1 {
 }
 
 .monolingual-paragraph {
-	height: 100%;
+	height: var(--working-area-height);
 	padding: 10px;
 }
 
@@ -729,9 +730,35 @@ h1 {
 #sidebar {
 	background-color: var(--dark-blue);
 	width: 400px;
-	overflow-y: scroll;
 	text-align: left;
 	padding-bottom: 20px;
+	height: var(--working-area-height);
+	overflow-y: auto;
+}
+
+/* Ширина полосы прокрутки */
+#sidebar::-webkit-scrollbar, .monolingual-paragraph::-webkit-scrollbar, .explorer::-webkit-scrollbar-webkit-scrollbar {
+	width: 12px;
+	height: 12px; /* Для горизонтальной прокрутки */
+}
+
+/* Фон полосы прокрутки (трек) */
+#sidebar::-webkit-scrollbar-track, .monolingual-paragraph::-webkit-scrollbar-track, .explorer::-webkit-scrollbar-track {
+	background-color: var(--blue);
+}
+
+/* Ползунок (скроллбар) */
+#sidebar::-webkit-scrollbar-thumb, .monolingual-paragraph::-webkit-scrollbar-thumb, .explorer::-webkit-scrollbar-thumb {
+	background-color: var(--orange);
+	border-radius: 7px;
+	border: 3px solid transparent; 
+	background-clip: padding-box;
+}
+
+/* Ползунок при наведении (опционально) */
+#sidebar::-webkit-scrollbar-thumb:hover, .monolingual-paragraph::-webkit-scrollbar-thumb:hover, .explorer::-webkit-scrollbar-thumb:hover {
+	background-color: var(--orange);
+	cursor: ns-resize;
 }
 
 .sidebar-close-button {
@@ -794,7 +821,7 @@ h1 {
 }
 
 .sidebar-mini-textarea {
-    width: 20px;
+    width: 30px;
     text-align: center;
     user-select: none;
     overflow-y: hidden;
@@ -803,8 +830,12 @@ h1 {
 	-ms-user-select: none;
 }
 
+.sidebar-space-between {
+	justify-content: space-between!important;
+}
+
 .sidebar-margin-top {
-	margin-top: 5px;
+	margin-top: 10px;
 }
 
 .sidebar-message {
@@ -814,13 +845,31 @@ h1 {
 .sidebar-vertical-container {
 	display: flex;
 	flex-direction: column;
-	align-items: anchor-center;
+	align-items: center;
+}
+
+.sidebar-align-start {
+	align-items: start!important;
+}
+
+.sidebar-inline-button {
+	width: 30px;
 }
 
 .sidebar-horizontal-container {
 	display: flex;
-	justify-content: space-between;
+	justify-content: left;
 	align-items: center;
+}
+
+.sidebar-inner-horizontal-container {
+	width: 100%;
+	justify-content: left;
+	margin-top: 5px;
+}
+
+.sidebar-margin-left-textarea {
+	margin-left: 5px;
 }
 
 .sidebar-count {

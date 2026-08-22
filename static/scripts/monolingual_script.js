@@ -1,5 +1,6 @@
 SIDEBAR_BUTTON_HTML = '<button class="sidebar-close-button" onclick="showSidebar(false)">×</button>';
 
+const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 if (getURLParameter('focus') === 'true') {
     document.querySelector('.monolingual-paragraph').focus();
@@ -138,11 +139,6 @@ function recoverApostrophesByLang (text, lang) {
     }
     
     return text;
-}
-
-
-function searchEllipsis () {
-
 }
 
 
@@ -579,12 +575,15 @@ function search (searchString, isRegex) {
 }
 
 
-function replace (isRegex, matchCase = false) {
+function replace (searchString, replacementString, isRegex, afterSearch = true, matchCase = false) {
     const force = !document.getElementById('sidebar').hidden;
-    const searchString = document.getElementById('search-input').value;
-    
-    if (!searchString) {
-        return;
+
+    if (searchString === undefined) {
+        searchString = document.getElementById('search-input').value;
+
+        if (!searchString) {
+            return;
+        }
     }
 
     if (isRegex === undefined) {
@@ -597,7 +596,7 @@ function replace (isRegex, matchCase = false) {
     const selectionEnd = paragraph.selectionEnd;
 
     if (selectionStart == selectionEnd) {
-        search();
+        if (afterSearch) search();
         return;
     }
     
@@ -622,7 +621,7 @@ function replace (isRegex, matchCase = false) {
 
             // Проверяем, что выделенный текст ПОЛНОСТЬЮ соответствует регулярному выражению
             if (!regex.test(selectionString) && !force) {
-                search(isRegex = true);
+                if (afterSearch) search(isRegex = true);
                 return;
             }
         } catch (e) {
@@ -632,18 +631,21 @@ function replace (isRegex, matchCase = false) {
     } else {
         // Обычный поиск по строке, как и был
         if ((selectionString !== searchString) && !force) {
-            search();
+            if (afterSearch) search();
             return;
         }
     }
     
-    const replaceInput = document.getElementById('replace-input')
-    let replacementString = replaceInput.value;
+    const replaceInput = document.getElementById('replace-input');
+
+    if (replacementString === undefined) {
+        replacementString = replaceInput.value;
+    }
 
     // ЛОГИКА ПОДСТРОЙКИ ПОД РЕГИСТР:
     // Работает только если matchCase === true
 
-    if (replaceInput.dataset.mode = 'yoditor') {
+    if (replaceInput.dataset.mode === 'yoditor') {
         matchCase = true;
     }
 
@@ -669,7 +671,7 @@ function replace (isRegex, matchCase = false) {
     paragraph.setSelectionRange(newSelection, newSelection);
     
     // Вызываем поиск для перехода к следующему совпадению
-    search();
+    if (afterSearch) search();
 
     updateSearchCount();
     updateParagraphsCount();
@@ -711,8 +713,8 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
     
     const paragraph = document.querySelector('.monolingual-paragraph');
     const text = paragraph.value;
-    
-    if (text.match(searchString).length === 0) {
+
+    if (!text.match(searchString)) {
         return;
     }
     
@@ -808,8 +810,13 @@ function updateSidebarTextareasCounts (textareaClass) {
     }
 
     textAreas.forEach((textarea) => {
-        const ellipsisCountElement = getPreviousElementByClass(textarea, 'sidebar-count');
-        ellipsisCountElement.innerText = countSubstrings(text, textarea.value, false) + ' ×';
+        const countElement = getPreviousElementByClass(textarea, 'sidebar-count');
+
+        if (textarea.value) {
+            countElement.innerText = countSubstrings(text, textarea.value, false) + ' ×';
+        } else {
+            countElement.innerText = '';
+        }
     });
 }
 
@@ -818,13 +825,14 @@ function showSidebar (show) {
     const sidebar = document.getElementById('sidebar');
     sidebar.hidden = !show;
     
-    if (sidebar.querySelector('#dot-unambiguous-yos-button')) {
-        unescapeUnambiguousYes('Removing unambiguous Е’s tags…');
-    }
-
+    
     if (!show) {
+        if (sessionStorage.sidebarTemplate === 'yoditor') {
+            unescapeUnambiguousYes('Removing unambiguous Е’s tags…');
+        }
 
         sidebar.innerHTML = SIDEBAR_BUTTON_HTML;
+        sessionStorage.removeItem('sidebarTemplate');
     }
 }
 
@@ -835,6 +843,8 @@ function showSidebarTemplate (templateName) {
     if (sidebar.hidden) {
         return;
     }
+    
+    sessionStorage.sidebarTemplate = templateName;
 
     sidebar.innerHTML = sidebar.innerHTML = SIDEBAR_BUTTON_HTML;
     
@@ -1148,6 +1158,217 @@ function countApostrophes () {
 }
 
 
+function getTextQuotationMarks () {
+    const quotationMarks = new Set('«»"\'<>‹›„“‚‘’⹂”「」『』﹃﹄﹁﹂《》〈〉⟪⟫⟨⟩❝❞❛❜〝〞〟❮❯');
+    const text = document.querySelector('.monolingual-paragraph').value;
+    const textQuotationMarks = [...new Set(text)].filter(char => quotationMarks.has(char));
+    return textQuotationMarks.join('');
+}
+
+
+function updateTextQuotationMarks() {
+    const textQuotationMarksDiv = document.getElementById('text-quotation-marks');
+    textQuotationMarksDiv.innerHTML = '';
+    
+    const chars = [...getTextQuotationMarks()];
+
+    if (!chars.length) {
+        textQuotationMarksDiv.innerHTML = '<p class="sidebar-message">No quotation marks found!</p>';
+        return;
+    }
+    
+    const chunkSize = 7;
+    
+    const textareaClasses = 'sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly sidebar-margin-left-textarea';
+    const textareaOnclick = `search(this.value, isRegex=false);updateSearchQuotationMarks(this.value, 'opening');copyToClipboard(this.value);`;
+    const textareaOncontextmenu = `event.preventDefault();updateSearchQuotationMarks(this.value, 'closing');`;
+
+    for (let i = 0; i < chars.length; i += chunkSize) {
+        const chunk = chars.slice(i, i + chunkSize);
+
+        const textareasHTML = chunk
+            .map(char => `<textarea class="${textareaClasses}" onclick="${textareaOnclick}" oncontextmenu="${textareaOncontextmenu}" readonly>${char}</textarea>`)
+            .join('');
+
+        const containerHTML = `<div class="sidebar-horizontal-container sidebar-inner-horizontal-container">${textareasHTML}</div>`;
+        textQuotationMarksDiv.insertAdjacentHTML('beforeend', containerHTML);
+    }
+}
+
+
+function getLanguageQuotationMarks (lang) {
+    const quotesMap = {
+        af: [['“', '”'], ['„', '”'], ['‘', '’'], ['‚', '’']],
+        nl: [['“', '”'], ['„', '”'], ['‘', '’'], ['‚', '’']],
+        ar: [['«', '»'], ['”', '“']],
+        hy: [['«', '»']],
+        el: [['«', '»'], ['“', '”']],
+        fa: [['«', '»']],
+        io: [['«', '»'], ['‘', '’']],
+        kk: [['«', '»'], ['“', '”']],
+        km: [['«', '»'], ['“', '”']],
+        ps: [['«', '»']],
+        rm: [['«', '»'], ['‹', '›']],
+        ug: [['«', '»'], ['‹', '›']],
+        am: [['«', '»'], ['“', '”'], ['‹', '›'], ['‘', '’']],
+        ti: [['«', '»'], ['“', '”'], ['‹', '›'], ['‘', '’']],
+        ca: [['«', '»'], ['“', '”'], ['‘', '’']],
+        es: [['«', '»'], ['“', '”'], ['‘', '’']],
+        eu: [['«', '»'], ['“', '”'], ['‘', '’']],
+        gl: [['«', '»'], ['“', '”'], ['‘', '’']],
+        it: [['«', '»'], ['“', '”'], ['‘', '’'], ['‹ ', ' ›']],
+        oc: [['«', '»'], ['“', '”']],
+        qu: [['«', '»'], ['“', '”']],
+        ru: [['«', '»'], ['“', '”'], ['„', '“'], ['‘', '’']],
+        az: [['«', '»'], ['„', '“']],
+        be: [['«', '»'], ['„', '“']],
+        no: [['«', '»'], ['„', '“'], ['‘', '’'], [',', '‘']],
+        uz: [['«', '»'], ['„', '“'], ['‚', '‘']],
+        bg: [['„', '“'], ['«', '»'], ['’', '’'], ['‘', '’']],
+        et: [['„', '“'], ['«', '»']],
+        bs: [['”', '”'], ['„', '”'], ['„', '“'], ['’', '’'], ['»', '«']],
+        cs: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        sk: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        sl: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        da: [['»', '«'], ['“', '”'], ['”', '”'], ['„', '“'], ['›', '‹'], ['‘', '’'], ['’', '’']],
+        de: [['„', '“'], ['»', '«'], ['«', '»'], ['‚', '‘'], ['›', '‹'], ['“', '”']],
+        cim: [['„', '“'], ['»', '«'], ['«', '»'], ['‚', '‘'], ['›', '‹'], ['“', '”']],
+        en: [['“', '”'], ['‘', '’']],
+        eo: [['“', '”'], ['«', '»'], ['„', '“'], ['‘', '’'], ['‹', '›'], ['‚', '‘']],
+        fi: [['”', '”'], ['»', '»'], ['’', '’']],
+        fil: [['“', '”'], ['‘', '’']],
+        ga: [['“', '”'], ['‘', '’']],
+        hi: [['“', '”'], ['‘', '’']],
+        ia: [['“', '”'], ['‘', '’']],
+        lo: [['“', '”']],
+        mt: [['“', '”'], ['‘', '’']],
+        ta: [['“', '”'], ['‘', '’']],
+        th: [['“', '”'], ['‘', '’']],
+        ur: [['“', '”'], ['‘', '’']],
+        vi: [['“', '”'], ['«', '»']],
+        fr: [['« ', ' »'], ['“', '”'], ['«', '»'], ['‹ ', ' ›'], ['‘', '’']],
+        cy: [['‘', '’'], ['“', '”']],
+        gd: [['‘', '’'], ['“', '”']],
+        he: [['"', '"'], ['”', '„'], ['\'', '\''], ['’', ',']],
+        hr: [['„', '”'], ['»', '«'], ['‘', '’']],
+        hu: [['„', '”'], ['»', '«']],
+        ro: [['„', '”'], ['«', '»']],
+        id: [['“', '”'], ['”', '”'], ['‘', '’'], ['’', '’']],
+        is: [['„', '“'], ['‚', '‘']],
+        ka: [['„', '“']],
+        lt: [['„', '“'], ['‚', '‘']],
+        mk: [['„', '“'], ['’', '‘']],
+        sq: [['„', '“'], ['‘', '’']],
+        wen: [['„', '“'], ['‚', '‘']],
+        ja: [['「', '」'], ['﹁', '﹂'], ['『', '』'], ['﹃', '﹄']],
+        jbo: [['lu ', ' li’u'], ['lu “', '” li’u']],
+        kl: [['"', '"'], ['»', '«']],
+        ko: [['“', '”'], ['﹃', '﹄'], ['《', '》'], ['‘', '’'], ['﹁', '﹂'], ['〈', '〉']],
+        bo: [['《', '》'], ['〈', '〉']],
+        khb: [['《', '》'], ['〈', '〉']],
+        tdd: [['《', '》'], ['〈', '〉']],
+        lv: [['“', '”'], ['„', '“']],
+        mn: [['«', '»'], ['„', '“'], ['⟪', '⟫'], ['⟨', '⟩']],
+        pl: [['„', '”'], ['«', '»'], ['»', '«'], ['‘', '’']],
+        pt: [['“', '”'], ['«', '»'], ['‘', '’']],
+        tr: [['“', '”'], ['«', '»'], ['‘', '’'], ['‹', '›']],
+        sr: [['„', '”'], ['„', '“'], ['»', '«'], ['’', '’']],
+        sv: [['”', '”'], ['»', '»'], ['«', '«'], ['’', '’']],
+        uk: [['«', '»'], ['„', '“'], ['„', '”'], ['‘', '’']],
+        zh: [['「', '」'], ['﹁', '﹂'], ['“', '”'], ['﹃', '﹄'], ['『', '』'], ['‘', '’']]
+    };
+
+    return quotesMap[lang] || [];
+}
+
+
+function updateLanguageQuotationMarks () {
+    const languageQuotationMarksDiv = document.getElementById('language-quotation-marks');
+    languageQuotationMarksDiv.innerHTML = '';
+
+    const lang = getLanguage();
+    const languageQuotationMarks = getLanguageQuotationMarks(lang);
+
+    if (!languageQuotationMarks.length) {
+        return;
+    }
+
+    const textareaClasses = 'sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly sidebar-margin-left-textarea';
+
+    for (let quotes of languageQuotationMarks) {
+        let regex = `(${escapeRegExp(quotes[0])})|(${escapeRegExp(quotes[1])})`;
+        
+        let textareaOnclick = `search('${regex}', isRegex=true);copyToClipboard(this.value);`;
+        textareaOnclick += `updateReplaceQuotationMarks('${quotes[0]}', '${quotes[1]}');`
+        const textareaHTML = `<textarea class="${textareaClasses}" onclick="${textareaOnclick}" readonly>${quotes.join('')}</textarea>`
+        languageQuotationMarksDiv.insertAdjacentHTML('beforeend', textareaHTML);
+    
+    }
+
+    updateReplaceQuotationMarks(languageQuotationMarks[0][0], languageQuotationMarks[0][1]);
+}
+
+
+function updateSearchQuotationMarks (quote, field) {
+    const quoteSearchTextarea = document.getElementById(`${field}-quote-search-textarea`);
+    quoteSearchTextarea.value = quote;
+    updateSidebarTextareasCounts('quote-textarea');
+}
+
+
+function updateReplaceQuotationMarks (openingQuote, closingQuote) {
+    const openingQuoteReplaceTextarea = document.getElementById('opening-quote-replace-textarea');
+    const closingQuoteReplaceTextarea = document.getElementById('closing-quote-replace-textarea');
+    
+    openingQuoteReplaceTextarea.value = openingQuote;
+    closingQuoteReplaceTextarea.value = closingQuote;
+
+    updateSidebarTextareasCounts('quote-textarea');
+}
+
+
+function replaceQuotationMarksAutomatically () {
+    const confirmation = confirm(`Replace quotation marks automatically?`);
+    
+    if (!confirmation) {
+        return;
+    }
+
+    const openingQuoteSearch = escapeRegExp(document.getElementById('opening-quote-search-textarea').value);
+    const closingQuoteSearch = escapeRegExp(document.getElementById('closing-quote-search-textarea').value);
+
+    const openingQuoteReplace = escapeRegExp(document.getElementById('opening-quote-replace-textarea').value);
+    const closingQuoteReplace = escapeRegExp(document.getElementById('closing-quote-replace-textarea').value);
+
+    replaceAll(`(?<=^|\\s)${openingQuoteSearch}(?=\\S)`, openingQuoteReplace, isRegex = true, withConfirmation = false);
+    replaceAll(`(?<=\\S)${closingQuoteSearch}(?=\\s|[.,!?;:]|$)`, closingQuoteReplace, isRegex = true, withConfirmation = false);
+
+    updateTextQuotationMarks();
+    updateSidebarTextareasCounts('quote-textarea');
+}
+
+
+function getQuotesRegex () {
+    const openingQuoteSearch = escapeRegExp(document.getElementById('opening-quote-search-textarea').value);
+    const closingQuoteSearch = escapeRegExp(document.getElementById('closing-quote-search-textarea').value);
+    return `(${openingQuoteSearch})|(${closingQuoteSearch})`;
+}
+
+
+function searchQuote () {
+    search(getQuotesRegex(), isRegex = true);
+}
+
+
+function replaceQuote (quoteVariant) {
+    const quote = document.getElementById(`${quoteVariant}-quote-replace-textarea`).value;
+    replace(searchString = getQuotesRegex(), replacementString = quote, afterSearch = false, isRegex = true);
+    updateTextQuotationMarks();
+    updateSidebarTextareasCounts('quote-textarea');
+    searchQuote();
+}
+
+
 function clearSearchResults () {
     const searchArea = document.querySelector('.sidebar-search-area');
 
@@ -1158,12 +1379,6 @@ function clearSearchResults () {
 
 
 function searchCharactersInThePlay () {
-    // regexes = getRegexesForCharacters();
-
-    // if (regexes.length === 0) {
-    //     return {};
-    // }
-
     let characters = document.getElementById('characters-textarea').value
         .trim()
         .split('\n')
@@ -1314,8 +1529,6 @@ function unescapeUnambiguousYes (message) {
 function generateYoRegex (yoWords) {
   const prefixToSuffixes = new Map();
   const letterBoundary = '[а-яА-ЯёЁ]';
-
-  const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   // Делает подстроку регистронезависимой без использования флага 'i'
   // Пример: "бер" -> "[бБ][еЕ][рР]"
@@ -1518,7 +1731,7 @@ function replaceAllApostrophes () {
 }
 
 
-function updateLanguageNamesInStatistics () {
+function updateLanguageNamesInSidebar () {
     const side = sessionStorage.leftFileFound ? 'left' : 'right';
     const languageName = document.getElementById('languages-dropdown-list-' + side).selectedOptions[0].text;
 
@@ -1609,6 +1822,10 @@ function makeMonolingualPanelButtonsFunctional () {
         quotationMarksButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('quotation_marks');
+            updateLanguageNamesInSidebar();
+            updateSidebarTextareasCounts('quote-textarea');
+            updateTextQuotationMarks();
+            updateLanguageQuotationMarks();
         });
     }
 
@@ -1626,7 +1843,7 @@ function makeMonolingualPanelButtonsFunctional () {
         dashesButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('dashes');
-            updateSidebarTextareasCounts('dash-textarea')
+            updateSidebarTextareasCounts('dash-textarea');
         });
     }
 
@@ -1678,7 +1895,7 @@ function makeMonolingualPanelButtonsFunctional () {
         statisticsButton.addEventListener('click', () => {
             showSidebar(true);
             showSidebarTemplate('statistics');
-            updateLanguageNamesInStatistics();
+            updateLanguageNamesInSidebar();
             updateStatisticsFields();
         });
     }

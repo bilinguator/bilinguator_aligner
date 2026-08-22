@@ -54,6 +54,45 @@
         <img src="{{ url_for('static', filename='img/quotation_marks.png') }}" class="panel-button-img">
         <h2 class="sidebar-heading"></h1>
     </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Quotation marks found in the text:</p>
+        <div class="sidebar-vertical-container sidebar-margin-top" id="text-quotation-marks"></div>
+        <p class="sidebar-p sidebar-margin-top">Quotation marks of the <span class="language-name"></span> language:</p>
+        <div class="sidebar-horizontal-container sidebar-margin-top" id="language-quotation-marks"></div>
+
+        <div class="sidebar-vertical-container sidebar-align-start sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-vertical-container sidebar-align-start">
+                <p class="sidebar-p sidebar-margin-top">Search</p>
+                <div class="sidebar-horizontal-container">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="opening-quote-search-textarea" onclick="search(this.value, isRegex=false);this.focus();" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">"</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="closing-quote-search-textarea" onclick="search(this.value, isRegex=false);this.focus();" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">"</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                </div>
+            </div>
+            <div class="sidebar-vertical-container sidebar-align-start">
+                <p class="sidebar-p sidebar-margin-top">Replace</p>
+                <div class="sidebar-horizontal-container">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="opening-quote-replace-textarea" onclick="search(this.value, isRegex=false);this.focus();" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">“</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="closing-quote-replace-textarea" onclick="search(this.value, isRegex=false);this.focus();" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">”</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="next-quote-button" title="Replace all" onclick="replaceQuotationMarksAutomatically();">All</button>
+                </div>
+                <div class="sidebar-horizontal-container sidebar-align-start">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="opening-quote-button" onclick="replaceQuote('opening');">⟳</button>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="closing-quote-button" onclick="replaceQuote('closing');">⟳</button>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="next-quote-button" onclick="searchQuote();">→</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 
@@ -63,18 +102,18 @@
         <h2 class="sidebar-heading"></h1>
     </div>
     <div class="sidebar-main-area">
-        <div class="sidebar-horizontal-container sidebar-margin-top">
+        <div class="sidebar-horizontal-container sidebar-margin-top sidebar-space-between">
             <p class="sidebar-p sidebar-margin-top">Typewriter apostrophes</p>
             <div class="sidebar-horizontal-container">
                 <p class="sidebar-p sidebar-count" id="typewriter-apostrophes-count"></p>
-                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search('\'', isRegex=false);copyToClipboard('\'');" readonly>'</textarea>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" readonly>'</textarea>
             </div>
         </div>
-        <div class="sidebar-horizontal-container sidebar-margin-top">
+        <div class="sidebar-horizontal-container sidebar-margin-top sidebar-space-between">
             <p class="sidebar-p sidebar-margin-top">Punctuation apostrophes</p>
             <div class="sidebar-horizontal-container">
                 <p class="sidebar-p sidebar-count" id="punctuation-apostrophes-count"></p>
-                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search('’', isRegex=false);copyToClipboard('’');" readonly>’</textarea>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" readonly>’</textarea>
             </div>
         </div>
         
@@ -97,13 +136,13 @@
     <div class="sidebar-main-area">
         <div class="sidebar-horizontal-container sidebar-margin-top">
             <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('-', isRegex=false);copyToClipboard('-');" title="Hyphen" readonly>-</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Hyphen" readonly>-</textarea>
             <p class="sidebar-p sidebar-count" id="minus-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('−', isRegex=false);copyToClipboard('−');" title="Minus" readonly>−</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Minus" readonly>−</textarea>
             <p class="sidebar-p sidebar-count" id="en-dash-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('–', isRegex=false);copyToClipboard('–');" title="En dash" readonly>–</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="En dash" readonly>–</textarea>
             <p class="sidebar-p sidebar-count" id="em-dash-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search('—', isRegex=false);copyToClipboard('—');" title="Em dash" readonly>—</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Em dash" readonly>—</textarea>
         </div>
         <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
             <div class="sidebar-horizontal-container">
@@ -137,13 +176,13 @@
     <div class="sidebar-main-area">
         <div class="sidebar-horizontal-container sidebar-margin-top">
             <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('. . .', isRegex=false);copyToClipboard('. . .');" title="Three dots with spaces" readonly>. . .</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Three dots with spaces" readonly>. . .</textarea>
             <p class="sidebar-p sidebar-count" id="three-dots-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('...', isRegex=false);copyToClipboard('...');" title="Three dots" readonly>...</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Three dots" readonly>...</textarea>
             <p class="sidebar-p sidebar-count" id="midline-ellipses-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('⋯', isRegex=false);copyToClipboard('⋯');" title="Midline ellipsis" readonly>⋯</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Midline ellipsis" readonly>⋯</textarea>
             <p class="sidebar-p sidebar-count" id="ellipses-count"></p>
-            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search('…', isRegex=false);copyToClipboard('…');" title="Ellipsis" readonly>…</textarea>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="search(this.value, isRegex=false);copyToClipboard(this.value);" title="Ellipsis" readonly>…</textarea>
         </div>
         <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
             <div class="sidebar-horizontal-container">

@@ -893,8 +893,20 @@
                 const langParamName = 'lang' + (side === 'left' ? '1' : '2');
                 setURLParameter(langParamName, languagesDropdownList.value);
 
-                if (getMode() === 2) {
+                const mode = getMode();
+
+                if (mode === 2) {
                     fixTextAreas();
+                } else if (mode === 1) {
+                    if (sessionStorage.sidebarTemplate === 'statistics') {
+                        updateLanguageNamesInSidebar();
+                        updateLanguageAlphabet();
+                    }
+
+                    if (sessionStorage.sidebarTemplate === 'quotation_marks') {
+                        updateLanguageNamesInSidebar();
+                        updateLanguageQuotationMarks();
+                    }
                 }
             });
         });
@@ -1734,6 +1746,10 @@
 
     // Rewrite unescapeUnambiguousYes function from monolingual script to
     // use replaceAll. Use showLoading!
+
+    // Update sidebar fields when on input into monolingual paragraph
+
+    // Add quotation marks for more languages
 </script>
 
 {% if mode == '2' %}
