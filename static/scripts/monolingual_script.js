@@ -1522,7 +1522,19 @@ function escapeUnambiguousYes () {
 
 
 function unescapeUnambiguousYes (message) {
-    processText('/unescape_unambiguous_yes', message);
+    if (message !== null) {
+        showLoading(enable = true, message = message);
+    }
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    paragraph.value = paragraph.value.replaceAll('<е>', 'е');
+
+    if (message !== null) {
+        showLoading(false);
+    }
+
+    enableMonolingualChangeStatus();
+    updateSearchCount();
 }
 
 
