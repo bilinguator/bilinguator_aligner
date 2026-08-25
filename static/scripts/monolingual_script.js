@@ -1,6 +1,9 @@
 SIDEBAR_BUTTON_HTML = '<button class="sidebar-close-button" onclick="showSidebar(false)">×</button>';
 
-const escapeRegExp = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function escapeRegExp (str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 
 if (getURLParameter('focus') === 'true') {
     document.querySelector('.monolingual-paragraph').focus();
@@ -1911,11 +1914,118 @@ function makeMonolingualPanelButtonsFunctional () {
             updateStatisticsFields();
         });
     }
+
 }
 
 makeMonolingualPanelButtonsFunctional();
 
 
-// TO DO
-// * Add placeholder while counting search strings
-// * Place sure E escaping in approproate places
+if (!window.isKeydownHandlerAttached) {
+    document.addEventListener('keydown', (e) => {
+        const target = e.target;
+        
+        if (!target.classList.contains('monolingual-paragraph') || target.tagName !== 'TEXTAREA') {
+            return;
+        }
+    
+        const { selectionStart, selectionEnd, value } = target;
+        const isCtrlX = (e.ctrlKey || e.metaKey) && e.code === 'KeyX';
+        const isAltUp = e.altKey && !e.shiftKey && e.code === 'ArrowUp';
+        const isAltDown = e.altKey && !e.shiftKey && e.code === 'ArrowDown';
+        const isShiftAltUp = e.altKey && e.shiftKey && e.code === 'ArrowUp';
+        const isShiftAltDown = e.altKey && e.shiftKey && e.code === 'ArrowDown';
+    
+        if (!isCtrlX && !isAltUp && !isAltDown && !isShiftAltUp && !isShiftAltDown) {
+            return;
+        }
+    
+        const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
+        let lineEnd = value.indexOf('\n', selectionStart);
+        if (lineEnd === -1) lineEnd = value.length;
+    
+        const currentLine = value.substring(lineStart, lineEnd);
+        const cursorOffsetInLine = selectionStart - lineStart;
+    
+        if (isCtrlX && selectionStart === selectionEnd) {
+            e.preventDefault();
+            
+            let removeStart = lineStart;
+            let removeEnd = lineEnd;
+            
+            if (lineEnd < value.length) {
+            removeEnd += 1;
+            } else if (lineStart > 0) {
+            removeStart -= 1;
+            }
+    
+            const textToCopy = currentLine + (lineEnd < value.length ? '\n' : '');
+            navigator.clipboard.writeText(textToCopy);
+    
+            target.value = value.substring(0, removeStart) + value.substring(removeEnd);
+            target.setSelectionRange(removeStart, removeStart);
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+    
+        if (isAltUp) {
+            if (lineStart === 0) return; // Уже первая строка
+            e.preventDefault();
+    
+            const prevLineStart = value.lastIndexOf('\n', lineStart - 2) + 1;
+            const prevLineEnd = lineStart - 1;
+            const prevLine = value.substring(prevLineStart, prevLineEnd);
+    
+            const newValue = value.substring(0, prevLineStart) + 
+                            currentLine + '\n' + prevLine + 
+                            value.substring(lineEnd);
+    
+            target.value = newValue;
+            const newCursorPos = prevLineStart + cursorOffsetInLine;
+            target.setSelectionRange(newCursorPos, newCursorPos);
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    
+        if (isAltDown) {
+            if (lineEnd === value.length) return;
+            e.preventDefault();
+    
+            const nextLineEnd = value.indexOf('\n', lineEnd + 1) === -1 ? value.length : value.indexOf('\n', lineEnd + 1);
+            const nextLine = value.substring(lineEnd + 1, nextLineEnd);
+    
+            const newValue = value.substring(0, lineStart) + 
+                            nextLine + '\n' + currentLine + 
+                            value.substring(nextLineEnd);
+    
+            target.value = newValue;
+            const newCursorPos = lineStart + nextLine.length + 1 + cursorOffsetInLine;
+            target.setSelectionRange(newCursorPos, newCursorPos);
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    
+        if (isShiftAltUp) {
+            e.preventDefault();
+            const newValue = value.substring(0, lineStart) + 
+                            currentLine + '\n' + 
+                            value.substring(lineStart);
+    
+            target.value = newValue;
+            const newCursorPos = selectionStart;
+            target.setSelectionRange(newCursorPos, newCursorPos);
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    
+        if (isShiftAltDown) {
+            e.preventDefault();
+            const newValue = value.substring(0, lineEnd) + 
+                            '\n' + currentLine + 
+                            value.substring(lineEnd);
+    
+            target.value = newValue;
+            const newCursorPos = selectionStart + currentLine.length + 1;
+            target.setSelectionRange(newCursorPos, newCursorPos);
+            target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+
+    window.isKeydownHandlerAttached = true;
+}
