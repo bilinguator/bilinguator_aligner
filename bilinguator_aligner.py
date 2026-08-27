@@ -11,8 +11,10 @@ from flask import Flask, jsonify, request, render_template, url_for
 from utils import storage, bilingual_formats, fast_mojification, yoditor, alphabets
 
 
-SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
-SCRIPT_DIRECTORY = Path(SCRIPT_DIRECTORY).as_posix()
+SCRIPT_DIRECTORY_RAW = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIRECTORY = Path(SCRIPT_DIRECTORY_RAW).as_posix()
+
+DEFAULT_DIRECTORY = SCRIPT_DIRECTORY_RAW.replace('/', os.sep).replace('\\', os.sep)
 
 STORAGE_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/storage'
 PARAGRAPHS_PER_PAGE = 100
@@ -408,16 +410,16 @@ def index():
     if request.method == 'GET':
         text1 = None
         text2 = None
-        text1_path = request.values.get('text1_path', SCRIPT_DIRECTORY)
-        text2_path = request.values.get('text2_path', SCRIPT_DIRECTORY)
+        text1_path = request.values.get('text1_path') or DEFAULT_DIRECTORY
+        text2_path = request.values.get('text2_path') or DEFAULT_DIRECTORY
         lang1 = request.values.get('lang1', 'en')
         lang2 = request.values.get('lang2', 'en')
         page = request.values.get('page', -1)
     else:
         text1 = request.json.get('text1', None)
         text2 = request.json.get('text2', None)
-        text1_path = request.json.get('text1_path', SCRIPT_DIRECTORY)
-        text2_path = request.json.get('text2_path', SCRIPT_DIRECTORY)
+        text1_path = request.json.get('text1_path') or DEFAULT_DIRECTORY
+        text2_path = request.json.get('text2_path') or DEFAULT_DIRECTORY
         lang1 = request.json.get('lang1', 'en')
         lang2 = request.json.get('lang2', 'en')
         page = request.json.get('page', -1)
@@ -473,8 +475,8 @@ def index():
         text2=text2,
         lang1=lang1,
         lang2=lang2,
-        text1_path=text1_path,
-        text2_path=text2_path,
+        text1_path=text1_path.replace('/', os.sep).replace('\\', os.sep),
+        text2_path=text2_path.replace('/', os.sep).replace('\\', os.sep),
         hash=hash,
         cover_HTML=cover_HTML,
         page=page,
