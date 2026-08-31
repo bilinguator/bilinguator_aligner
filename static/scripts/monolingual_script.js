@@ -215,6 +215,22 @@ function trimParagraphs (characters) {
 }
 
 
+function removeHTMLEntities () {
+    showSidebar(false);
+    const confirmation = confirm('Remove HTML entities?');
+
+    if (!confirmation) {
+        return;
+    }
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    paragraph.innerHTML = paragraph.value;
+
+    enableMonolingualChangeStatus();
+    updateSearchCount();
+}
+
+
 function mergeOrphans () {
     showSidebar(false);
 
@@ -1793,9 +1809,12 @@ function makeMonolingualPanelButtonsFunctional () {
 
     const removeLineBreaksButton = document.getElementById('panel-button-remove_linebreaks');
     if (removeLineBreaksButton) {
-        removeLineBreaksButton.addEventListener('click', () => {
-            mergeOrphans();
-        });
+        removeLineBreaksButton.addEventListener('click', mergeOrphans);
+    }
+
+    const removeHTMLEntitiesButton = document.getElementById('panel-button-remove_html_entities');
+    if (removeHTMLEntitiesButton) {
+        removeHTMLEntitiesButton.addEventListener('click', removeHTMLEntities);
     }
 
     const trimButton = document.getElementById('panel-button-trim_tailing_characters');

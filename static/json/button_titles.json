@@ -4,6 +4,7 @@
     "statistics": "Statistics",
     "mojification": "Mojify texts",
 
+    "remove_html_entities": "Remove HTML entities",
     "remove_linebreaks": "Merge orphans",
     "remove_page_numbers": "Remove page numbers",
     "remove_notes": "Remove notes",

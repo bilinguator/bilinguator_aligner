@@ -2,6 +2,7 @@
     "0": [],
     "1": [
         [
+            "remove_html_entities",
             "trim_tailing_characters",
             "remove_page_numbers",
             "remove_notes",
