@@ -773,10 +773,11 @@ function replaceAllEllipses () {
 }
 
 
-function toManualReplacement (searchString, replaceString) {
+function toManualReplacement (searchString, replaceString, isRegex) {
     document.getElementById('search-input').value = searchString;
     document.getElementById('replace-input').value = replaceString;
-    search(searchString, isRegex = false);
+    document.getElementById('regex-checkbox').checked = isRegex;
+    search(searchString, isRegex = isRegex);
     updateSearchCount();
 }
 
@@ -786,13 +787,9 @@ function toDashesManualReplacement (regex = null, dashReplacement = null) {
     const dashInSearchTextarea = document.getElementById('dash-search-textarea').value;
     const dashSearch = isRegex ? regex.replace('<>', dashInSearchTextarea) : dashInSearchTextarea;
 
-    if (isRegex) {
-        document.getElementById('regex-checkbox').checked = true;
-    }
-
     dashReplacement = !!dashReplacement ? dashReplacement : document.getElementById('dash-replace-textarea').value;
 
-    toManualReplacement(dashSearch, dashReplacement);
+    toManualReplacement(dashSearch, dashReplacement, isRegex);
     updateSidebarTextareasCounts('dash-textarea');
 }
 
@@ -801,7 +798,7 @@ function toEllipsisManualReplacement () {
     const ellipsisSearch = document.getElementById('ellipses-search-textarea').value;
     const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
 
-    toManualReplacement(ellipsisSearch, ellipsisReplacement);
+    toManualReplacement(ellipsisSearch, ellipsisReplacement, false);
     updateSidebarTextareasCounts('ellipsis-textarea');
 }
 
