@@ -794,6 +794,15 @@ function toDashesManualReplacement (regex = null, dashReplacement = null) {
 }
 
 
+function updateEllipsesTextatea (ellipsis, textareaVariant) {
+    document.getElementById(`ellipses-${textareaVariant}-textarea`).value = ellipsis;
+}
+
+function updateDashesTextatea (dash, textareaVariant) {
+    document.getElementById(`dash-${textareaVariant}-textarea`).value = dash;
+}
+
+
 function toEllipsisManualReplacement () {
     const ellipsisSearch = document.getElementById('ellipses-search-textarea').value;
     const ellipsisReplacement = document.getElementById('ellipses-replace-textarea').value;
@@ -1196,7 +1205,7 @@ function updateTextQuotationMarks() {
     const chunkSize = 7;
     
     const textareaClasses = 'sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly sidebar-margin-left-textarea';
-    const textareaOnclick = `search(this.value, isRegex=false);updateSearchQuotationMarks(this.value, 'opening');copyToClipboard(this.value);`;
+    const textareaOnclick = `updateSearchQuotationMarks(this.value, 'opening');`;
     const textareaOncontextmenu = `event.preventDefault();updateSearchQuotationMarks(this.value, 'closing');`;
 
     for (let i = 0; i < chars.length; i += chunkSize) {
@@ -1314,8 +1323,7 @@ function updateLanguageQuotationMarks () {
     for (let quotes of languageQuotationMarks) {
         let regex = `(${escapeRegExp(quotes[0])})|(${escapeRegExp(quotes[1])})`;
         
-        let textareaOnclick = `search('${regex}', isRegex=true);copyToClipboard(this.value);`;
-        textareaOnclick += `updateReplaceQuotationMarks('${quotes[0]}', '${quotes[1]}');`
+        const textareaOnclick = `updateReplaceQuotationMarks('${quotes[0]}', '${quotes[1]}');`;
         const textareaHTML = `<textarea class="${textareaClasses}" onclick="${textareaOnclick}" readonly>${quotes.join('')}</textarea>`
         languageQuotationMarksDiv.insertAdjacentHTML('beforeend', textareaHTML);
     
