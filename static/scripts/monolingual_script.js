@@ -443,6 +443,7 @@ function tagHeadings () {
 
     textInput.value = processedText;
 
+    enableMonolingualChangeStatus();
     detectHeadingsByParameters();
 }
 
