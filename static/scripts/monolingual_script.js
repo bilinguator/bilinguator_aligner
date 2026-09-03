@@ -1393,6 +1393,66 @@ function replaceQuote (quoteVariant) {
 }
 
 
+function findQuoteAlternationMismatch () {
+    const sidebarMesage = document.querySelector('.sidebar-message');
+    sidebarMesage.innerText = '';
+
+    const paragraph = document.querySelector('.monolingual-paragraph');
+    if (!paragraph) return;
+
+    const quote1 = document.getElementById('opening-quote-replace-textarea').value;
+    const quote2 = document.getElementById('closing-quote-replace-textarea').value;
+
+    if (quote1 === quote2) return;
+
+    const text = paragraph.value;
+    console.log(text.length)
+    if (!text || !quote1 || !quote2) return;
+
+    const startPos = paragraph.selectionEnd || 0;
+    const stopPos = paragraph.selectionStart || 0;
+
+    let expected = null;
+    let mismatchIndex = -1;
+
+
+    function scanRange(from, to) {
+        for (let i = from; i < to; i++) {
+            const char = text[i];
+            
+            if (char === quote1 || char === quote2) {
+                if (expected === null) {
+                    expected = char === quote1 ? quote2 : quote1;
+                    continue;
+                }
+
+                if (char === expected) {
+                    expected = char === quote1 ? quote2 : quote1;
+                } else {
+                    mismatchIndex = i;
+                    return true; // Alternation broken
+                }
+            }
+        }
+        return false;
+    }
+
+    let found = scanRange(startPos, text.length);
+
+    if (!found && startPos > 0) {
+        const limit = (startPos >= stopPos && stopPos > 0) ? stopPos : startPos;
+        scanRange(0, limit);
+    }
+
+    if (mismatchIndex !== -1) {
+        paragraph.focus();
+        setSelectionRange(paragraph, mismatchIndex, mismatchIndex + 1);
+    } else {
+        sidebarMesage.innerText = 'No alternation mismatch found!';
+    }
+}
+
+
 function clearSearchResults () {
     const searchArea = document.querySelector('.sidebar-search-area');
 
@@ -2053,3 +2113,4 @@ if (!window.isKeydownHandlerAttached) {
 
     window.isKeydownHandlerAttached = true;
 }
+
