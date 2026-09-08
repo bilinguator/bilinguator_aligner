@@ -533,6 +533,7 @@ function demojify (withMessage = false) {
             sessionStorage.text1 = response['text1'];
             sessionStorage.text2 = response['text2'];
             updateTextOnScreen();
+            enableSaveButtons('both');
 
             if (withMessage) {
                 showMessage('Successfully demojified!');
