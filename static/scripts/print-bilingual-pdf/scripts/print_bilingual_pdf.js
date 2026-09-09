@@ -1,5 +1,5 @@
-const scriptUrl = document.currentScript.src;
-const projectDir = new URL('..', scriptUrl).href;
+scriptUrl = document.currentScript.src;
+projectDir = new URL('..', scriptUrl).href;
 
 
 function printBilingualPDF (text1, text2, lang1, lang2,
