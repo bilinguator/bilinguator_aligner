@@ -3,6 +3,7 @@
         Language
     </label>
     <select class="languages-dropdown-list languages-dropdown-list-{{ side }}" id="languages-dropdown-list-{{ side }}">
+        <option value="--">--</option>
         {% for language_iso_code, language_name in languages.items() %}
             <option value="{{ language_iso_code }}"{{ ' selected' if lang == language_iso_code else '' }}>{{ language_name }}</option>
         {% endfor %}

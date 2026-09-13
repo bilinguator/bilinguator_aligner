@@ -32,8 +32,8 @@
     {% if mode == '0' %}
         sessionStorage.clear();
         clearURLParameters();
-        document.querySelector('.languages-dropdown-list-left').value = 'es'
-        document.querySelector('.languages-dropdown-list-right').value = 'en'
+        document.querySelector('.languages-dropdown-list-left').value = '--';
+        document.querySelector('.languages-dropdown-list-right').value = '--';
         sessionStorage.leftFileFound = 'false';
         sessionStorage.rightFileFound = 'false';
     {% elif mode == '2' %}

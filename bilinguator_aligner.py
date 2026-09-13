@@ -417,6 +417,14 @@ def unset_bookmark():
     return jsonify({'status': 'success'})
 
 
+def guess_lang(file_name):
+    guessed_lang = file_name[:file_name.rfind('.')].split('_')[-1]
+
+    if guessed_lang in LANGUAGES.keys():
+        return guessed_lang
+
+    return '--'
+
 @app.route('/', methods=['POST', 'GET'])
 def index():
 
@@ -425,16 +433,28 @@ def index():
         text2 = None
         text1_path = request.values.get('text1_path') or ROOT_DIRECTORY
         text2_path = request.values.get('text2_path') or ROOT_DIRECTORY
-        lang1 = request.values.get('lang1', 'en')
-        lang2 = request.values.get('lang2', 'en')
+
+        lang1 = request.values.get('lang1', '--')
+        print(lang1)
+        lang1 = guess_lang(text1_path) if lang1 == '--' else lang1
+        print(lang1)
+        lang2 = request.values.get('lang2', '--')
+        lang2 = guess_lang(text2_path) if lang2 == '--' else lang2
+
         page = request.values.get('page', -1)
     else:
         text1 = request.json.get('text1', None)
         text2 = request.json.get('text2', None)
         text1_path = request.json.get('text1_path') or ROOT_DIRECTORY
         text2_path = request.json.get('text2_path') or ROOT_DIRECTORY
-        lang1 = request.json.get('lang1', 'en')
-        lang2 = request.json.get('lang2', 'en')
+        lang1 = request.json.get('lang1', guess_lang(text1_path))
+        lang2 = request.json.get('lang2', guess_lang(text2_path))
+
+        lang1 = request.json.get('lang1', '--')
+        lang1 = guess_lang(text1_path) if lang1 == '--' else 'es'
+        lang2 = request.json.get('lang2', '--')
+        lang2 = guess_lang(text2_path) if lang2 == '--' else 'en'
+
         page = request.json.get('page', -1)
     
     if type(text1) != str and not text1 and os.path.isfile(text1_path):
