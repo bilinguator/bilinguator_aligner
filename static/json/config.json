@@ -1,5 +1,5 @@
 {
-    "root_directory": "C:\\xampp\\htdocs\\bilinguator_aligner_projects",
+    "root_directory": "default",
     "paragraphs_per_page": "100",
-    "dark_mode": "yes"
+    "dark_mode": "no"
 }

@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 import json
 import zipfile
+import threading
 from time import sleep
 import webbrowser
 from urllib.parse import unquote
@@ -22,7 +23,7 @@ with open(CONFIG_JSON_PATH) as file:
 
 ROOT_DIRECTORY = CONFIG.get('root_directory', 'default')
 
-if ROOT_DIRECTORY == 'default':
+if (ROOT_DIRECTORY == 'default') or (not os.path.isdir(ROOT_DIRECTORY)):
     ROOT_DIRECTORY = SCRIPT_DIRECTORY_RAW.replace('/', os.sep).replace('\\', os.sep)
 
 PARAGRAPHS_PER_PAGE = int(CONFIG.get('paragraphs_per_page', 100))
@@ -531,17 +532,34 @@ def open_settings():
     })
 
 
-def restart_app():
-  """Перезапускает текущий Python-процесс."""
-  python = sys.executable
-  os.execl(python, python, *sys.argv)
+def trigger_reloader():
+    sleep(0.5)
+    os.utime(__file__, None)
 
 
 @app.route('/update_settings', methods=['GET', 'POST'])
 def update_settings():
+    new_config = {}
+
+    new_config['root_directory'] = request.json.get('root_directory', ROOT_DIRECTORY)
+    new_config['paragraphs_per_page'] = request.json.get('paragraphs_per_page', PARAGRAPHS_PER_PAGE)
+    new_config['dark_mode'] = request.json.get('dark_mode', DARK_MODE)
+
+    if not os.path.isdir(new_config['root_directory']):
+        new_config['root_directory'] = 'default'
+
+    if not new_config['paragraphs_per_page'].isnumeric():
+        new_config['paragraphs_per_page'] = PARAGRAPHS_PER_PAGE
+
+    if new_config['dark_mode'] not in ['no', 'yes']:
+        new_config['dark_mode'] = DARK_MODE
+
     with open(CONFIG_JSON_PATH, 'w') as file:
-        json.dump(request.json, file, indent=4)
-    restart_app()
+        json.dump(new_config, file, indent=4)
+
+    threading.Thread(target=trigger_reloader).start()
+
+    return jsonify({'status': 'success', 'message': 'Settings saved, server is restarting...'})
     
 
 @app.route('/save_book', methods=['GET', 'POST'])
@@ -951,6 +969,27 @@ def get_ambiguous_yos():
 storage.garbage_collection()
 
 
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({'status': 'ok'})
+
+
+def hard_restart():
+    sleep(0.3)
+    os.utime(__file__, None)
+
+
+@app.route('/restart', methods=['POST'])
+def restart_app():
+    threading.Thread(target=hard_restart).start()
+
+    return jsonify(
+        {'status': 'restarting', 'message': 'Restarting...'}
+    )
+
+
 if __name__ == '__main__':
-    webbrowser.open_new('http://127.0.0.1:2000/')
-    app.run(port=2000, debug=True, use_reloader=False) # debug=False, use_reloader=True when developped
+    if not os.environ.get('WERKZEUG_RUN_MAIN'):
+        webbrowser.open_new('http://127.0.0.1:2000/')
+
+    app.run(port=2000, debug=True, use_reloader=True) # debug=False, use_reloader=True when developped
