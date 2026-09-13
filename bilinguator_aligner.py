@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 import json
 import zipfile
@@ -14,10 +15,21 @@ from utils import storage, bilingual_formats, fast_mojification, yoditor, alphab
 SCRIPT_DIRECTORY_RAW = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_DIRECTORY = Path(SCRIPT_DIRECTORY_RAW).as_posix()
 
-DEFAULT_DIRECTORY = SCRIPT_DIRECTORY_RAW.replace('/', os.sep).replace('\\', os.sep)
+CONFIG_JSON_PATH = os.path.normpath(f'{SCRIPT_DIRECTORY}/static/json/config.json')
+
+with open(CONFIG_JSON_PATH) as file:
+    CONFIG = json.load(file)
+
+ROOT_DIRECTORY = CONFIG.get('root_directory', 'default')
+
+if ROOT_DIRECTORY == 'default':
+    ROOT_DIRECTORY = SCRIPT_DIRECTORY_RAW.replace('/', os.sep).replace('\\', os.sep)
+
+PARAGRAPHS_PER_PAGE = int(CONFIG.get('paragraphs_per_page', 100))
+DARK_MODE = CONFIG.get('dark_mode', 'no')
+# DARK_MODE = True if DARK_MODE == 'yes' else False
 
 STORAGE_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/storage'
-PARAGRAPHS_PER_PAGE = 100
 
 LANGUAGES_JSON_PATH = os.path.normpath(f'{SCRIPT_DIRECTORY}/static/json/languages.json')
 with open(LANGUAGES_JSON_PATH) as file:
@@ -410,16 +422,16 @@ def index():
     if request.method == 'GET':
         text1 = None
         text2 = None
-        text1_path = request.values.get('text1_path') or DEFAULT_DIRECTORY
-        text2_path = request.values.get('text2_path') or DEFAULT_DIRECTORY
+        text1_path = request.values.get('text1_path') or ROOT_DIRECTORY
+        text2_path = request.values.get('text2_path') or ROOT_DIRECTORY
         lang1 = request.values.get('lang1', 'en')
         lang2 = request.values.get('lang2', 'en')
         page = request.values.get('page', -1)
     else:
         text1 = request.json.get('text1', None)
         text2 = request.json.get('text2', None)
-        text1_path = request.json.get('text1_path') or DEFAULT_DIRECTORY
-        text2_path = request.json.get('text2_path') or DEFAULT_DIRECTORY
+        text1_path = request.json.get('text1_path') or ROOT_DIRECTORY
+        text2_path = request.json.get('text2_path') or ROOT_DIRECTORY
         lang1 = request.json.get('lang1', 'en')
         lang2 = request.json.get('lang2', 'en')
         page = request.json.get('page', -1)
@@ -482,7 +494,7 @@ def index():
         page=page,
         mode=mode,
         languages=LANGUAGES,
-        root_folder=SCRIPT_DIRECTORY,
+        root_folder=ROOT_DIRECTORY,
         central_panel=render_panel(
             panel_class='central-panel',
             mode=mode,
@@ -502,8 +514,35 @@ def index():
         sidebar_templates=render_sidebar_templates(mode),
         paragraphs_per_page=PARAGRAPHS_PER_PAGE,
         home_screen=render_home_screen(mode),
+        dark_mode=DARK_MODE,
     )
 
+
+@app.route('/open_settings', methods=['GET', 'POST'])
+def open_settings():
+    with open(CONFIG_JSON_PATH, 'r') as file:
+        config = json.load(file)
+    
+    return jsonify({
+        'template': render_partial_template(
+            'blocks/settings.html',
+            config=config,
+        )
+    })
+
+
+def restart_app():
+  """Перезапускает текущий Python-процесс."""
+  python = sys.executable
+  os.execl(python, python, *sys.argv)
+
+
+@app.route('/update_settings', methods=['GET', 'POST'])
+def update_settings():
+    with open(CONFIG_JSON_PATH, 'w') as file:
+        json.dump(request.json, file, indent=4)
+    restart_app()
+    
 
 @app.route('/save_book', methods=['GET', 'POST'])
 def save_file():
@@ -756,9 +795,9 @@ def upload_illustrations():
         if file.filename:
             file.save(os.path.join(illustrations_folder, file.filename))
     
-    
     storage.set_attribute(text1_path, text2_path, 'illustrations', len(os.listdir(illustrations_folder)))
 
+    print('len(illustrations):', len(illustrations))
     return jsonify({'status': 'done', 'count': len(illustrations)})
 
 
@@ -784,12 +823,13 @@ def remove_illustrations():
 def render_illustrations_renaming(text1_path, text2_path):
     hash = storage.project_hash(text1_path, text2_path)
     illustrations_folder = f'{SCRIPT_DIRECTORY}/static/storage/{hash}/illustrations'
+    if (not os.path.isdir(illustrations_folder)):
+        return ''
 
     illustration_names = [file_name[:-4] for file_name in os.listdir(illustrations_folder)
                           if file_name.endswith('.png')]
     if (not illustration_names):
         return ''
-
 
     return render_partial_template(
         'blocks/illustrations_renaming.html',
@@ -910,6 +950,7 @@ def get_ambiguous_yos():
 
 storage.garbage_collection()
 
+
 if __name__ == '__main__':
     webbrowser.open_new('http://127.0.0.1:2000/')
-    app.run(port=2000) # debug=False when developped
+    app.run(port=2000, debug=True, use_reloader=False) # debug=False, use_reloader=True when developped

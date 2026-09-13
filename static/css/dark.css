@@ -1,0 +1,12 @@
+.main-area {
+	background: var(--dark-blue) !important;
+}
+
+.paragraph {
+	background-color: var(--blue) !important;
+	color: #FFFFF2 !important;
+}
+
+.paragraph-number {
+	color: var(--dark-blue);
+}

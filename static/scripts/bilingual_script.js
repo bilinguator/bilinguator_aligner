@@ -714,7 +714,7 @@ function saveEpub () {
 }
 
 
-function uploadIllustrations() {
+function uploadIllustrations () {
     const illustrationsPicker = document.querySelector('#illustrations-picker');
     const files = illustrationsPicker.files;
 
@@ -728,12 +728,12 @@ function uploadIllustrations() {
         formData.append('illustrations', file);
     });
 
-
     const bookAddressLeft = document.querySelector('#book-address-left').value;
     const bookAddressRight = document.querySelector('#book-address-right').value;
 
     formData.append('text1_path', bookAddressLeft);
     formData.append('text2_path', bookAddressRight);
+
 
     $.ajax({
         url: '/upload_illustrations',
@@ -748,15 +748,15 @@ function uploadIllustrations() {
         error: function(xhr, status, error) {
             console.error('Ошибка:', error);
             showMessage('An error occured!');
-        }
+        },
     });
 }
 
 
 function openIllustrationsRenamingPanel (bookAddressLeft = null, bookAddressRight = null) {
+    closeExplorer('both');
     bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
     bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
-
 
     $.ajax({
         url: '/open_illustrations_renaming_panel',
@@ -770,6 +770,12 @@ function openIllustrationsRenamingPanel (bookAddressLeft = null, bookAddressRigh
             text2_path: bookAddressRight,
         }),
         success: function (response) {
+            closePanel('illustrations-renaming-panel');
+
+            if (!response['template']) {
+                return;
+            }
+
             const mainArea = document.querySelector('.main-area');
             mainArea.insertAdjacentHTML('afterbegin', response['template']);
 
@@ -780,6 +786,7 @@ function openIllustrationsRenamingPanel (bookAddressLeft = null, bookAddressRigh
                     sortIllustrations();
                 });
             });
+            sortIllustrations();
         },
         error: function(xhr, status, error) {
             console.error('AJAX request failed:', status, error);
@@ -812,11 +819,6 @@ function sortIllustrations () {
     });
 
     items.forEach(item => container.appendChild(item));
-}
-
-
-function closeIllustrationsRenamingPanel () {
-    document.querySelector('.illustrations-renaming-panel').remove();
 }
 
 

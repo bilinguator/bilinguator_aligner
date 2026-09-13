@@ -1,6 +1,6 @@
 {
     "0": [
-        ["about"]
+        ["settings", "about"]
     ],
     "1": [
         ["swap", "statistics", "about"]

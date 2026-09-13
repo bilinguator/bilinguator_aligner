@@ -147,7 +147,7 @@ button {
     background-color: var(--dark-blue);
 	color: white;
 	overflow-y: scroll;
-	z-index: 9998;
+	z-index: 9997;
 }
 
 .explorer-left {
@@ -417,7 +417,7 @@ input::-moz-placeholder{
 	margin-bottom: 0;
 	background-color: var(--bookmark-red);
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% var(--paragraph-number-height), 0 100%);
-	z-index: 9997;
+	z-index: 9996;
 }
 
 textarea {
@@ -602,30 +602,30 @@ h1 {
 	margin-top: 10px;
 }
 
-.illustrations-renaming-panel {
+.overlaying-panel {
 	width: 100%;
     position: fixed;
     background-color: var(--dark-blue);
-    z-index: 100;
+    z-index: 9998;
     top: 0px;
     overflow-y: scroll;
     height: 100vh;
 	padding: 50px;
 }
 
-.illustrations-renaming-heading {
+.overlaying-panel-heading {
 	color: white;
 	text-align: center;
 	font-size: 18px;
 	margin-bottom: 15px;
 }
 
-.illustrations-message {
+.overlaying-panel-message {
 	color: white;
 	margin-bottom: 15px;
 }
 
-.illustration-item {
+.overlaying-panel-item {
 	display: flex;
 	justify-content: center;
     align-items: center;
@@ -663,6 +663,19 @@ h1 {
 
 .illustrations-renaming-button {
 	margin-top: 30px;
+}
+
+.setting-name {
+	color: white;
+	text-align: left;
+	width: 150px;
+}
+
+.setting-value {
+	height: 17px;
+	width: 350px;
+	border-radius: 1px;
+    padding: 1px;
 }
 
 .cover-preview {

@@ -333,7 +333,7 @@
             if (document.querySelector('.explorer')) {
                 closeExplorer('both');
             } else {
-                const isFolder = !sessionStorage[side + 'FileFound'];
+                const isFolder = sessionStorage[side + 'FileFound'] === 'false';
                 openExplorer(null, isFolder, side);
             }
         });
@@ -483,7 +483,6 @@
                 text2_path: document.querySelector('#book-address-right').value,
                 lang1: document.querySelector('#languages-dropdown-list-left').value,
                 lang2: document.querySelector('#languages-dropdown-list-right').value,
-                //page: -1,
            }
         }
 
@@ -1192,7 +1191,79 @@
     }
 
 
+    function openSettings (open = true) {
+        $.ajax({
+            url: '/open_settings',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            success: function (response) {
+                closePanel('settings-panel');
+
+                if (!response['template']) {
+                    return;
+                }
+
+                const mainArea = document.querySelector('.main-area');
+                mainArea.insertAdjacentHTML('afterbegin', response['template']);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function updateSettings () {
+        if (!document.getElementById('settings-list')) {
+            return;
+        }
+
+        const confirmation = confirm('Update settings? Program will be reloaded. All unsaved work in other browser tabs can be lost!')
+        if (!confirmation) {
+            return;
+        }
+
+        $.ajax({
+            url: '/update_settings',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                root_directory: document.getElementById('root-directory').value,
+                paragraphs_per_page: document.getElementById('paragraphs-per-page').value,
+                dark_mode: document.getElementById('dark-mode').value
+            }),
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+                showLoading(enable = true, message = 'Please, wait! Reloading program...', withButton = false);
+            },
+        });
+    }
+
+
+    function closePanel (panelID) {
+        const panel = document.getElementById(panelID);
+        if (panel) {
+            panel.remove();
+        }
+    }
+
+
     function makePanelButtonsFunctional () {
+        const panelButtonSettings = document.querySelector('#panel-button-settings');
+        if (panelButtonSettings) {
+            panelButtonSettings.addEventListener('click', () => {
+                openSettings(true);
+            });
+        }
+
         const paragraphButtonsPanels = document.querySelectorAll('.paragraph-buttons');
         if (paragraphButtonsPanels) {
             paragraphButtonsPanels.forEach((panel) => {
@@ -1397,6 +1468,9 @@
         if (illustrationsPicker) {
             illustrationsPicker.addEventListener('change', () => {
                 uploadIllustrations();
+            });
+            illustrationsPicker.addEventListener('click', () => {
+                openIllustrationsRenamingPanel();
             });
         }
 
@@ -1635,10 +1709,10 @@
     }
 
 
-    function showLoading (enable = true, message = '') {
+    function showLoading (enable = true, message = '', withButton = true) {
         document.querySelector('.screen-block').hidden = !enable;
         document.querySelector('.loading-img').hidden = !enable;
-        document.querySelector('.screen-block-abort-button').hidden = !enable;
+        document.querySelector('.screen-block-abort-button').hidden = !enable || !withButton;
 
         if (message) {
             document.querySelector('.screen-block-message').innerText = message;
