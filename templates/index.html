@@ -70,7 +70,7 @@
         const percentProgress = document.querySelector('.percent');
     
         {% if mode == '1' %}
-            const paragraph = document.querySelector('.monolingual-paragraph');
+            const paragraph = document.getElementById('monolingual-paragraph');
             
             paragraph.addEventListener('scroll', () => {
                 const scrollTop = paragraph.scrollTop;
@@ -131,7 +131,7 @@
                 if (mode === 2) {
                     window.scrollTo(0, 0)
                 } else if (mode === 1) {
-                    document.querySelector('.monolingual-paragraph').scrollTop = 0;
+                    document.getElementById('monolingual-paragraph').scrollTop = 0;
                 }
             });
         }
@@ -576,7 +576,7 @@
         const mode = getMode();
 
         if (mode === 1) {
-            return document.querySelector('.monolingual-paragraph').value;
+            return document.getElementById('monolingual-paragraph').value;
         } else if (mode === 2) {
             return getFullTextFromBilingualMode(side);
         } else {
@@ -774,7 +774,7 @@
     
         document.querySelectorAll('.paragraph').forEach((paragraph) => {
             paragraph.addEventListener('input', () => {
-                if (paragraph.classList.contains('monolingual-paragraph')) {
+                if (paragraph.id == 'monolingual-paragraph') {
                     const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
                     sessionStorage[side + 'FileChanged'] = 'true';
                     updateTextsInSessionStorage(side);
@@ -855,7 +855,7 @@
 
     function setLanguageForParagraphs (side, lang = null) {
         const paragraphs = document.querySelectorAll('.paragraph-' + side);
-        const monolingualParagraph = document.querySelector('.monolingual-paragraph');
+        const monolingualParagraph = document.getElementById('monolingual-paragraph');
 
         if (!lang) {
             lang = document.querySelector('#languages-dropdown-list-' + side).value;
@@ -879,7 +879,7 @@
     function getMode () {
         if (document.querySelector('.paragraph-left')) {
             return 2;
-        } else if (document.querySelector('.monolingual-paragraph')) {
+        } else if (document.getElementById('monolingual-paragraph')) {
             return 1;
         }
         
@@ -1099,7 +1099,7 @@
 
 
         if (mode === 1) {
-            const paragraph = document.querySelector('.monolingual-paragraph');
+            const paragraph = document.getElementById('monolingual-paragraph');
 
             targetParagraphIndex = targetParagraphIndex ? targetParagraphIndex : document.querySelector('.bookmark-number').innerText;
             targetParagraphIndex = parseInt(targetParagraphIndex);

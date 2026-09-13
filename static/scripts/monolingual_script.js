@@ -6,7 +6,7 @@ function escapeRegExp (str) {
 
 
 if (getURLParameter('focus') === 'true') {
-    document.querySelector('.monolingual-paragraph').focus();
+    document.getElementById('monolingual-paragraph').focus();
     unsetURLParameter('focus');
 }
 
@@ -48,7 +48,7 @@ function updateLanguageAlphabet (lang = null) {
             const alphabet = [...response['alphabet']].sort((a, b) => a.localeCompare(b, lang)).join('');
             document.getElementById('alphabet-textarea').value = alphabet;
             
-            const text = document.querySelector('.monolingual-paragraph').value.toUpperCase();
+            const text = document.getElementById('monolingual-paragraph').value.toUpperCase();
             
             const textCharacters = [...new Set(text)]
                 .sort((a, b) => a.localeCompare(b, lang))
@@ -146,14 +146,14 @@ function recoverApostrophesByLang (text, lang) {
 
 
 function updateParagraphsCount () {
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     const paragraphsCount = countSubstrings(paragraph.value, '\n', false) + 1;
     document.querySelector('.total-count').innerText = paragraphsCount;
 }
 
 
 function applyToSelection (foo, ...args) {
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
     let text = paragraph.value;
     
@@ -196,7 +196,7 @@ function trimParagraphs (characters) {
         return;
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     let text = paragraph.value;
 
     const escapedChars = characters.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -223,7 +223,7 @@ function removeHTMLEntities () {
         return;
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     paragraph.innerHTML = paragraph.value;
 
     enableMonolingualChangeStatus();
@@ -243,7 +243,7 @@ function mergeOrphans () {
         return;
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     const safeChars = characters.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(`([^${safeChars}])\\r?\\n`, 'g');
     paragraph.value = paragraph.value.replace(regex, '$1 ');
@@ -394,7 +394,7 @@ function searchHeadingsByParameters (
 
 
 function detectHeadingsByParameters () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const chapterWord = document.getElementById('chapter-word-textarea').value;
     const numbering = document.getElementById('numbering-select').value;
     const numberingDelimiter = document.getElementById('numbering-delimiter-textarea').value;
@@ -417,7 +417,7 @@ function detectHeadingsByParameters () {
 
 
 function tagHeadings () {
-    const textInput = document.querySelector('.monolingual-paragraph');
+    const textInput = document.getElementById('monolingual-paragraph');
     const headingsInput = document.getElementById('headings-textarea');
 
     if (!textInput || !headingsInput) return;
@@ -465,7 +465,7 @@ function getUniqueUpperCaseLines (text) {
 
 
 function searchUpperCaseHeadings () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const upperCaseHeadings = getUniqueUpperCaseLines(text);
 
     const headingsTextarea = document.getElementById('headings-textarea');
@@ -475,7 +475,7 @@ function searchUpperCaseHeadings () {
 
 
 function updateSearchCount () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
 
     const searchString = document.getElementById('search-input').value;
     const searchCount = document.getElementById('search-count');
@@ -503,7 +503,7 @@ function updateSearchCount () {
 
 
 function updateSearchFromSelection () {
-    if (document.activeElement.classList.contains('monolingual-paragraph')) {
+    if (document.activeElement.id === 'monolingual-paragraph') {
         const paragraph = document.activeElement;
         const selectedText = paragraph.value.slice(paragraph.selectionStart, paragraph.selectionEnd);
         document.querySelector('#search-input').value = selectedText;
@@ -544,23 +544,18 @@ function search (searchString, isRegex) {
         isRegex = document.getElementById('regex-checkbox').checked;
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
-    // Переменные для хранения позиции совпадения и длины найденной строки
     let matchIndex = -1;
     let matchLength = 0;
 
     if (isRegex) {
         try {
-            // Создаем регулярное выражение с флагами g (глобальный) и, например, u (юникод)
-            // Если нужно игнорировать регистр, можно добавить флаг 'gi'
             const regex = new RegExp(searchString, 'ugm');
             
-            // Начинаем поиск с конца текущего выделения
             regex.lastIndex = paragraph.selectionEnd;
             let match = regex.exec(paragraph.value);
 
-            // Если с текущей позиции ничего не нашли, ищем сначала текста (зацикливание)
             if (!match) {
                 regex.lastIndex = 0;
                 match = regex.exec(paragraph.value);
@@ -572,10 +567,9 @@ function search (searchString, isRegex) {
             }
         } catch (e) {
             console.error('Incorrect regular expression!', e);
-            return; // Завершаем, если регулярка написана с синтаксической ошибкой
+            return;
         }
     } else {
-        // Стандартный поиск обычной подстроки
         matchIndex = paragraph.value.indexOf(searchString, paragraph.selectionEnd);
 
         if (matchIndex === -1) {
@@ -585,10 +579,9 @@ function search (searchString, isRegex) {
         matchLength = searchString.length;
     }
 
-    // Если совпадение найдено, выделяем его
     if (matchIndex !== -1) {
         paragraph.blur();
-        // Используем matchLength, так как длина совпадения в RegExp может отличаться от длины самого паттерна
+
         setSelectionRange(paragraph, matchIndex, matchIndex + matchLength);
         paragraph.focus();
     }
@@ -610,7 +603,7 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
         isRegex = document.getElementById('regex-checkbox').checked;
     }
     
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     const text = paragraph.value;
     const selectionStart = paragraph.selectionStart;
     const selectionEnd = paragraph.selectionEnd;
@@ -620,10 +613,8 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
         return;
     }
     
-    // Берем то, что сейчас выделено в тексте
     const selectionString = text.slice(selectionStart, selectionEnd);
     
-    // Проверка на совпадение выделения с поисковым запросом
     if (isRegex) {
         try {
             const testRegex = new RegExp(searchString, 'um');
@@ -639,7 +630,6 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
 
             const regex = new RegExp(`^${cleanedSearch}$`, 'u');
 
-            // Проверяем, что выделенный текст ПОЛНОСТЬЮ соответствует регулярному выражению
             if (!regex.test(selectionString) && !force) {
                 if (afterSearch) search(isRegex = true);
                 return;
@@ -649,7 +639,6 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
             return;
         }
     } else {
-        // Обычный поиск по строке, как и был
         if ((selectionString !== searchString) && !force) {
             if (afterSearch) search();
             return;
@@ -661,9 +650,6 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
     if (replacementString === undefined) {
         replacementString = replaceInput.value;
     }
-
-    // ЛОГИКА ПОДСТРОЙКИ ПОД РЕГИСТР:
-    // Работает только если matchCase === true
 
     if (replaceInput.dataset.mode === 'yoditor') {
         matchCase = true;
@@ -683,14 +669,11 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
     const part1 = text.slice(0, selectionStart);
     const part3 = text.slice(selectionEnd);
 
-    // Заменяем выделенный кусок текста
     paragraph.value = part1 + replacementString + part3;
 
-    // Сдвигаем курсор в конец вставленной строки
     const newSelection = selectionStart + replacementString.length;
     paragraph.setSelectionRange(newSelection, newSelection);
     
-    // Вызываем поиск для перехода к следующему совпадению
     if (afterSearch) search();
 
     updateSearchCount();
@@ -698,17 +681,6 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
     enableMonolingualChangeStatus();
 }
 
-// const regex = new RegExp(searchString, 'gm');
-            
-//             // Начинаем поиск с конца текущего выделения
-//             regex.lastIndex = paragraph.selectionEnd;
-//             let match = regex.exec(paragraph.value);
-
-//             // Если с текущей позиции ничего не нашли, ищем сначала текста (зацикливание)
-//             if (!match) {
-//                 regex.lastIndex = 0;
-//                 match = regex.exec(paragraph.value);
-//             }
 
 function replaceAll (searchString, replacementString, isRegex, withConfirmation = true) {
     if (searchString === undefined) {
@@ -731,7 +703,7 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
 
     searchString = isRegex ? new RegExp(searchString, 'gm') : searchString;
     
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     const text = paragraph.value;
 
     if (!text.match(searchString)) {
@@ -827,7 +799,7 @@ function getPreviousElementByClass(currentElement, className) {
 
 
 function updateSidebarTextareasCounts (textareaClass) {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
 
     const textAreas = document.querySelectorAll('.' + textareaClass);
     
@@ -890,7 +862,7 @@ function numberSorting (a, b) {
 
 
 function detectNotes () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const regex = /\{\d+\}|\[\d+\]|\(\d+\)/g;
     const hits = [...new Set(text.match(regex))];
 
@@ -926,7 +898,7 @@ function removeNotes () {
     const regex3 = new RegExp(`( *(?:${pattern})\\n+)|(\\n+(?:${pattern}) *)`, 'g');
     const regex4 = new RegExp(` *(?:${pattern}) *`, 'g');
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     paragraph.value = paragraph.value
         .replace(regex1, '')
         .replace(regex2, '\n')
@@ -940,7 +912,7 @@ function removeNotes () {
 
 
 function detectPageNumbers () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const regex = /^\d+$/gm;
     const hits = [...new Set(text.match(regex))];
 
@@ -968,7 +940,7 @@ function removeLinesByHitsInTextarea (textareaID) {
         return;
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
     paragraph.value = paragraph.value
         .split('\n')
@@ -993,7 +965,7 @@ function removePageNumbers () {
 
 
 function detectRepeatedLines () {
-    const textLines = document.querySelector('.monolingual-paragraph').value.split('\n');
+    const textLines = document.getElementById('monolingual-paragraph').value.split('\n');
     let repeatedLines = [];
 
     textLines.forEach((line) => {
@@ -1088,7 +1060,7 @@ function checkMergeStrophesArguments () {
 
 function mergeStrophesByDelimiter (test = false) {
     
-    let text = document.querySelector('.monolingual-paragraph').value;
+    let text = document.getElementById('monolingual-paragraph').value;
     const paragraphsCountBefore = countSubstrings(text, '\n', false) + 1;
 
     if (!checkMergeStrophesArguments()) {
@@ -1123,7 +1095,7 @@ function mergeStrophesByDelimiter (test = false) {
     
     const currentPosition = getCurretPosition();
 
-    document.querySelector('.monolingual-paragraph').value = text;
+    document.getElementById('monolingual-paragraph').value = text;
     enableMonolingualChangeStatus();
     updateParagraphsCount();
     updateSearchCount();
@@ -1134,7 +1106,7 @@ function mergeStrophesByDelimiter (test = false) {
 
 
 function removeEmptyLines () {
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     paragraph.value = paragraph.value.replace(/^\s*[\r\n]/gm, '');
 
     const currentPosition = getCurretPosition();
@@ -1148,7 +1120,7 @@ function removeEmptyLines () {
 
 
 function mergeLinesWithoutOpeningTags () {
-    let text = document.querySelector('.monolingual-paragraph').value;
+    let text = document.getElementById('monolingual-paragraph').value;
     const paragraphsCountBefore = countSubstrings(text, '\n', false) + 1;
     const delimiter = document.getElementById('delimiter-textarea').value;
     
@@ -1158,7 +1130,7 @@ function mergeLinesWithoutOpeningTags () {
 
     const currentPosition = getCurretPosition();
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     paragraph.value = paragraph.value.replace(/\n(?!<b>|<h1>|<i>)/g, delimiter);
 
     enableMonolingualChangeStatus();
@@ -1177,7 +1149,7 @@ function setParagraphNumbersInMergingStrophes (before, after) {
 
 
 function countApostrophes () {
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
 
     document.getElementById('typewriter-apostrophes-count').innerText = countSubstrings(text, "'", false) + ' ×';
     document.getElementById('punctuation-apostrophes-count').innerText = countSubstrings(text, "’", false) + ' ×';
@@ -1186,7 +1158,7 @@ function countApostrophes () {
 
 function getTextQuotationMarks () {
     const quotationMarks = new Set('«»"\'<>‹›„“‚‘’⹂”「」『』﹃﹄﹁﹂《》〈〉⟪⟫⟨⟩❝❞❛❜〝〞〟❮❯');
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const textQuotationMarks = [...new Set(text)].filter(char => quotationMarks.has(char));
     return textQuotationMarks.join('');
 }
@@ -1398,7 +1370,7 @@ function findQuoteAlternationMismatch () {
     const sidebarMesage = document.querySelector('.sidebar-message');
     sidebarMesage.innerText = '';
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     if (!paragraph) return;
 
     const quote1 = document.getElementById('opening-quote-replace-textarea').value;
@@ -1476,7 +1448,7 @@ function searchCharactersInThePlay () {
     regexes = characters
         .map(character => '^' + (character + charactersDelimiter).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + lineEnd);
 
-    const text = document.querySelector('.monolingual-paragraph').value;
+    const text = document.getElementById('monolingual-paragraph').value;
     const characterCounts = {};
 
     for (let i = 0; i < characters.length; i++) {
@@ -1538,7 +1510,7 @@ function tagCharacters () {
     const hitTextareas = document.querySelectorAll('.sidebar-hit-textarea');
     const regexes = Array.from(hitTextareas).map(hitTextarea => hitTextarea.dataset.regex);
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     let text = paragraph.value;
 
     regexes.forEach(regex => {
@@ -1560,7 +1532,7 @@ function processText (url, message = null) {
         showLoading(enable = true, message = message);
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
     let xhr = $.ajax({
         url: url,
@@ -1611,7 +1583,7 @@ function unescapeUnambiguousYes (message) {
         showLoading(enable = true, message = message);
     }
 
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
     paragraph.value = paragraph.value.replaceAll('<е>', 'е');
 
     if (message !== null) {
@@ -1708,7 +1680,7 @@ function getAmbiguousYos () {
         },
         contentType: 'application/json;charset=UTF-8',
         data: JSON.stringify({
-            text: document.querySelector('.monolingual-paragraph').value
+            text: document.getElementById('monolingual-paragraph').value
         }),
         success: function(response) {
             const regex = generateYoRegex(response['ambiguous_yos']);
@@ -1804,7 +1776,7 @@ function mojify () {
 
 
 function replaceApostrophesAutomatically (lang = null) {
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
     paragraph.value = recoverApostrophesByLang(
         paragraph.value,
@@ -1818,7 +1790,7 @@ function replaceApostrophesAutomatically (lang = null) {
 
 
 function replaceAllApostrophes () {
-    const paragraph = document.querySelector('.monolingual-paragraph');
+    const paragraph = document.getElementById('monolingual-paragraph');
 
     paragraph.value = paragraph.value.replaceAll("'", '’');
 
@@ -2009,7 +1981,7 @@ if (!window.isKeydownHandlerAttached) {
     document.addEventListener('keydown', (e) => {
         const target = e.target;
         
-        if (!target.classList.contains('monolingual-paragraph') || target.tagName !== 'TEXTAREA') {
+        if ((target.id !== 'monolingual-paragraph') || (target.tagName !== 'TEXTAREA')) {
             return;
         }
     
