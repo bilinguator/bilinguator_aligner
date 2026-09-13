@@ -159,19 +159,27 @@
     }
 
 
-    function openExplorer (path = null, isFolder = true, side='left') {
+    function openExplorer (path = null, side='left') {
 
         if (document.querySelector('.explorer')) {
             closeExplorer('both');
         }
 
         const bookAddress = document.querySelector('#book-address-' + side);
+
+        const isWindows = window.navigator.userAgent.includes('Windows');
+        const pathSep = isWindows ? '\\' : '/';
         
         if (path === null) {
-            path = bookAddress.value;
+            path = bookAddress.value
+
+            if (sessionStorage[side + 'FileFound'] === 'true') {
+                path = path.split(pathSep).slice(0, -1).join(pathSep);
+            }
         }
 
-        const originalPath = sessionStorage[side + 'FileFound'] ? bookAddress.value : path;
+
+        const originalPath = sessionStorage[side + 'FileFound'] === 'true' ? bookAddress.value : path;
 
         $.ajax({
             url: '/open_explorer',
@@ -182,7 +190,6 @@
             contentType: 'application/json;charset=UTF-8',
             data: JSON.stringify({
                 path: path,
-                is_folder: isFolder,
                 side: side,
                 original_path: originalPath,
             }),
@@ -333,8 +340,7 @@
             if (document.querySelector('.explorer')) {
                 closeExplorer('both');
             } else {
-                const isFolder = sessionStorage[side + 'FileFound'] === 'false';
-                openExplorer(null, isFolder, side);
+                openExplorer(null, side);
             }
         });
     });

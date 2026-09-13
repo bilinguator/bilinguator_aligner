@@ -2,7 +2,7 @@
     <button class="explorer-close-button explorer-close-button-{{ side }}" onclick="closeExplorer('{{ side }}')">×</button>
     <div class="file-path-field" path="{{ path }}">
         {% for i in range(upstream_folders|length) %}
-            <div class="explorer-element upstream-element" ondblclick="openExplorer('{{ upstream_absolute_paths[i] }}', true, '{{ side }}')">
+            <div class="explorer-element upstream-element" ondblclick="openExplorer('{{ upstream_absolute_paths[i] }}', '{{ side }}')">
                 <img class="explorer-img" src="{{ url_for('static', filename='img/folder.svg') }}" alt="Folder icon" />
                 <p class="explorer-element-text">{{ upstream_folders[i] }}</p>
             </div>
@@ -10,7 +10,7 @@
     </div>
     
     {% for i in range(downstream_folders|length) %}
-        <div class="explorer-element downstream-element" ondblclick="openExplorer('{{ downstream_folders_absolute_paths[i] }}', true, '{{ side }}')">
+        <div class="explorer-element downstream-element" ondblclick="openExplorer('{{ downstream_folders_absolute_paths[i] }}', '{{ side }}')">
             <img class="explorer-img" src="{{ url_for('static', filename='img/folder.svg') }}" alt="Folder icon" />
             <p class="explorer-element-text">{{ downstream_folders[i] }}</p>
         </div>

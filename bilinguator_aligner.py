@@ -347,8 +347,6 @@ def render_explorer():
 
     side = request.json.get('side')
     path = request.json.get('path')
-    is_folder = request.json.get('is_folder')
-    path = path if is_folder else os.path.dirname(os.path.realpath(__file__))
 
     response = {
         'status': 'Folder_found',
@@ -435,9 +433,7 @@ def index():
         text2_path = request.values.get('text2_path') or ROOT_DIRECTORY
 
         lang1 = request.values.get('lang1', '--')
-        print(lang1)
         lang1 = guess_lang(text1_path) if lang1 == '--' else lang1
-        print(lang1)
         lang2 = request.values.get('lang2', '--')
         lang2 = guess_lang(text2_path) if lang2 == '--' else lang2
 
