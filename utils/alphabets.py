@@ -466,21 +466,3 @@ def get_alphabet (lang='en', all_scripts=False):
         return result
     else:
         return set(alphabets[lang])
-
-def get_text_alphabet (text=None, file=None):
-    """Get all the symbols of the text.
-
-    str `text` - text from which to obtain symbols;
-    str `file` - if `text` is not specified the function tries to get
-        text from the `file` path;
-    return set - set of all the symbols of the text.
-    """
-    space_characters = set(' \n')
-    if text != None:
-        return set(text.upper()) - space_characters
-    if file != None:
-        file = open(file, 'r', encoding='utf-8')
-        text = file.read().upper()
-        file.close()
-        return set(text) - space_characters
-    return False

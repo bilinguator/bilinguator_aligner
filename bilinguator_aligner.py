@@ -934,17 +934,6 @@ def get_language_alphabet():
     return json.dumps(response), 200, {'ContentType':'application/json'}
 
 
-@app.route('/get_text_alphabet', methods=['GET', 'POST'])
-def get_text_alphabet():
-    text = request.json.get('text')
-
-    response = {
-        'alphabet': alphabets.get_text_alphabet(text),
-    }
-    
-    return json.dumps(response), 200, {'ContentType':'application/json'}
-
-
 @app.route('/escape_unambiguous_yes', methods=['GET', 'POST'])
 def escape_unambiguous_yes():
     text = request.json.get('text')

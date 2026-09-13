@@ -115,20 +115,6 @@ def get_splitted_texts(text1: str, text2: str, lang1: str, lang2: str,
     return splitted
 
 
-def get_database_path(book_id: str, lang1: str, lang2: str) -> str:
-    """
-    Get path to the Lingtrain database.
-
-    str `book_id` - book ID;
-    str `lang1` - ISO 639 code of the language 1;
-    str `lang2` - ISO 639 code of the language 2.
-
-    return str - path to the Lingtrain database.
-    """
-    
-    return f'db/{book_id}_{lang1}_{lang2}.db'
-
-
 def prepare_database(splitted: dict, db_path: str, lang1: str, lang2: str) -> None:
     """
     Launche `lingtrain_aligner.aligner.fill_db`. Returns nothing.
