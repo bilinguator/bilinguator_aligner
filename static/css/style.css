@@ -61,10 +61,11 @@ button {
 	background-color: transparent;
 }
 
-.logo-link {
+#logo {
 	position: absolute;
     left: 6px;
     top: 6px;
+	cursor: pointer;
 }
 
 .starting-message {

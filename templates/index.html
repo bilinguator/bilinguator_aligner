@@ -842,9 +842,6 @@
 
         e.preventDefault();
         e.returnValue = changesNotSavedMessage;
-        
-        sessionStorage.leftFileChanged = 'false';
-        sessionStorage.rightFileChanged = 'false';
 
         return changesNotSavedMessage;
     });
@@ -1257,6 +1254,13 @@
 
 
     function makePanelButtonsFunctional () {
+        const logo = document.getElementById('logo');
+        if (logo) {
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
+
         const panelButtonSettings = document.querySelector('#panel-button-settings');
         if (panelButtonSettings) {
             panelButtonSettings.addEventListener('click', () => {
