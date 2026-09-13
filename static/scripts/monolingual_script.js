@@ -1972,6 +1972,26 @@ function makeMonolingualPanelButtonsFunctional () {
         });
     }
 
+    const paragraph = document.getElementById('monolingual-paragraph');
+    if (paragraph) {
+        paragraph.addEventListener('input', () => {
+            if (sessionStorage.sidebarTemplate === 'quotation_marks') {
+                updateSidebarTextareasCounts('quote-textarea');
+                updateTextQuotationMarks();
+                updateLanguageQuotationMarks();
+            } else if (sessionStorage.sidebarTemplate === 'apostroph') {
+                countApostrophes();
+            } else if (sessionStorage.sidebarTemplate === 'dashes') {
+                updateSidebarTextareasCounts('dash-textarea');
+            } else if (sessionStorage.sidebarTemplate === 'ellipsis') {
+                updateSidebarTextareasCounts('ellipsis-textarea');
+            } else if (sessionStorage.sidebarTemplate === 'merge_strophes_by_delimiter') {
+                mergeStrophesByDelimiter(test = true);
+            } else if (sessionStorage.sidebarTemplate === 'statistics') {
+                updateStatisticsFields();
+            }
+        });
+    }
 }
 
 makeMonolingualPanelButtonsFunctional();
@@ -2086,4 +2106,3 @@ if (!window.isKeydownHandlerAttached) {
 
     window.isKeydownHandlerAttached = true;
 }
-
