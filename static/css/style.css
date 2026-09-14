@@ -228,7 +228,7 @@ button {
 	cursor: pointer;
 }
 
-.explorer-chosen-file {
+.explorer-selected-file {
 	background-color: var(--blue);
 }
 

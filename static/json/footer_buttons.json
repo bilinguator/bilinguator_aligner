@@ -55,7 +55,7 @@
         [
             "template:paragraph_number_inputs",
             "shift",
-            "delete_by_index"
+            "trash"
         ],
         [
             "focus",

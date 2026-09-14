@@ -39,11 +39,12 @@
     "switch_case": "Switch case (Ctrl+Q)",
     "img": "Illustration",
     "division": "Divide paragraph (Enter)",
+    "division_by_delimiter": "Divide by delimiter",
     "concatenation": "Concatenate paragraphs",
     "concatenation_space": "Concatenate paragraphs via space (Ctrl+Space)",
     "concatenation_delimiter": "Concatenate paragraphs via delimiter",
     "shift": "Shift paragraphs",
-    "delete_by_index": "Delete paragraphs by indexes",
+    "trash": "Delete paragraphs by indexes",
     "focus": "To current position",
     "bookmark": "Set bookmark (Ctrl+B)"
 }

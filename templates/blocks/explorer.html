@@ -17,7 +17,7 @@
     {% endfor %}
     
     {% for i in range(downstream_files|length) %}
-        <div class="explorer-element downstream-element{{ ' explorer-chosen-file' if original_path == downstream_files_absolute_paths[i] else '' }}" ondblclick="openBook('{{ downstream_files_absolute_paths[i] }}', '{{ side }}')">
+        <div class="explorer-element downstream-element{{ ' explorer-selected-file' if original_path == downstream_files_absolute_paths[i] else '' }}" ondblclick="openBook('{{ downstream_files_absolute_paths[i] }}', '{{ side }}')">
             <img class="explorer-img"
                 src="{{ url_for('static', filename=('img/file_selected.svg' if original_path == downstream_files_absolute_paths[i] else 'img/file.svg')) }}"
                 alt="File icon" />

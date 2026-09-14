@@ -1,4 +1,4 @@
 <svg width="13" height="16" viewBox="0 0 13 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M11 8L2.75 14.9282L2.75 1.0718L11 8Z" fill="#FA9038"/>
-<rect x="11" y="1" width="2" height="14" fill="#FA9038"/>
+<path d="M11 8L2.75 14.9282V1.0718L11 8Z" fill="#FA9038"/>
+<path d="M13 1H11V15H13V1Z" fill="#FA9038"/>
 </svg>
