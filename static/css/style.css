@@ -45,7 +45,7 @@ header {
 	height: var(--header-container-height);
 	background-color: var(--dark-blue);
 	display: flex;
-	justify-content: space-around;
+	justify-content: center;
 }
 
 a {
@@ -66,6 +66,7 @@ button {
     left: 6px;
     top: 6px;
 	cursor: pointer;
+	height: 25px;
 }
 
 .starting-message {
@@ -122,6 +123,10 @@ button {
 .book-panel-button-disabled {
 	cursor: not-allowed;
 	background-color: #937761;
+}
+
+.central-panel {
+	padding: 0 60px;
 }
 
 .central-panel .subpanel {
@@ -270,11 +275,11 @@ input::-moz-placeholder{
 }
 
 .home-screen-inner-container {
-	margin: 30px 0;
+	margin: 20px 0;
 }
 
 .home-screen-img {
-	width: 200px;
+	width: 230px;
 }
 
 .home-screen-message {
@@ -305,7 +310,7 @@ input::-moz-placeholder{
 }
 
 .storage-items {
-	margin-top: 50px;
+	margin-top: 30px;
 }
 
 .storage-items > div:first-of-type {
