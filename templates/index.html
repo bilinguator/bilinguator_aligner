@@ -1720,8 +1720,12 @@
             if (event.ctrlKey && event.code === 'Space' && !event.repeat) {
                 event.preventDefault();
 
-                if (getMode() === 2) {
+                const mode = getMode();
+
+                if (mode === 2) {
                     concatenateParagraphs(' ');
+                } else if (mode === 1) {
+                    applyToSelection(concatenateSelection, ' ');
                 }
             }
             
