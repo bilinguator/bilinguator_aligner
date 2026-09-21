@@ -2,6 +2,7 @@
 	--panel-button-width: 23px;
 	--paragraph-button-width: 15px;
 	--orange: #FA9038;
+	--dark-orange: #D56305;
 	--bookmark-red: #ED3E0D;
 	--blue: #222A35;
 	--dark-blue: #161C24;
@@ -116,8 +117,14 @@ button {
 	cursor: pointer;
 	border-radius: 2px;
 	padding: 0 5px;
-	background-color: #CB5F05;
+	background-color: var(--dark-orange);
 	color: white;
+	transition: 0.2s ease;
+
+}
+
+.book-panel-button:not(.book-panel-button-disabled):hover {
+	background-color: #9E4A04;
 }
 
 .book-panel-button-disabled {
@@ -172,7 +179,7 @@ button {
 
 .explorer-close-button {
 	position: absolute;
-    top: 5px;
+    top: 0px;
     right: 10px;
     color: var(--orange);
 	font-size: 20px;
@@ -185,7 +192,7 @@ button {
 .file-path-field {
 	background-color: var(--blue);
 	display: flex;
-    padding: 12px;
+    padding: 22px 12px 12px 12px;
 	overflow-x: scroll;
 	touch-action: none;
 	user-select: none;
@@ -204,6 +211,7 @@ button {
 .explorer-element {
 	display: flex;
 	align-items: center;
+	transition: 0.2s ease;
 }
 
 .explorer-img {
@@ -378,6 +386,11 @@ input::-moz-placeholder{
 	height: var(--paragraph-button-width);
 	width: var(--paragraph-button-width);
 	margin-top: 1px;
+	transition: 0.2s ease;
+}
+
+.paragraph-button:hover {
+	filter: brightness(70%);
 }
 
 .total-count {
@@ -403,6 +416,11 @@ input::-moz-placeholder{
 	background-color: var(--orange);
 	cursor: pointer;
 	text-align: center;
+	transition: 0.2s ease;
+}
+
+.paragraph-number:not(.paragraph-number-bookmark):hover {
+	background-color: var(--dark-orange);
 }
 
 .paragraph-number-bookmark {
@@ -411,6 +429,13 @@ input::-moz-placeholder{
 	background-color: var(--bookmark-red);
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% var(--paragraph-number-height), 0 100%);
 	z-index: 9996;
+}
+
+.paragraph-number-bookmark:hover {
+	background-color: var(--dark-orange);
+	clip-path: none;
+	margin-bottom: var(--paragraph-number-margin-bottom);
+	height: var(--paragraph-number-height);
 }
 
 textarea {
@@ -513,6 +538,19 @@ h1 {
 	display: inline-flex;
     align-items: center;
     justify-content: center;
+	border: 1px transparent solid;
+	transition: 0.2s ease;
+}
+
+.panel-button:hover {
+	border-left: 1px #50648c solid;
+	border-right: 1px var(--dark-blue) solid;
+
+	  box-shadow:
+    -1px -1px 0px 0px var(--dark-blue),
+     1px  1px 0px 0px var(--dark-blue),
+    -1px  1px 0px 0px var(--dark-blue),
+     1px -1px 0px 0px var(--dark-blue);
 }
 
 .panel-button-img {
@@ -587,6 +625,11 @@ h1 {
 	color: black;
 	font-size: 14px;
 	margin-top: 10px;
+	transition: 0.2s ease;
+}
+
+.screen-block-abort-button:hover {
+	background-color: var(--dark-orange);
 }
 
 .overlaying-panel {
@@ -740,27 +783,28 @@ h1 {
     right: 0;
 }
 
+:is(body, #sidebar, #monolingual-paragraph, .explorer) {
+	&::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
 
+    &::-webkit-scrollbar-track {
+        background-color: var(--blue);
+    }
 
-#sidebar::-webkit-scrollbar, #monolingual-paragraph::-webkit-scrollbar, .explorer::-webkit-scrollbar-webkit-scrollbar {
-	width: 12px;
-	height: 12px;
-}
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--orange);
+        border-radius: 7px;
+        border: 3px solid transparent;
+        background-clip: padding-box;
 
-#sidebar::-webkit-scrollbar-track, #monolingual-paragraph::-webkit-scrollbar-track, .explorer::-webkit-scrollbar-track {
-	background-color: var(--blue);
-}
+    }
 
-#sidebar::-webkit-scrollbar-thumb, #monolingual-paragraph::-webkit-scrollbar-thumb, .explorer::-webkit-scrollbar-thumb {
-	background-color: var(--orange);
-	border-radius: 7px;
-	border: 3px solid transparent; 
-	background-clip: padding-box;
-}
-
-#sidebar::-webkit-scrollbar-thumb:hover, #monolingual-paragraph::-webkit-scrollbar-thumb:hover, .explorer::-webkit-scrollbar-thumb:hover {
-	background-color: var(--orange);
-	cursor: ns-resize;
+	&:-webkit-scrollbar-thumb {
+		background-color: green;
+		cursor: ns-resize;
+	}
 }
 
 .sidebar-close-button {
