@@ -1,5 +1,5 @@
 :root {
-	--panel-button-width: 23px;
+	--panel-button-width: 20px;
 	--paragraph-button-width: 15px;
 	--orange: #FA9038;
 	--dark-orange: #D56305;
@@ -33,6 +33,7 @@ body {
 	flex-direction: column;
 	justify-content: space-between;
 	height: 100vh;
+	overflow-x: clip;
 }
 
 header {
@@ -161,6 +162,7 @@ button {
 	color: white;
 	overflow-y: scroll;
 	z-index: 9997;
+	outline: var(--dark-blue) 1px solid;
 }
 
 .explorer-left {
@@ -193,19 +195,24 @@ button {
 	background-color: var(--blue);
 	display: flex;
     padding: 22px 12px 12px 12px;
-	overflow-x: scroll;
-	touch-action: none;
-	user-select: none;
-	-ms-overflow-style: none;
-	scrollbar-width: none;
 }
 
 .file-path-field:hover {
 	cursor: ew-resize;
 }
 
-.file-path-field::-webkit-scrollbar {
-    display: none;
+:is(.header-container, .upper-panel, .footer, .file-path-field) {
+	& {
+		overflow-x: scroll;
+		touch-action: none;
+		user-select: none;
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 
 .explorer-element {
@@ -428,7 +435,7 @@ input::-moz-placeholder{
 	margin-bottom: 0;
 	background-color: var(--bookmark-red);
 	clip-path: polygon(0 0, 100% 0, 100% 100%, 50% var(--paragraph-number-height), 0 100%);
-	z-index: 9996;
+	z-index: 9995;
 }
 
 .paragraph-number-bookmark:hover {
@@ -462,6 +469,9 @@ h1 {
 	justify-content: space-between;
 	flex-direction: row;
 	bottom: 0px;
+	overflow-x: scroll;
+    overflow-y: hidden;
+	z-index: 9996;
 }
 
 .stats {
@@ -774,13 +784,14 @@ h1 {
 
 #sidebar {
 	background-color: var(--dark-blue);
-	width: 250px;
+	width: 400px;
 	text-align: left;
 	padding-bottom: 20px;
 	height: var(--working-area-height);
 	overflow-y: auto;
-	position: fixed;
+	position: relative;
     right: 0;
+	outline: var(--dark-blue) 1px solid;
 }
 
 :is(body, #sidebar, #monolingual-paragraph, .explorer) {
@@ -798,11 +809,10 @@ h1 {
         border-radius: 7px;
         border: 3px solid transparent;
         background-clip: padding-box;
-
     }
 
-	&:-webkit-scrollbar-thumb {
-		background-color: green;
+	&::-webkit-scrollbar-thumb {
+		background-color: var(--orange);
 		cursor: ns-resize;
 	}
 }

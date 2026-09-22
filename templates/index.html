@@ -196,7 +196,7 @@
             success: function (response) {
                 const mainArea = document.querySelector('.main-area');
                 mainArea.insertAdjacentHTML('afterbegin', response['template']);
-                makeFilePathFieldScrollable();
+                makeHorizontalFieldScrollable('.file-path-field');
 
                 if (getMode() == 0) {
                     document.querySelector('.explorer').classList.add('full-height-explorer');
@@ -413,37 +413,34 @@
     }
 
 
-    function makeFilePathFieldScrollable () {
-        const filePathFields = document.querySelectorAll('.file-path-field');
-        let isDragging = false;
-        let startX;
-        let scrollLeft;
-        let scrollTop;
-    
+    function makeHorizontalFieldScrollable (fieldClass) {
+        const filePathFields = document.querySelectorAll(fieldClass);
+
         filePathFields.forEach((element) => {
+            let isDragging = false;
+            let startX;
+            let scrollLeft;
+
             element.addEventListener('mousedown', (e) => {
+                const isInput = e.target.closest('textarea, input, [contenteditable="true"]');
+                if (isInput) return;
+
                 isDragging = true;
                 element.classList.add('dragging');
                 startX = e.pageX - element.offsetLeft;
                 scrollLeft = element.scrollLeft;
             });
-        });
-    
-        filePathFields.forEach((element) => {
+
             element.addEventListener('mouseleave', () => {
                 isDragging = false;
                 element.classList.remove('dragging');
             });
-        });
-    
-        filePathFields.forEach((element) => {
+
             element.addEventListener('mouseup', () => {
                 isDragging = false;
                 element.classList.remove('dragging');
             });
-        });
-    
-        filePathFields.forEach((element) => {
+
             element.addEventListener('mousemove', (e) => {
                 if (!isDragging) return;
                 e.preventDefault();
@@ -453,6 +450,10 @@
             });
         });
     }
+
+    makeHorizontalFieldScrollable('.header-container');
+    makeHorizontalFieldScrollable('.upper-panel');
+    makeHorizontalFieldScrollable('.footer');
     
 
     function reviveScripts (selector = 'script') {

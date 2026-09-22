@@ -10,3 +10,7 @@
 .paragraph-number {
 	color: var(--dark-blue);
 }
+
+.upper-panel, #monolingual-paragraph, .footer {
+	outline: var(--dark-blue) 1px solid;
+}
