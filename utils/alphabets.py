@@ -19,6 +19,7 @@ def get_alphabet (lang='en', all_scripts=False):
             content = file.read()
             file.close()
             return set(content)
+    
     alphabets = {
         # Afar
         'aa': 'ABTSECXKXDIQCRFGOLMNUWHY',
@@ -34,6 +35,8 @@ def get_alphabet (lang='en', all_scripts=False):
         'ab.gulia': 'აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰჶჷჳჲჾჿ',
         # Afrikaans
         'af': 'ABCDEFGHIJKLMNOPQRSTUVWXYZÊÔÛÎ',
+        # Altai
+        'alt': 'АБВГДЈЕЁЖЗИЙКЛМНҤОӦПРСТУӰФХЦЧШЩЪЫЬЭЮЯ',
         # Amharic
         'am': 'ሀሁሂሃሄህሆለሉሊላሌልሎሐሑሒሓሔሕሖመሙሚማሜምሞሠሡሢሣሤሥሦረሩሪራሬርሮሰሱሲሳሴስሶሸሹሺሻሼሽሾቀቁቂቃቄቅቆበቡቢባቤብቦተቱቲታቴትቶቸቹቺቻቼችቾኀኁኂኃኄኅኆነኑኒናኔንኖኘኙኚኛኜኝኞአኡኢኣኤእኦከኩኪካኬክኮኸኹኺኻኼኽኾወዉዊዋዌውዎዐዑዒዓዔዕዖዘዙዚዛዜዝዞዠዡዢዣዤዥዦየዩዪያዬይዮደዱዲዳዴድዶጀጁጂጃጄጅጆገጉጊጋጌግጎጠጡጢጣጤጥጦጨጩጪጫጬጭጮጰጱጲጳጴጵጶጸጹጺጻጼጽጾፀፁፂፃፄፅፆፈፉፊፋፌፍፎፐፑፒፓፔፕፖ',
         # Aragonese
@@ -75,9 +78,9 @@ def get_alphabet (lang='en', all_scripts=False):
         # Tibetan
         'bo': 'ༀ༁༂༃༄༅༆༇༈༉༊་༌།༎༏༐༑༒༓༔༕༖༗༘༙༚༛༜༝༞༟༠༡༢༣༤༥༦༧༨༩༪༫༬༭༮༯༰༱༲༳༴༵༶༷༸༹༺༻༼༽༾༿ཀཁགགྷངཅཆཇཉཊཋཌཌྷཎཏཐདདྷནཔཕབབྷམཙཚཛཛྷཝཞཟའཡརལཤཥསཧཨཀྵཪཫཬཱཱཱིིུུྲྀཷླྀཹེཻོཽཾཿ྄ཱྀྀྂྃ྅྆྇ྈྉྊྋྌྍྏྐྑྒྒྷྔྕྖྗྙྚྛྜྜྷྞྟྠྡྡྷྣྤྥྦྦྷྨྩྪྫྫྷྭྮྯྰྱྲླྴྵྶྷྸྐྵྺྻྼ྾྿࿀࿁࿂࿃࿄࿅࿆࿇࿈࿉࿊࿋࿌࿎࿏࿐࿑࿒࿓࿔࿕࿖࿗࿘࿙࿚',
         # Bosnian Cyrillic Script
-        'bs': 'АБВГДЂЕЖЗИЈКЛЉМCНЊОПРСТЋУФХЦЧЏШ',
+        'bs.cyrillic': 'АБВГДЂЕЖЗИЈКЛЉМCНЊОПРСТЋУФХЦЧЏШ',
         # Bosnian Latin Script
-        'bs.latin': 'ABVGDĐEŽZIJKLMNOPRSTĆUFHCČŠ',
+        'bs': 'ABVGDĐEŽZIJKLMNOPRSTĆUFHCČŠ',
         # Breton
         'br': 'ABCCʼDEFGHIJKLMNOPRSTUVWYZÂÊÎÔÛÙÜÑ',
         # Catalan
@@ -96,10 +99,12 @@ def get_alphabet (lang='en', all_scripts=False):
         'ch': 'AÅBCDEFGHIKLMNÑOPRSTUY',
         # Cimbrian
         'cim': 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÄÈÉÌÒÓÖÙÜ',
+        # Montenegrin
+        'cnr': 'ABVGDĐEŽZIJKLMNOPRSTĆUFHCČŠ',
         # Corsican
         'co': 'AÀBCDEÈFGHIÌÏJLMNOÒPQRSTUÙÜVZ',
         # Cree Latin Script
-        'cr': 'mnñńptchčksšryýwliīîuūûōôoeēêaāâ',
+        'cr': 'ACEHIKLMNOPRSTUWYÂÊÎÑÔÛÝĀČĒĪŃŌŠŪ',
         # Cree Eastern Syllabary
         'cr.eastern': 'ᐁᐃᐅᐊᐄᐆᐋᐯᐱᐳᐸᐲᐴᐹᑉᑌᑎᑐᑕᑏᑑᑖᑦᑫᑭᑯᑲᑮᑰᑳᒃᒉᒋᒍᒐᒌᒎᒑᒡᒣᒥᒧᒪᒦᒨᒫᒻᓀᓂᓄᓇᓃᓅᓈᓐᓭᓯᓱᓴᓰᓲᓵᔅᔐᔑᔓᔕᔒᔔᔖᔥᔦᔨᔪᔭᔩᔫᔮᔾᐤᓓᓕᓗᓚᓖᓘᓛᓪᕃᕆᕈᕋᕇᕉᕌᕐᕓᕕᕗᕙᕖᕘᕚᕝᕞᕠᕤᕦᕢᕥᕧᕪᐌᐎᐒᐗᐐᐔᐙᐤᐦ',
         # Cree Western Syllabary
@@ -218,6 +223,8 @@ def get_alphabet (lang='en', all_scripts=False):
         'ka.asomtavruli': 'ႠႡႢႣႤႥႦჁႧႨႩႪႫႬჂႭႮႯႰႱႲჃႭჃႳႴႵႶႷႸႹႺႻႼႽႾჄႿჀჅ',
         # Georgian Nuskhuri Script
         'ka.nuskhuri': 'ⴀⴁⴂⴃⴄⴅⴆⴡⴇⴈⴉⴊⴋⴌⴢⴍⴎⴏⴐⴑⴒⴣⴍⴣⴓⴔⴕⴖⴗⴘⴙⴚⴛⴜⴝⴞⴤⴟⴠⴥ',
+        # Kabyle
+        'kab': 'ABCČDḌEƐFGǦƔHḤIJKLMNOQRŘṚSṢTṬUWXYZẒ',
         # Kikuyu
         'ki': 'ABCDEGHIĨJKMNORTUŨWY',
         # Kazakh Cyrillic Script
@@ -321,7 +328,7 @@ def get_alphabet (lang='en', all_scripts=False):
         # Occitan
         'oc': 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÈÒÁÉÍÓÚÏÜÇ·',
         # Odia, Oriya
-        'or': '଼ୀଢଫଖଣମଳଓଲକୈଆଥୋଯଟୂ୍ଃବଅଛଶୱଇଈଜଗଋେଷୡାପଘୟଞିତୢୄଐଧଉଚଠ&ୃସୌନଭ̄ଙଡଝଔହୁଊଏଦଌରୣୠ',
+        'or': '଼ୀଢଫଖଣମଳଓଲକୈଆଥୋଯଟୂ୍ଃବଅଛଶୱଇଈଜଗଋେଷୡାପଘୟଞିତୢୄଐଧଉଚଠୃସୌନଭ̄ଙଡଝଔହୁଊଏଦଌରୣୠ',
         # Ossetian Cyrillic Script
         'os': 'АӔБВГДДЖЕЗИЙКЛМНОПРСТУФХЦЧЫЪ',
         # Ossetian Latin Script 1923-1938
@@ -348,6 +355,8 @@ def get_alphabet (lang='en', all_scripts=False):
         'rw': 'ABCDEFGHIJKMNOPRSTUVWYZ',
         # Sanskrit Devanagari Script
         'sa': 'वऑॶऔऎउओथठबपनछॳ़इतएमकखडअचयआॷलगशसहऊऒँॵॲजटऐफरईॴद',
+        # Yakut
+        'sah': 'АБВГҔДДьЕЁЖЗИЙКЛМНҤНьОӨПРСҺТУҮФХЦЧШЩЪЫЬЭЮЯ',
         # Sardinian
         'sc': 'ABCDEFGHIJKLMNOPRSTTUVXZÀÇÈÌÒÙ',
         # Northern Sámi
@@ -366,13 +375,15 @@ def get_alphabet (lang='en', all_scripts=False):
         'sn': 'ABCDEFGHIJKMNOPRSTUVWYZ',
         # Somali
         'so': 'ABCDDEFGHIJKKLMNOQRSTUWXYʼ',
+        # Somali Osmanya
+        'so.osmanya': '𐒀𐒁𐒂𐒃𐒄𐒅𐒆𐒇𐒈𐒉𐒌𐒊𐒋𐒍𐒎𐒏𐒐𐒑𐒒𐒔𐒘𐒚𐒙𐒖𐒗𐒕𐒓𐒝𐒛𐒜',
         # Albanian
         'sq': 'ABCÇDDEËFGHIJKLMNOPQRSTUVXYZ',
         # Serbian Cyrillic Script
         'sr': 'АБВГДЂЕЖЗИЈКЛЉМCНЊОПРСТЋУФХЦЧЏШ',
         # Serbian Latin Script
         'sr.latin': 'ABCČĆDĐEFGHIJKLMNOPRSŠTUVZŽ',
-        # Swazi, siSwati
+        # Swazi, Swati, siSwati
         'ss': 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
         # Sotho, Sesotho, Southern Sotho
         'st': 'ABDEFGHIJKLMNOPQRSTUWY',
@@ -402,6 +413,10 @@ def get_alphabet (lang='en', all_scripts=False):
         'tk.cyrillic': 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЧШЫҖҢҮӘӨ',
         # Tagalog
         'tl': 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ',
+        # Tagalog
+        'tl.baybayin': '̣̇ᜀᜁᜂᜃᜄᜅᜆᜇᜈᜉᜊᜋᜌᜍᜎᜏᜐᜑᜒᜓ᜔᜕◌',
+        # Klingon
+        'tlh': "'ABCDEGHIJLMNOPQRSTUVWY",
         # Tongan
         'to': 'AEFHIKLMNGOPSTUVʻ',
         # Turkish
@@ -465,4 +480,4 @@ def get_alphabet (lang='en', all_scripts=False):
                 result[key] = set(value)
         return result
     else:
-        return set(alphabets[lang])
+        return set(alphabets.get(lang, ''))

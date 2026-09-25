@@ -44,14 +44,15 @@ function updateLanguageAlphabet (lang = null) {
             lang: lang === null ? getLanguage() : lang
         }),
         success: function(response) {
+            const nonLang = '--';
             const lang = getLanguage();
-            const alphabet = [...response['alphabet']].sort((a, b) => a.localeCompare(b, lang)).join('');
+            const alphabet = lang == nonLang ? [] : [...new Set(response['alphabet'])].sort((a, b) => a.localeCompare(b, lang)).join('');
             document.getElementById('alphabet-textarea').value = alphabet;
             
             const text = document.getElementById('monolingual-paragraph').value.toUpperCase();
             
             const textCharacters = [...new Set(text)]
-                .sort((a, b) => a.localeCompare(b, lang))
+                .sort((a, b) => a.localeCompare(b, lang == nonLang ? 'en': lang))
                 .filter(char => char !== '\n')
                 .join('');
             document.getElementById('unique-characters-textarea').value = textCharacters;
@@ -85,7 +86,6 @@ function replaceByRegex (text, regexStr, oldStr, newStr) {
     
     if (!matches) return text;
 
-    // Получаем уникальные совпадения (аналог set() в Python)
     const uniqueHits = Array.from(new Set(matches));
 
     for (const hit of uniqueHits) {
@@ -200,12 +200,8 @@ function trimParagraphs (characters) {
     let text = paragraph.value;
 
     const escapedChars = characters.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    
-    // Create a regex to match leading and trailing target characters
-    // ^[...] matches at the start, [...]$ matches at the end
     const regex = new RegExp(`^[${escapedChars}]+|[${escapedChars}]+$`, 'g');
     
-    // Split into paragraphs, map over them to apply the regex, and rejoin
     paragraph.value = text.split('\n')
                           .map(paragraph => paragraph.replace(regex, ''))
                           .join('\n');
@@ -267,6 +263,7 @@ function updateHeadingExample () {
         'devanagari': '५',
         'bengali': '৫',
         'odia': '୫',
+        'osmania': '𐒥',
         'tamil': '௫',
         'telugu': '౫',
         'kannada': '೫',
@@ -279,7 +276,9 @@ function updateHeadingExample () {
         'burmese': '၅',
         'khmer': '၅',
         'mongolian': '᠕',
-        'limbu': '᥋'
+        'limbu': '᥋',
+        'adlam': '𞥕',
+        'nko': '߅',
     }[numbering];
 
     const chapterWord = document.getElementById('chapter-word-textarea').value;
@@ -341,6 +340,8 @@ function searchHeadingsByParameters (
         regex += '[০১২৩৪৫৬৭৮৯]+';
     } else if (numbering === 'odia') {
         regex += '[୦୧୨୩୪୫୬୭୮୯]+';
+    } else if (numbering === 'osmanya') {
+        regex += '[𐒠𐒡𐒢𐒣𐒤𐒥𐒦𐒧𐒨𐒩]+';
     } else if (numbering === 'tamil') {
         regex += '[௦௧௨௩௪௫௬௭௮௯]+';
     } else if (numbering === 'telugu') {
@@ -365,6 +366,10 @@ function searchHeadingsByParameters (
         regex += '[᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙]+';
     } else if (numbering === 'limbu') {
         regex += '[᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏]+';
+    } else if (numbering === 'adlam') {
+        regex += '[𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙]+';
+    } else if (numbering === 'nko') {
+        regex += '[߀߁߂߃߄߅߆߇߈߉]+';
     }
 
     if (numberingFirst) {
@@ -1187,8 +1192,8 @@ function updateTextQuotationMarks() {
         const textareasHTML = chunk
             .map(char => `<textarea class="${textareaClasses}" onclick="${textareaOnclick}" oncontextmenu="${textareaOncontextmenu}" readonly>${char}</textarea>`)
             .join('');
-
-        const containerHTML = `<div class="sidebar-horizontal-container sidebar-inner-horizontal-container">${textareasHTML}</div>`;
+            
+            const containerHTML = `<div class="sidebar-horizontal-container sidebar-inner-horizontal-container">${textareasHTML}</div>`;
         textQuotationMarksDiv.insertAdjacentHTML('beforeend', containerHTML);
     }
 }
@@ -1196,86 +1201,167 @@ function updateTextQuotationMarks() {
 
 function getLanguageQuotationMarks (lang) {
     const quotesMap = {
+        ab: [['«', '»']],
         af: [['“', '”'], ['„', '”'], ['‘', '’'], ['‚', '’']],
-        nl: [['“', '”'], ['„', '”'], ['‘', '’'], ['‚', '’']],
-        ar: [['«', '»'], ['”', '“']],
-        hy: [['«', '»']],
-        el: [['«', '»'], ['“', '”']],
-        fa: [['«', '»']],
-        io: [['«', '»'], ['‘', '’']],
-        kk: [['«', '»'], ['“', '”']],
-        km: [['«', '»'], ['“', '”']],
-        ps: [['«', '»']],
-        rm: [['«', '»'], ['‹', '›']],
-        ug: [['«', '»'], ['‹', '›']],
+        ak: [['“', '”'], ['‘', '’']],
+        alt: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
         am: [['«', '»'], ['“', '”'], ['‹', '›'], ['‘', '’']],
-        ti: [['«', '»'], ['“', '”'], ['‹', '›'], ['‘', '’']],
-        ca: [['«', '»'], ['“', '”'], ['‘', '’']],
-        es: [['«', '»'], ['“', '”'], ['‘', '’']],
-        eu: [['«', '»'], ['“', '”'], ['‘', '’']],
-        gl: [['«', '»'], ['“', '”'], ['‘', '’']],
-        it: [['«', '»'], ['“', '”'], ['‘', '’'], ['‹ ', ' ›']],
-        oc: [['«', '»'], ['“', '”']],
-        qu: [['«', '»'], ['“', '”']],
-        ru: [['«', '»'], ['“', '”'], ['„', '“'], ['‘', '’']],
+        an: [['«', '»'], ['“', '”'], ['‘', '’']],
+        ar: [['«', '»'], ['”', '“']],
+        as: [['“', '”'], ['‘', '’']],
+        ast: [['«', '»'], ['“', '”'], ['‘', '’']],
+        av: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        ay: [['“', '”'], ['‘', '’']],
         az: [['«', '»'], ['„', '“']],
+        ba: [['«', '»'], ['„', '“']],
         be: [['«', '»'], ['„', '“']],
-        no: [['«', '»'], ['„', '“'], ['‘', '’'], [',', '‘']],
-        uz: [['«', '»'], ['„', '“'], ['‚', '‘']],
         bg: [['„', '“'], ['«', '»'], ['’', '’'], ['‘', '’']],
-        et: [['„', '“'], ['«', '»']],
+        bi: [['“', '”'], ['‘', '’']],
+        bm: [['“', '”'], ['‘', '’'], ['«', '»']],
+        bn: [['“', '”'], ['‘', '’']],
+        bo: [['《', '》'], ['〈', '〉']],
+        br: [['«', '»']],
         bs: [['”', '”'], ['„', '”'], ['„', '“'], ['’', '’'], ['»', '«']],
+        ca: [['«', '»'], ['“', '”'], ['‘', '’']],
+        ce: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        cim: [['„', '“'], ['»', '«'], ['«', '»'], ['‚', '‘'], ['›', '‹'], ['“', '”']],
+        ch: [['“', '”']],
+        cnr: [['”', '”'], ['„', '”'], ['„', '“'], ['’', '’'], ['»', '«']],
+        co: [['« ', ' »']],
         cs: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
-        sk: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
-        sl: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        cv: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        cy: [['‘', '’'], ['“', '”']],
         da: [['»', '«'], ['“', '”'], ['”', '”'], ['„', '“'], ['›', '‹'], ['‘', '’'], ['’', '’']],
         de: [['„', '“'], ['»', '«'], ['«', '»'], ['‚', '‘'], ['›', '‹'], ['“', '”']],
-        cim: [['„', '“'], ['»', '«'], ['«', '»'], ['‚', '‘'], ['›', '‹'], ['“', '”']],
+        dv: [['”', '“'], ['’', '‘']],
+        ee: [['“', '”'], ['‘', '’']],
+        el: [['«', '»'], ['“', '”']],
         en: [['“', '”'], ['‘', '’']],
         eo: [['“', '”'], ['«', '»'], ['„', '“'], ['‘', '’'], ['‹', '›'], ['‚', '‘']],
+        es: [['«', '»'], ['“', '”'], ['‘', '’']],
+        et: [['„', '“'], ['«', '»']],
+        eu: [['«', '»'], ['“', '”'], ['‘', '’']],
+        fa: [['«', '»']],
+        ff: [['“', '”']],
         fi: [['”', '”'], ['»', '»'], ['’', '’']],
         fil: [['“', '”'], ['‘', '’']],
+        fj: [['“', '”'], ['‘', '’']],
+        fo: [['“', '”'], ['‘', '’']],
+        fr: [['« ', ' »'], ['«', '»'], ['“ ', ' ”'], ['“', '”'], ['‹ ', ' ›'], ['‹', '›'], ['‘ ', ' ’'], ['‘', '’']],
+        fy: [['“', '”'], ['‘', '’']],
         ga: [['“', '”'], ['‘', '’']],
-        hi: [['“', '”'], ['‘', '’']],
-        ia: [['“', '”'], ['‘', '’']],
-        lo: [['“', '”']],
-        mt: [['“', '”'], ['‘', '’']],
-        ta: [['“', '”'], ['‘', '’']],
-        th: [['“', '”'], ['‘', '’']],
-        ur: [['“', '”'], ['‘', '’']],
-        vi: [['“', '”'], ['«', '»']],
-        fr: [['« ', ' »'], ['“', '”'], ['«', '»'], ['‹ ', ' ›'], ['‘', '’']],
-        cy: [['‘', '’'], ['“', '”']],
         gd: [['‘', '’'], ['“', '”']],
-        he: [['"', '"'], ['”', '„'], ['\'', '\''], ['’', ',']],
+        gl: [['«', '»'], ['“', '”'], ['‘', '’']],
+        gn: [['«', '»'], ['“', '”']],
+        grc: [['⟩', ''], ['«', '»'], ['“', '”']],
+        he: [['"', '"'], ['\'', '\''], ['”', '„'], ['’', ','], ['”', '”']],
+        hi: [['“', '”'], ['‘', '’']],
         hr: [['„', '”'], ['»', '«'], ['‘', '’']],
         hu: [['„', '”'], ['»', '«']],
-        ro: [['„', '”'], ['«', '»']],
+        hy: [['«', '»']],
+        ia: [['“', '”'], ['‘', '’']],
         id: [['“', '”'], ['”', '”'], ['‘', '’'], ['’', '’']],
+        ie: [['«', '»'], ['„', '“']],
+        ig: [['“', '”'], ['‘', '’']],
+        ik: [['“', '”'], ['‘', '’']],
+        io: [['«', '»'], ['‘', '’']],
         is: [['„', '“'], ['‚', '‘']],
-        ka: [['„', '“']],
-        lt: [['„', '“'], ['‚', '‘']],
-        mk: [['„', '“'], ['’', '‘']],
-        sq: [['„', '“'], ['‘', '’']],
-        wen: [['„', '“'], ['‚', '‘']],
+        it: [['«', '»'], ['“', '”'], ['‘', '’'], ['‹ ', ' ›']],
+        la: [['«', '»'], ['“', '”'], ['„', '“']],
+        lb: [['„', '”'], ['«', '»']],
+        lg: [['“', '”'], ['‘', '’']],
+        li: [['“', '”'], ['„', '“']],
+        ln: [['« ', ' »'], ['«', '»'], ['“ ', ' ”'], ['“', '”']],
         ja: [['「', '」'], ['﹁', '﹂'], ['『', '』'], ['﹃', '﹄']],
         jbo: [['lu ', ' li’u'], ['lu “', '” li’u']],
-        kl: [['"', '"'], ['»', '«']],
-        ko: [['“', '”'], ['﹃', '﹄'], ['《', '》'], ['‘', '’'], ['﹁', '﹂'], ['〈', '〉']],
-        bo: [['《', '》'], ['〈', '〉']],
+        ka: [['„', '“'], ['«', '»']],
+        kab: [['« ', ' »'], ['«', '»'], ['“ ', ' ”'], ['“', '”']],
         khb: [['《', '》'], ['〈', '〉']],
-        tdd: [['《', '》'], ['〈', '〉']],
+        kk: [['«', '»'], ['“', '”']],
+        kl: [['"', '"'], ['»', '«']],
+        km: [['«', '»'], ['“', '”']],
+        kn: [['“', '”'], ['‘', '’']],
+        ko: [['“', '”'], ['﹃', '﹄'], ['《', '》'], ['‘', '’'], ['﹁', '﹂'], ['〈', '〉']],
+        ku: [['«', '»'], ['“', '”']],
+        kv: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        kw: [['“', '”'], ['‘', '’']],
+        ky: [['«', '»'], ['“', '”']],
+        lo: [['“', '”']],
+        lt: [['„', '“'], ['‚', '‘']],
         lv: [['“', '”'], ['„', '“']],
+        mg: [['«', '»']],
+        mh: [['“', '”'], ['‘', '’']],
+        mi: [['‘', '’'], ['“', '”']],
+        mk: [['„', '“'], ['’', '‘']],
+        ml: [['“', '”'], ['‘', '’']],
         mn: [['«', '»'], ['„', '“'], ['⟪', '⟫'], ['⟨', '⟩']],
+        mo: [['„', '”'], ['«', '»']],
+        mr: [['“', '”'], ['‘', '’']],
+        ms: [['“', '”'], ['‘', '’']],
+        mt: [['“', '”'], ['‘', '’']],
+        my: [['“', '”']],
+        ne: [['“', '”'], ['‘', '’']],
+        nl: [['“', '”'], ['„', '”'], ['‘', '’'], ['‚', '’']],
+        ny: [['“', '”']],
+        no: [['«', '»'], ['„', '“'], ['‘', '’'], [',', '‘']],
+        oc: [['«', '»'], ['“', '”']],
+        or: [['“', '”'], ['‘', '’']],
+        os: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        pa: [['“', '”'], ['‘', '’']],
         pl: [['„', '”'], ['«', '»'], ['»', '«'], ['‘', '’']],
+        ps: [['«', '»']],
         pt: [['“', '”'], ['«', '»'], ['‘', '’']],
-        tr: [['“', '”'], ['«', '»'], ['‘', '’'], ['‹', '›']],
+        qu: [['«', '»'], ['“', '”']],
+        rm: [['«', '»'], ['‹', '›']],
+        ro: [['„', '”'], ['«', '»']],
+        ru: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        rue: [['«', '»'], ['„', '“'], ['„', '”'], ['‘', '’']],
+        rw: [['« ', ' »'], ['«', '»'], ['‹ ', ' ›'], ['‹', '›']],
+        sa: [['“', '”'], ['‘', '’']],
+        sah: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        sc: [['«', '»'], ['“', '”'], ['‘', '’']],
+        se: [['«', '»'], ['“', '”']],
+        sg: [['« ', ' »'], ['«', '»'], ['“ ', ' ”'], ['“', '”'], ['‹ ', ' ›'], ['‹', '›'], ['‘ ', ' ’'], ['‘', '’']],
+        si: [['“', '”'], ['‘', '’']],
+        sk: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        sl: [['„', '“'], ['»', '«'], ['‚', '‘'], ['›', '‹']],
+        sm: [['“', '”'], ['‘', '’']],
+        sn: [['“', '”'], ['‘', '’']],
+        so: [['“', '”'], ['‘', '’']],
+        sq: [['„', '“'], ['‘', '’']],
         sr: [['„', '”'], ['„', '“'], ['»', '«'], ['’', '’']],
+        st: [['“', '”'], ['‘', '’']],
         sv: [['”', '”'], ['»', '»'], ['«', '«'], ['’', '’']],
+        sw: [['“', '”'], ['‘', '’']],
+        ta: [['“', '”'], ['‘', '’']],
+        tdd: [['《', '》'], ['〈', '〉']],
+        te: [['“', '”'], ['‘', '’']],
+        tg: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        ti: [['«', '»'], ['“', '”'], ['‹', '›'], ['‘', '’']],
+        tk: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        tl: [['“', '”'], ['‘', '’']],
+        th: [['“', '”'], ['‘', '’']],
+        to: [['“', '”'], ['‘', '’']],
+        tr: [['“', '”'], ['«', '»'], ['‘', '’'], ['‹', '›']],
+        tt: [['«', '»'], ['„', '“'], ['“', '”'], ['‘', '’']],
+        tw: [['“', '”'], ['‘', '’']],
+        ty: [['«', '»'], ['“', '”']],
+        ug: [['«', '»'], ['‹', '›']],
         uk: [['«', '»'], ['„', '“'], ['„', '”'], ['‘', '’']],
-        zh: [['「', '」'], ['﹁', '﹂'], ['“', '”'], ['﹃', '﹄'], ['『', '』'], ['‘', '’']]
+        ur: [['“', '”'], ['‘', '’']],
+        uz: [['«', '»'], ['„', '“'], ['‚', '‘']],
+        ve: [['“', '”'], ['‘', '’']],
+        vi: [['“', '”'], ['«', '»']],
+        vo: [['„', '“']],
+        wa: [['«', '»'], ['« ', ' »']],
+        wen: [['„', '“'], ['‚', '‘']],
+        wo: [['« ', ' »'], ['«', '»']],
+        yi: [['"', '"'], ['\'', '\''], ['”', '„'], ['’', ','], ['”', '”']],
+        yo: [['“', '”'], ['‘', '’']],
+        zh: [['「', '」'], ['﹁', '﹂'], ['“', '”'], ['﹃', '﹄'], ['『', '』'], ['‘', '’']],
+        zu: [['“', '”'], ['‘', '’']]
     };
-
+    
     return quotesMap[lang] || [];
 }
 
@@ -1288,18 +1374,17 @@ function updateLanguageQuotationMarks () {
     const languageQuotationMarks = getLanguageQuotationMarks(lang);
 
     if (!languageQuotationMarks.length) {
+        const textareaHTML = '<p class="sidebar-message">No quotation marks available!</p>';
+        languageQuotationMarksDiv.insertAdjacentHTML('beforeend', textareaHTML);
         return;
     }
 
     const textareaClasses = 'sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly sidebar-margin-left-textarea';
 
     for (let quotes of languageQuotationMarks) {
-        let regex = `(${escapeRegExp(quotes[0])})|(${escapeRegExp(quotes[1])})`;
-        
         const textareaOnclick = `updateReplaceQuotationMarks('${quotes[0]}', '${quotes[1]}');`;
         const textareaHTML = `<textarea class="${textareaClasses}" onclick="${textareaOnclick}" readonly>${quotes.join('')}</textarea>`
         languageQuotationMarksDiv.insertAdjacentHTML('beforeend', textareaHTML);
-    
     }
 
     updateReplaceQuotationMarks(languageQuotationMarks[0][0], languageQuotationMarks[0][1]);
@@ -1403,7 +1488,7 @@ function findQuoteAlternationMismatch () {
                     expected = char === quote1 ? quote2 : quote1;
                 } else {
                     mismatchIndex = i;
-                    return true; // Alternation broken
+                    return true;
                 }
             }
         }
@@ -1568,7 +1653,6 @@ function processText (url, message = null) {
 
 
 function dotUnambiguousYos () {
-    // dotAmbiguousYos(switchMode = false, quiet = true);
     processText('/dot_unambiguous_yos', 'Dotting unambiguous Ё’s in progress…')
 }
 
@@ -1596,77 +1680,68 @@ function unescapeUnambiguousYes (message) {
 
 
 function generateYoRegex (yoWords) {
-  const prefixToSuffixes = new Map();
-  const letterBoundary = '[а-яА-ЯёЁ]';
+    const prefixToSuffixes = new Map();
+    const letterBoundary = '[а-яА-ЯёЁ]';
 
-  // Делает подстроку регистронезависимой без использования флага 'i'
-  // Пример: "бер" -> "[бБ][еЕ][рР]"
-  const makeCaseInsensitive = (str) => {
-    return str
-      .split('')
-      .map((char) => {
-        const lower = char.toLowerCase();
-        const upper = char.toUpperCase();
-        if (lower !== upper) {
-          return `[${lower}${upper}]`;
+    const makeCaseInsensitive = (str) => {
+        return str
+            .split('')
+            .map((char) => {
+                const lower = char.toLowerCase();
+                const upper = char.toUpperCase();
+                if (lower !== upper) {
+                    return `[${lower}${upper}]`;
+                }
+                return escapeRegExp(char);
+            })
+            .join('');
+    };
+
+    for (const word of yoWords) {
+        const trimmed = word.trim();
+        const yoIndex = trimmed.search(/[ёЁ]/);
+
+        if (yoIndex === -1) continue;
+
+        const prefix = trimmed.slice(0, yoIndex);
+        const suffix = trimmed.slice(yoIndex + 1);
+
+        if (!prefixToSuffixes.has(prefix)) {
+            prefixToSuffixes.set(prefix, new Set());
         }
-        return escapeRegExp(char);
-      })
-      .join('');
-  };
-
-  // 1. Разбираем слова (ищем и 'ё', и 'Ё')
-  for (const word of yoWords) {
-    const trimmed = word.trim();
-    // Ищем индекс первой 'ё' или 'Ё'
-    const yoIndex = trimmed.search(/[ёЁ]/);
-    if (yoIndex === -1) continue;
-
-    const prefix = trimmed.slice(0, yoIndex);
-    const suffix = trimmed.slice(yoIndex + 1);
-
-    if (!prefixToSuffixes.has(prefix)) {
-      prefixToSuffixes.set(prefix, new Set());
-    }
-    prefixToSuffixes.get(prefix).add(suffix);
-  }
-
-  const branches = [];
-
-  // 2. Собираем ветки
-  for (const [prefix, suffixesSet] of prefixToSuffixes.entries()) {
-    const suffixes = Array.from(suffixesSet).sort();
-    
-    // Делаем префикс регистронезависимым
-    const ciPrefix = makeCaseInsensitive(prefix);
-
-    // Проверка начала слова
-    const lookbehind = prefix
-      ? `(?<=(?<!${letterBoundary})${ciPrefix})`
-      : `(?<!${letterBoundary})`;
-
-    // Анализ суффиксов
-    const hasEmpty = suffixes.includes('');
-    const nonEmpty = suffixes
-      .filter((s) => s !== '')
-      .map(makeCaseInsensitive); // Делаем суффиксы регистронезависимыми
-
-    let sufPattern = '';
-    if (nonEmpty.length === 1) {
-      sufPattern = hasEmpty ? `${nonEmpty[0]}?` : nonEmpty[0];
-    } else if (nonEmpty.length > 1) {
-      sufPattern = `(?:${nonEmpty.join('|')})`;
-      if (hasEmpty) sufPattern += '?';
+        prefixToSuffixes.get(prefix).add(suffix);
     }
 
-    // Проверка конца слова
-    const lookahead = `(?=${sufPattern}(?!${letterBoundary}))`;
+    const branches = [];
 
-    // Ищем и 'е', и 'Е'
-    branches.push(`${lookbehind}[еЕ]${lookahead}`);
-  }
+    for (const [prefix, suffixesSet] of prefixToSuffixes.entries()) {
+        const suffixes = Array.from(suffixesSet).sort();
+        
+        const ciPrefix = makeCaseInsensitive(prefix);
 
-  return `(?:${branches.join('|')})`;
+        const lookbehind = prefix
+            ? `(?<=(?<!${letterBoundary})${ciPrefix})`
+            : `(?<!${letterBoundary})`;
+
+        const hasEmpty = suffixes.includes('');
+        const nonEmpty = suffixes
+            .filter((s) => s !== '')
+            .map(makeCaseInsensitive);
+
+        let sufPattern = '';
+        if (nonEmpty.length === 1) {
+            sufPattern = hasEmpty ? `${nonEmpty[0]}?` : nonEmpty[0];
+        } else if (nonEmpty.length > 1) {
+            sufPattern = `(?:${nonEmpty.join('|')})`;
+            if (hasEmpty) sufPattern += '?';
+        }
+
+        const lookahead = `(?=${sufPattern}(?!${letterBoundary}))`;
+
+        branches.push(`${lookbehind}[еЕ]${lookahead}`);
+    }
+
+    return `(?:${branches.join('|')})`;
 }
 
 
@@ -2045,7 +2120,7 @@ if (!window.isKeydownHandlerAttached) {
         }
     
         if (isAltUp) {
-            if (lineStart === 0) return; // Уже первая строка
+            if (lineStart === 0) return;
             e.preventDefault();
     
             const prevLineStart = value.lastIndexOf('\n', lineStart - 2) + 1;

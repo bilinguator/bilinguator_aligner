@@ -33,7 +33,7 @@ DARK_MODE = CONFIG.get('dark_mode', 'no')
 STORAGE_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/storage'
 
 LANGUAGES_JSON_PATH = os.path.normpath(f'{SCRIPT_DIRECTORY}/static/json/languages.json')
-with open(LANGUAGES_JSON_PATH) as file:
+with open(LANGUAGES_JSON_PATH, 'r', encoding='utf-8') as file:
     languages = json.load(file)
     languages = sorted(languages.items(), key=lambda item: item[1])
     LANGUAGES = dict(languages)

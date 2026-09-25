@@ -794,7 +794,7 @@ h1 {
 	outline: var(--dark-blue) 1px solid;
 }
 
-:is(body, #sidebar, #monolingual-paragraph, .explorer) {
+:is(body, #sidebar, #monolingual-paragraph, .explorer, .sidebar-multiline-textarea, .sidebar-small-multiline-textarea) {
 	&::-webkit-scrollbar {
         width: 12px;
         height: 12px;
@@ -936,6 +936,7 @@ h1 {
 
 
 .paragraph[lang="ar"],
+.paragraph[lang="dv"],
 .paragraph[lang="fa"],
 .paragraph[lang="he"],
 .paragraph[lang="ug"],
