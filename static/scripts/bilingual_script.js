@@ -190,34 +190,20 @@ function concatenateParagraphs (separator = '') {
         return;
     }
 
-    let positionInText = getPositionInText();
     const side = getCurrentParagraphSide();
     const textNumber = side === 'left' ? '1' : '2';
-    let text = sessionStorage['text' + textNumber];
+    let text = sessionStorage['text' + textNumber].split('\n');
+
+    const currentParagraphNumber = getCurrentParagraphNumber() - 1;
     
-    for (const char of text.slice(positionInText)) {
-        if (char == '\n') {
-            text = text.slice(0, positionInText) + separator + text.slice(positionInText + 1);
-            sessionStorage['text' + textNumber] = text.trimRight();
+    text[currentParagraphNumber] += separator + text[currentParagraphNumber + 1];
+    text.splice(currentParagraphNumber + 1, 1);
 
-            const oppositeTextNumber = textNumber == '1' ? '2' : '1';
-            sessionStorage['text' + oppositeTextNumber] = sessionStorage['text' + oppositeTextNumber].trimRight();
-            sessionStorage[side + 'FileChanged'] = 'true';
+    sessionStorage['text' + textNumber] = text.join('\n');
 
-            equalizeParagraphCountsInTexts();
-            rerenderAllByTexts();
-            enableSaveButtons(side);
-            
-            break
-        };
-        
-        positionInText++;
-    }
-}
-
-
-function focusParagraph () {
-
+    equalizeParagraphCountsInTexts();
+    rerenderAllByTexts();
+    enableSaveButtons(side);
 }
 
 

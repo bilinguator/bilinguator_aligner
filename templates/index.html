@@ -545,12 +545,6 @@
            }
         }
 
-        // for (const paramName in ['text1_path', 'text2_path', 'lang1', 'lang2', 'page']) {
-        //     if (queryParameters[paramName]) {
-        //         setURLParameter(paramName, queryParameters[paramName]);
-        //     }
-        // }
-
         $.ajax({
             url: '/',
             type: 'POST',
@@ -560,7 +554,6 @@
             contentType: 'application/json;charset=UTF-8',
             data: JSON.stringify(queryParameters),
             success: function (response) {
-
                 document.documentElement.innerHTML = response;
                 reviveScripts();
             },
