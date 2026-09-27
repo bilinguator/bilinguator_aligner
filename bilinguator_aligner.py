@@ -447,9 +447,9 @@ def index():
         lang2 = request.json.get('lang2', guess_lang(text2_path))
 
         lang1 = request.json.get('lang1', '--')
-        lang1 = guess_lang(text1_path) if lang1 == '--' else 'es'
+        lang1 = guess_lang(text1_path) if lang1 == '--' else lang1
         lang2 = request.json.get('lang2', '--')
-        lang2 = guess_lang(text2_path) if lang2 == '--' else 'en'
+        lang2 = guess_lang(text2_path) if lang2 == '--' else lang2
 
         page = request.json.get('page', -1)
     
