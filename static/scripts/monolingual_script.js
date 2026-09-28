@@ -941,10 +941,6 @@ function removeLinesByHitsInTextarea (textareaID) {
     const textarea = document.getElementById(textareaID);
     let hits = textarea.value.split('\n');
 
-    if (hits === '') {
-        return;
-    }
-
     const paragraph = document.getElementById('monolingual-paragraph');
 
     paragraph.value = paragraph.value
@@ -1005,6 +1001,12 @@ function removeRepeatedLines () {
     enableMonolingualChangeStatus();
 
     toCurrentPosition(currentPosition);
+}
+
+
+function removeEmptyLines () {
+    document.getElementById('repeated-lines-textarea').value = '';
+    removeRepeatedLines();
 }
 
 
