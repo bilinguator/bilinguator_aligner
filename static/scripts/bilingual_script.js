@@ -1,33 +1,63 @@
-function fixTextAreas () {
-    let paragraphs = document.querySelectorAll('.paragraph');
-    
+function fixTextAreas(targetParagraph) {
     function fixTextareaSize(textarea) {
         textarea.style.height = '0px';
         textarea.style.height = textarea.scrollHeight + 2 + 'px';
     }
-    
-    ~function () {
-        for (let i = 0; i < paragraphs.length; i++) {
-            paragraphs[i].addEventListener('input', function (e) {
-                fixTextareaSize(e.target)
-            });
-            fixTextareaSize(paragraphs[i]);
+
+    const leftParagraphs = document.querySelectorAll('.paragraph-left');
+    const rightParagraphs = document.querySelectorAll('.paragraph-right');
+    const paragraphCouples = document.querySelectorAll('.paragraph-couple');
+
+    function syncCouple(i) {
+        const left = leftParagraphs[i];
+        const right = rightParagraphs[i];
+        const couple = paragraphCouples[i];
+
+        if (!left || !right) return;
+
+        left.style.height = 'auto';
+        right.style.height = 'auto';
+
+        fixTextareaSize(left);
+        fixTextareaSize(right);
+
+        const leftTextarea = left.tagName === 'TEXTAREA' ? left : left.querySelector('textarea');
+        const rightTextarea = right.tagName === 'TEXTAREA' ? right : right.querySelector('textarea');
+        if (leftTextarea) fixTextareaSize(leftTextarea);
+        if (rightTextarea) fixTextareaSize(rightTextarea);
+
+        const leftH = left.offsetHeight;
+        const rightH = right.offsetHeight;
+        const coupleH = couple ? couple.offsetHeight : 0;
+
+        const maxH = Math.max(leftH, rightH, coupleH);
+
+        left.style.height = maxH + 'px';
+        right.style.height = maxH + 'px';
+    }
+
+    if (targetParagraph) {
+        let index = Array.from(leftParagraphs).indexOf(targetParagraph);
+        if (index === -1) {
+            index = Array.from(rightParagraphs).indexOf(targetParagraph);
         }
-    }()
 
-    let leftParagraphs = document.querySelectorAll('.paragraph-left');
-    let rightParagraphs = document.querySelectorAll('.paragraph-right');
-    let paragraphCouples = document.querySelectorAll('.paragraph-couple');
+        if (index === -1 && targetParagraph.closest) {
+            const parentLeft = targetParagraph.closest('.paragraph-left');
+            const parentRight = targetParagraph.closest('.paragraph-right');
+            if (parentLeft) index = Array.from(leftParagraphs).indexOf(parentLeft);
+            if (parentRight) index = Array.from(rightParagraphs).indexOf(parentRight);
+        }
 
-    for (let i = 0; i < leftParagraphs.length; i++) {
-        let leftParagraphHeight = leftParagraphs[i].offsetHeight;
-        let rightParagraphHeight = rightParagraphs[i].offsetHeight;
-        let paragraphCoupleHeight = paragraphCouples[i].offsetHeight;
-
-        let maximalHeight = Math.max(leftParagraphHeight, rightParagraphHeight, paragraphCoupleHeight);
-        
-        leftParagraphs[i].style.height = maximalHeight + 'px';
-        rightParagraphs[i].style.height = maximalHeight + 'px';
+        if (index !== -1) {
+            syncCouple(index);
+        } else {
+            console.warn('Specified paragraph does not belong to either `.paragraph-left` or `.paragraph-right`.');
+        }
+    } else {
+        for (let i = 0; i < leftParagraphs.length; i++) {
+            syncCouple(i);
+        }
     }
 }
 
@@ -135,6 +165,9 @@ function getCurrentParagraphSide () {
 
 
 function equalizeParagraphCountsInTexts () {
+    sessionStorage.text1 = sessionStorage.text1.replace(/\s+$/, '');
+    sessionStorage.text2 = sessionStorage.text2.replace(/\s+$/, '');
+
     const lineBreaksInText1 = countSubstrings(sessionStorage.text1, '\n');
     const lineBreaksInText2 = countSubstrings(sessionStorage.text2, '\n');
 
@@ -891,4 +924,4 @@ makeIllustrationPreviewsFunctional();
 
 
 equalizeParagraphCountsInTexts();
-window.onresize = fixTextAreas;
+window.onresize = () => fixTextAreas();

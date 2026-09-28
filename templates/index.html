@@ -766,6 +766,13 @@
         });
     
     
+
+    }
+
+    makeSessionStorageFunctional();
+
+
+    function makeParagraphsFunctional () {
         document.querySelectorAll('.paragraph').forEach((paragraph) => {
             paragraph.addEventListener('input', () => {
                 if (paragraph.id == 'monolingual-paragraph') {
@@ -779,12 +786,13 @@
                     sessionStorage[side + 'FileChanged'] = 'true';
                     updateTextsInSessionStorage(side);
                     enableSaveButtons(side);
+                    fixTextAreas(paragraph);
                 }
             });
         });
     }
 
-    makeSessionStorageFunctional();
+    makeParagraphsFunctional();
 
 
     function makeSaveBookButtonsFunctional () {
