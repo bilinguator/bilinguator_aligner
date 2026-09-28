@@ -360,14 +360,14 @@ input::-moz-placeholder{
 
 .paragraph-couple {
 	display: flex;
-	flex-direction: raw;
+	flex-direction: row;
 	align-items: stretch;
 	width: 100%;
 }
 
 .left, .right {
 	display: flex;
-	flex-direction: raw;
+	flex-direction: row;
 	margin: 3px;
     flex-basis: 50%;
 	align-self: stretch;
