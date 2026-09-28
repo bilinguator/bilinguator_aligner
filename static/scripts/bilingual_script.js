@@ -517,6 +517,8 @@ function mojify () {
 
             updateTextsInSessionStorage('both');
             enableSaveButtons('both');
+            sessionStorage['leftFileChanged'] = 'true';
+            sessionStorage['rightFileChanged'] = 'true';
             fixTextAreas();
         },
         error: function(xhr, status, error) {
@@ -548,7 +550,6 @@ function demojify (withMessage = false) {
             text2: sessionStorage.text2,
         }),
         success: function (response) {
-            console.log(response);
             sessionStorage.text1 = response['text1'];
             sessionStorage.text2 = response['text2'];
             updateTextOnScreen();
