@@ -158,7 +158,7 @@ def get_alphabet (lang='en', all_scripts=False):
         # Faroese
         'fo': 'AÁBDÐEFGHIÍJKLMNOÓPRSTUÚVYÝÆØ',
         # French
-        'fr': 'ABCDEFGHIJKLMNOPQRSTUVWXYZÉÂÊÎÔÛÀÈÙËÏÜŸÇ',
+        'fr': 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÂÇÈÉÊËÎÏÔÙÛÜŒŸ',
         # Western Frisian
         'fy': 'AÂBCDEÊÉFGHIYJKLMNOÔPQRSTUÛÚVWXZŒ',
         # Irish, Gaelic
