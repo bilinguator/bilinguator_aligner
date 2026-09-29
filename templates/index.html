@@ -66,6 +66,27 @@
         navigator.clipboard.writeText(text);
     }
 
+
+    function setProgressPercent () {
+        if (getMode() !== 2) {
+            return;
+        }
+
+        const percentProgress = document.querySelector('.percent');
+
+        const minPercent = parseFloat(percentProgress.getAttribute('min'));
+        const maxPercent = parseFloat(percentProgress.getAttribute('max'));
+
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+        const value = minPercent + (maxPercent - minPercent) * progress;
+
+        percentProgress.textContent = Math.round(value) + '%';
+    }
+
+
     function makeProgressFunctional () {
         const percentProgress = document.querySelector('.percent');
     
@@ -95,19 +116,7 @@
             });
 
         {% elif mode == '2' %}
-            document.addEventListener('scroll', () => {
-    
-                const minPercent = parseFloat(percentProgress.getAttribute('min'));
-                const maxPercent = parseFloat(percentProgress.getAttribute('max'));
-    
-                const scrollTop = window.scrollY || document.documentElement.scrollTop;
-                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
-    
-                const value = minPercent + (maxPercent - minPercent) * progress;
-    
-                percentProgress.textContent = Math.round(value) + '%';
-            });
+            document.addEventListener('scroll', setProgressPercent);
         {% endif %}
     }
 
@@ -522,6 +531,7 @@
                 sessionStorage.leftFileChanged = 'false';
                 sessionStorage.rightFileChanged = 'false';
                 reviveScripts();
+                setProgressPercent();
             },
             error: function(xhr, status, error) {
                 console.error('AJAX request failed:', status, error);
@@ -556,6 +566,7 @@
             success: function (response) {
                 document.documentElement.innerHTML = response;
                 reviveScripts();
+                setProgressPercent();
             },
             error: function(xhr, status, error) {
                 console.error('AJAX request failed:', status, error);
