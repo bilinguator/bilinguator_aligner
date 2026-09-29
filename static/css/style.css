@@ -195,6 +195,7 @@ button {
 	background-color: var(--blue);
 	display: flex;
     padding: 22px 12px 12px 12px;
+	outline: var(--dark-blue) 1px solid;
 }
 
 .file-path-field:hover {
@@ -241,6 +242,7 @@ button {
 .downstream-element {
 	height: 40px;
 	padding-left: 40px;
+	outline: var(--dark-blue) 1px solid;
 }
 
 .downstream-element:hover {
@@ -587,7 +589,6 @@ h1 {
 	text-align: left;
 	font-size: 14px;
 	height: 100%;
-	/* min-height: 3em; */
 	padding: 10px;
 	align-self: stretch;
 	overflow: auto;
