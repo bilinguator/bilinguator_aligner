@@ -912,6 +912,17 @@ def rename_illustrations():
     return jsonify({'status': 'success'})
 
 
+@app.route('/remove_illustration', methods=['POST'])
+def remove_illustration():
+    illustration_path = SCRIPT_DIRECTORY + str(request.json.get('illustration_path'))
+
+    if os.path.isfile(illustration_path):
+        os.remove(illustration_path)
+        return jsonify({'status': 'success'})
+    
+    return jsonify({'status': 'error', 'message': 'File not found'}), 404
+
+
 @app.route('/dot_unambiguous_yos', methods=['GET', 'POST'])
 def dot_unambiguous_yos():
     text = request.json.get('text')

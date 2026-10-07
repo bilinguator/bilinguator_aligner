@@ -1298,6 +1298,14 @@
         if (panel) {
             panel.remove();
         }
+
+        if (panelID === 'illustrations-renaming-panel') {
+            document.querySelectorAll('.paragraph').forEach((paragraph) => {
+                insertIllustrationPreview(paragraph);
+            });
+
+            reloadCoverAndIllustrations();
+        }
     }
 
 

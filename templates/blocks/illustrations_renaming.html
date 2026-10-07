@@ -15,6 +15,12 @@
                 <input class="illustration-name" type="text" value="{{ illustration_name }}" data-original-name="{{ illustration_name }}">
                 <p class="illustration-extension">.png</p>
             </div>
+
+            <img src="{{ url_for('static', filename='img/trash.svg') }}"
+              class="illustrations-delete-button"    
+              alt="Remove"
+              title="Remove"
+              onclick="this.parentElement.remove();removeIllustration(`{{ url_for('static', filename='storage/' + project + '/illustrations/' + illustration_name +'.png') }}`)">
         </div>
     {% endfor %}
     </div>

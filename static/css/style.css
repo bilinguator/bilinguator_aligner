@@ -357,8 +357,18 @@ input::-moz-placeholder{
 	font-size: 12px;
 }
 
-.storage-item-delete-button {
+.storage-item-delete-button, .illustrations-delete-button {
 	width: 20px;
+}
+
+.illustrations-delete-button {
+	margin-left: 30px;
+	cursor: pointer;
+	transition: 0.2s ease;
+}
+
+.illustrations-delete-button:hover {
+	filter: brightness(70%);
 }
 
 .paragraph-couple {
@@ -796,7 +806,7 @@ h1 {
 	outline: var(--dark-blue) 1px solid;
 }
 
-:is(body, #sidebar, #monolingual-paragraph, .explorer, .sidebar-multiline-textarea, .sidebar-small-multiline-textarea) {
+:is(body, #sidebar, #monolingual-paragraph, .explorer, .sidebar-multiline-textarea, .sidebar-small-multiline-textarea, #illustrations-renaming-panel) {
 	&::-webkit-scrollbar {
         width: 12px;
         height: 12px;

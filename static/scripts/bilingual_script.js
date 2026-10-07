@@ -842,6 +842,29 @@ function sortIllustrations () {
 }
 
 
+function removeIllustration (illustrationPath) {
+    $.ajax({
+        url: '/remove_illustration',
+        type: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        contentType: 'application/json;charset=UTF-8',
+        data: JSON.stringify({
+            illustration_path: illustrationPath,
+        }),
+        success: function (response) {
+            console.log(`Illustration removed: ${illustrationPath}`);
+        },
+        error: function(xhr, status, error) {
+            showMessage(`Error status: ${status}. ${error}.`);
+            console.error('AJAX request failed:', status, error);
+            console.error('XHR object:', xhr);
+        },
+    });
+}
+
+
 function renameIllustrations () {
     const illustrationNames = document.querySelectorAll('.illustration-name');
     let illustrationRenaming = Array();
@@ -908,6 +931,39 @@ function insertIllustrationPreview (paragraph) {
     const illustrationHTML = `<img class="illustration-preview" src="${illustrationPath}">`;
 
     paragraph.insertAdjacentHTML('afterend', illustrationHTML);
+}
+
+
+function reloadIllustration(imgElement, errorAction = 'placeholder') {
+    imgElement.onerror = function() {
+        if (errorAction === 'placeholder') {
+            this.src = this.src;
+            this.onerror = null;
+        } else if (errorAction === 'remove') {
+            this.remove();
+        }
+    };
+
+    const currentSrc = imgElement.src.split('?')[0];
+    imgElement.src = currentSrc + '?t=' + new Date().getTime();
+}
+
+
+function reloadCoverAndIllustrations () {
+    updateCover();
+    
+    document.querySelectorAll('.illustration-preview').forEach((illustration) =>{
+        reloadIllustration(illustration, errorAction = 'placeholder');
+    });
+}
+
+
+function updateCover () {
+    const coverPreview = document.querySelector('.cover-preview');
+
+    if (coverPreview) {
+        reloadIllustration(coverPreview, errorAction = 'remove');
+    }
 }
 
 
