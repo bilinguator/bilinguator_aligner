@@ -1,4 +1,5 @@
 SIDEBAR_BUTTON_HTML = '<button class="sidebar-close-button" onclick="showSidebar(false)">×</button>';
+sessionStorage.removeItem('sidebarTemplate');
 
 function escapeRegExp (str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
