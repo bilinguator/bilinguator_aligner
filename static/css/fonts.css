@@ -1,0 +1,358 @@
+@font-face {
+  font-family: 'Noto Sans Local';
+  src: url('/static/fonts/noto-sans-v42-cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Arabic Local';
+  src: url('/static/fonts/noto-sans-arabic-v33-arabic-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Armenian Local';
+  src: url('/static/fonts/noto-sans-armenian-v47-armenian-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Avestan Local';
+  src: url('/static/fonts/noto-sans-avestan-v22-avestan-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Bengali Local';
+  src: url('/static/fonts/noto-sans-bengali-v33-bengali-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Devanagari Local';
+  src: url('/static/fonts/noto-sans-devanagari-v30-devanagari-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Ethiopic Local';
+  src: url('/static/fonts/noto-sans-ethiopic-v50-ethiopic-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Georgian Local';
+  src: url('/static/fonts/noto-sans-georgian-v48-georgian-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Gurmukhi Local';
+  src: url('/static/fonts/noto-sans-gurmukhi-v29-gurmukhi-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Hebrew Local';
+  src: url('/static/fonts/noto-sans-hebrew-v50-hebrew-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Javanese Local';
+  src: url('/static/fonts/noto-sans-javanese-v25-javanese-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans JP Local';
+  src: url('/static/fonts/noto-sans-jp-v57-japanese-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Kannada Local';
+  src: url('/static/fonts/noto-sans-kannada-v32-kannada-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Khmer Local';
+  src: url('/static/fonts/noto-sans-khmer-v29-khmer-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans KR Local';
+  src: url('/static/fonts/noto-sans-kr-v40-korean-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Lao Local';
+  src: url('/static/fonts/noto-sans-lao-v33-lao-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Malayalam Local';
+  src: url('/static/fonts/noto-sans-malayalam-v29-malayalam-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Myanmar Local';
+  src: url('/static/fonts/noto-sans-myanmar-v27-myanmar-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC Local';
+  src: url('/static/fonts/noto-sans-sc-v41-chinese-simplified-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Sinhala Local';
+  src: url('/static/fonts/noto-sans-sinhala-v36-sinhala-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Tamil Local';
+  src: url('/static/fonts/noto-sans-tamil-v31-tamil-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Telugu Local';
+  src: url('/static/fonts/noto-sans-telugu-v30-telugu-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Thaana Local';
+  src: url('/static/fonts/noto-sans-thaana-v26-thaana-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans Thai Local';
+  src: url('/static/fonts/noto-sans-thai-v29-thai-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Serif Tibetan Local';
+  src: url('/static/fonts/noto-serif-tibetan-v24-tibetan-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+    --main-font-family: 
+        'Noto Sans Local',
+        sans-serif;
+}
+
+* {
+    font-family: var(--main-font-family);
+}
+
+.paragraph[lang="ar"],
+.paragraph[lang="dv"],
+.paragraph[lang="fa"],
+.paragraph[lang="he"],
+.paragraph[lang="ug"],
+.paragraph[lang="ur"],
+.paragraph[lang="yi"] {
+	direction: rtl;
+	text-align: right;
+	font-size: 16px;
+}
+
+.paragraph[lang="ja"],
+.paragraph[lang="zh"] {
+    font-size: 20px;
+	font-weight: 200;
+}
+
+.paragraph[lang="am"],
+.paragraph[lang="ko"],
+.paragraph[lang="th"],
+.paragraph[lang="ti"] {
+	font-size: 15px;
+}
+
+.paragraph[lang="bn"],
+.paragraph[lang="hi"],
+.paragraph[lang="km"],
+.paragraph[lang="kn"],
+.paragraph[lang="lo"],
+.paragraph[lang="mr"],
+.paragraph[lang="ne"],
+.paragraph[lang="or"],
+.paragraph[lang="sa"] {
+	font-size: 16px;
+	font-weight: 200;
+}
+
+.paragraph {
+  font-family: 'Noto Sans Local', sans-serif;
+}
+
+.paragraph[lang="ar"],
+.paragraph[lang="fa"],
+.paragraph[lang="ug"],
+.paragraph[lang="ur"] {
+  font-family: 'Noto Sans Arabic Local', sans-serif;
+}
+
+.paragraph[lang="hy"] {
+  font-family: 'Noto Sans Armenian Local', sans-serif;
+}
+
+.paragraph[lang="ae"] {
+  font-family: 'Noto Sans Avestan Local', sans-serif;
+}
+
+.paragraph[lang="as"],
+.paragraph[lang="bn"] {
+  font-family: 'Noto Sans Bengali Local', sans-serif;
+}
+
+.paragraph[lang="hi"],
+.paragraph[lang="mr"],
+.paragraph[lang="ne"],
+.paragraph[lang="pi"],
+.paragraph[lang="sa"] {
+  font-family: 'Noto Sans Devanagari Local', sans-serif;
+}
+
+.paragraph[lang="am"],
+.paragraph[lang="ti"] {
+  font-family: 'Noto Sans Ethiopic Local', sans-serif;
+}
+
+.paragraph[lang="ka"] {
+  font-family: 'Noto Sans Georgian Local', sans-serif;
+}
+
+.paragraph[lang="pa"] {
+  font-family: 'Noto Sans Gurmukhi Local', sans-serif;
+}
+
+.paragraph[lang="he"],
+.paragraph[lang="yi"] {
+  font-family: 'Noto Sans Hebrew Local', sans-serif;
+}
+
+.paragraph[lang="jv"] {
+  font-family: 'Noto Sans Javanese Local', sans-serif;
+}
+
+.paragraph[lang="ja"] {
+  font-family: 'Noto Sans JP Local', sans-serif;
+}
+
+.paragraph[lang="kn"] {
+  font-family: 'Noto Sans Kannada Local', sans-serif;
+}
+
+.paragraph[lang="km"] {
+  font-family: 'Noto Sans Khmer Local', sans-serif;
+}
+
+.paragraph[lang="ko"] {
+  font-family: 'Noto Sans KR Local', sans-serif;
+}
+
+.paragraph[lang="lo"] {
+  font-family: 'Noto Sans Lao Local', sans-serif;
+}
+
+.paragraph[lang="ml"] {
+  font-family: 'Noto Sans Malayalam Local', sans-serif;
+}
+
+.paragraph[lang="my"] {
+  font-family: 'Noto Sans Myanmar Local', sans-serif;
+}
+
+.paragraph[lang="zh"] {
+  font-family: 'Noto Sans SC Local', sans-serif;
+}
+
+.paragraph[lang="si"] {
+  font-family: 'Noto Sans Sinhala Local', sans-serif;
+}
+
+.paragraph[lang="ta"] {
+  font-family: 'Noto Sans Tamil Local', sans-serif;
+}
+
+.paragraph[lang="te"] {
+  font-family: 'Noto Sans Telugu Local', sans-serif;
+}
+
+.paragraph[lang="dv"] {
+  font-family: 'Noto Sans Thaana Local', sans-serif;
+}
+
+.paragraph[lang="th"] {
+  font-family: 'Noto Sans Thai Local', sans-serif;
+}
+
+.paragraph[lang="bo"],
+.paragraph[lang="dz"] {
+  font-family: 'Noto Serif Tibetan Local', serif;
+}
