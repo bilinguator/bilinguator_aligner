@@ -769,6 +769,11 @@ function uploadIllustrations () {
             console.error('Ошибка:', error);
             showMessage('An error occured!');
         },
+        complete: function() {
+            setTimeout(() => {
+                updateIllustrations('illustration');
+            }, 1000)
+        },
     });
 }
 
@@ -802,8 +807,12 @@ function openIllustrationsRenamingPanel (bookAddressLeft = null, bookAddressRigh
             const illustrationNames = document.querySelectorAll('.illustration-name');
             illustrationNames.forEach((illustrationName) => {
                 illustrationName.addEventListener('blur', () => {
-                    illustrationName.value = illustrationName.value.trim();
                     sortIllustrations();
+                });
+
+                illustrationName.addEventListener('input', () => {
+                    illustrationName.value = illustrationName.value.trim();
+                    illustrationName.setAttribute('value', illustrationName.value.trim())
                 });
             });
             sortIllustrations();
@@ -866,6 +875,8 @@ function removeIllustration (illustrationPath) {
 
 
 function renameIllustrations () {
+    sortIllustrations();
+
     const illustrationNames = document.querySelectorAll('.illustration-name');
     let illustrationRenaming = Array();
 
@@ -897,6 +908,7 @@ function renameIllustrations () {
             renaming: Object.assign({}, illustrationRenaming),
         }),
         success: function (response) {
+            closePanel('illustrations-renaming-panel');
             showMessage('Illustrations successfully renamed!');
         },
         error: function(xhr, status, error) {
@@ -949,8 +961,8 @@ function reloadIllustration(imgElement, errorAction = 'placeholder') {
 }
 
 
-function updateIllustrations () {
-    document.querySelectorAll('.illustration-preview').forEach((illustration) =>{
+function updateIllustrations (illustrationClass) {
+    document.querySelectorAll('.' + illustrationClass).forEach((illustration) =>{
         reloadIllustration(illustration, errorAction = 'placeholder');
     });
 }
