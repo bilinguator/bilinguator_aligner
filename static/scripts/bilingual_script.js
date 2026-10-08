@@ -949,9 +949,7 @@ function reloadIllustration(imgElement, errorAction = 'placeholder') {
 }
 
 
-function reloadCoverAndIllustrations () {
-    updateCover();
-    
+function updateIllustrations () {
     document.querySelectorAll('.illustration-preview').forEach((illustration) =>{
         reloadIllustration(illustration, errorAction = 'placeholder');
     });
@@ -959,11 +957,19 @@ function reloadCoverAndIllustrations () {
 
 
 function updateCover () {
-    const coverPreview = document.querySelector('.cover-preview');
-
-    if (coverPreview) {
-        reloadIllustration(coverPreview, errorAction = 'remove');
+    let coverPreview = document.querySelector('.cover-preview');
+    
+    if (!coverPreview) {
+        const coverPreviewPath = `${illustrationsFolder}/cover.png`;
+        const coverPreviewElement = document.createElement('img');
+        coverPreviewElement.className = 'cover-preview';
+        coverPreviewElement.src = coverPreviewPath;
+        document.querySelector('.main-area').insertAdjacentElement('beforebegin', coverPreviewElement);
+        
+        coverPreview = document.querySelector('.cover-preview');
     }
+    
+    reloadIllustration(coverPreview, errorAction = 'remove');
 }
 
 
