@@ -629,7 +629,6 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
             const testRegex = new RegExp(searchString, 'um');
         
             if (!testRegex.test(text)) {
-                console.log('!testRegex.test(text)');
                 return;
             }
 
@@ -686,6 +685,7 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
     if (afterSearch) search();
 
     updateSearchCount();
+    updateSidebar();
     updateParagraphsCount();
     enableMonolingualChangeStatus();
 }
@@ -730,9 +730,9 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
     paragraph.value = text.replaceAll(searchString, replacementString);
 
     updateSearchCount();
+    updateSidebar();
     updateParagraphsCount();
     enableMonolingualChangeStatus();
-
     toCurrentPosition(currentPosition);
 }
 
@@ -1891,6 +1891,25 @@ function updateLanguageNamesInSidebar () {
 }
 
 
+function updateSidebar () {
+    if (sessionStorage.sidebarTemplate === 'quotation_marks') {
+        updateSidebarTextareasCounts('quote-textarea');
+        updateTextQuotationMarks();
+        updateLanguageQuotationMarks();
+    } else if (sessionStorage.sidebarTemplate === 'apostroph') {
+        countApostrophes();
+    } else if (sessionStorage.sidebarTemplate === 'dashes') {
+        updateSidebarTextareasCounts('dash-textarea');
+    } else if (sessionStorage.sidebarTemplate === 'ellipsis') {
+        updateSidebarTextareasCounts('ellipsis-textarea');
+    } else if (sessionStorage.sidebarTemplate === 'merge_strophes_by_delimiter') {
+        mergeStrophesByDelimiter(test = true);
+    } else if (sessionStorage.sidebarTemplate === 'statistics') {
+        updateStatisticsFields();
+    }
+}
+
+
 function makeMonolingualPanelButtonsFunctional () {
     const regexCheckbox = document.getElementById('regex-checkbox');
     if (regexCheckbox) {
@@ -2055,23 +2074,7 @@ function makeMonolingualPanelButtonsFunctional () {
 
     const paragraph = document.getElementById('monolingual-paragraph');
     if (paragraph) {
-        paragraph.addEventListener('input', () => {
-            if (sessionStorage.sidebarTemplate === 'quotation_marks') {
-                updateSidebarTextareasCounts('quote-textarea');
-                updateTextQuotationMarks();
-                updateLanguageQuotationMarks();
-            } else if (sessionStorage.sidebarTemplate === 'apostroph') {
-                countApostrophes();
-            } else if (sessionStorage.sidebarTemplate === 'dashes') {
-                updateSidebarTextareasCounts('dash-textarea');
-            } else if (sessionStorage.sidebarTemplate === 'ellipsis') {
-                updateSidebarTextareasCounts('ellipsis-textarea');
-            } else if (sessionStorage.sidebarTemplate === 'merge_strophes_by_delimiter') {
-                mergeStrophesByDelimiter(test = true);
-            } else if (sessionStorage.sidebarTemplate === 'statistics') {
-                updateStatisticsFields();
-            }
-        });
+        paragraph.addEventListener('input', updateSidebar);
     }
 }
 
