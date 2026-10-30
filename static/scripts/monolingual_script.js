@@ -221,7 +221,10 @@ function removeHTMLEntities () {
     }
 
     const paragraph = document.getElementById('monolingual-paragraph');
-    paragraph.innerHTML = paragraph.value;
+    
+    const parser = new DOMParser();
+    const decodedString = parser.parseFromString(paragraph.value, 'text/html').body.textContent;
+    paragraph.value = decodedString;
 
     enableMonolingualChangeStatus();
     updateSearchCount();
