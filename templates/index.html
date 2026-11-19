@@ -234,7 +234,7 @@
         }
 
         const paragraphsCount = parseInt(
-            document.querySelector('.total-count').innerText
+            document.querySelector('.paragraphs-count').innerText
         );
 
         if (bookmark < 0 || bookmark > paragraphsCount) {
@@ -371,18 +371,20 @@
                     if (sessionStorage[side + 'FileFound'] !== 'false') {
                         const bookAddressOld = document.querySelector('#book-address-' + side);
         
-                        bookAddressOld.value = null;
+                        bookAddressOld.value = rootFolder;
                         
                         sessionStorage[side + 'FileFound'] = 'false';
         
                         const leftFileFound = side === 'left' ? 'false' : sessionStorage['leftFileFound'];
                         const rightFileFound = side === 'right' ? 'false' : sessionStorage['rightFileFound'];
+
+                        console.log(leftFileFound);
+                        console.log(rightFileFound);
         
                         rerenderAllByPaths(leftFileFound, rightFileFound, null);
                         reviveScripts();
                     }
                 }
-
             });
         });
     }
@@ -540,41 +542,6 @@
         });
     }
 
-
-    function rerenderAllByTexts (queryParameters = null) {
-        if (!queryParameters) {
-            const mode = getMode();
-            queryParameters = {
-                text1: sessionStorage['text1'],
-                text2: sessionStorage['text2'],
-                text1_path: document.querySelector('#book-address-left').value,
-                text2_path: document.querySelector('#book-address-right').value,
-                lang1: document.querySelector('#languages-dropdown-list-left').value,
-                lang2: document.querySelector('#languages-dropdown-list-right').value,
-                page: page = mode === 2 ? document.querySelector('.page-number').value : 1,
-           }
-        }
-
-        $.ajax({
-            url: '/',
-            type: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            contentType: 'application/json;charset=UTF-8',
-            data: JSON.stringify(queryParameters),
-            success: function (response) {
-                document.documentElement.innerHTML = response;
-                reviveScripts();
-                setProgressPercent();
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX request failed:', status, error);
-                console.error('XHR object:', xhr);
-            },
-        });
-    }
-
     
     function getTextBySide (side = 'left') {
         let text = '';
@@ -655,7 +622,7 @@
             contentType: 'application/json;charset=UTF-8',
             data: JSON.stringify(data),
             success: function (response) {
-                console.log('Backup successfully saved!');
+                showMessage('Backup successfully saved!');
             },
             error: function(xhr, status, error) {
                 console.error('AJAX request failed:', status, error);
@@ -775,16 +742,15 @@
                 disableSaveButtons('both');
             }
         });
-    
-    
-
     }
 
     makeSessionStorageFunctional();
 
 
-    function makeParagraphsFunctional () {
-        document.querySelectorAll('.paragraph').forEach((paragraph) => {
+    function makeParagraphsFunctional (novel = false) {
+        const paragraphClass = 'paragraph' + (novel ? '-new' : '');
+
+        document.querySelectorAll('.' + paragraphClass).forEach((paragraph) => {
             paragraph.addEventListener('input', () => {
                 if (paragraph.id == 'monolingual-paragraph') {
                     const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
@@ -798,6 +764,10 @@
                     updateTextsInSessionStorage(side);
                     enableSaveButtons(side);
                     fixTextAreas(paragraph);
+
+                    if (novel) {
+                        paragraph.classList.remove(paragraphClass);
+                    }
                 }
             });
         });
@@ -1110,7 +1080,6 @@
     function toCurrentPosition (targetParagraphIndex = null) {
         const mode = getMode();
 
-
         if (mode === 1) {
             const paragraph = document.getElementById('monolingual-paragraph');
 
@@ -1125,7 +1094,7 @@
         } else if (mode === 2) {
 
             const paragraphsCount = parseInt(
-                document.querySelector('.total-count').innerText
+                document.querySelector('.paragraphs-count').innerText
             );
 
             if (!targetParagraphIndex) {
@@ -1325,37 +1294,6 @@
             });
         }
 
-        const paragraphButtonsPanels = document.querySelectorAll('.paragraph-buttons');
-        if (paragraphButtonsPanels) {
-            paragraphButtonsPanels.forEach((panel) => {
-                panel.addEventListener('contextmenu', (event) => {
-                    event.preventDefault();
-
-                    const siblingPanel = panel.classList.contains('main-paragraph-buttons')? panel.nextElementSibling : panel.previousElementSibling;
-                    siblingPanel.hidden = false;
-                    panel.hidden = true;
-                });
-            });
-        }
-
-        const shiftParagraphButtons = document.querySelectorAll('.shift-paragraph-button');
-        if (shiftParagraphButtons) {
-            shiftParagraphButtons.forEach((button) => {
-                button.addEventListener('click', (event) => {
-                    const side = getSideByParagraphButton(button);
-                    swapParagraphsByButton(button, side);
-                });
-            });
-        }
-
-        const swapParagraphButtons = document.querySelectorAll('.swap-paragraph-button');
-        if (swapParagraphButtons) {
-            swapParagraphButtons.forEach((button) => {
-                button.addEventListener('click', (event) => {
-                    swapParagraphsByButton(button, 'both');
-                });
-            });
-        }
 
         const mojificationButton = document.querySelector('#panel-button-mojification');
         if (mojificationButton) {
@@ -1662,28 +1600,10 @@
             });
         }
 
-        const deleteByIndexButton = document.querySelector('#panel-button-delete_by_index');
+        const deleteByIndexButton = document.querySelector('#panel-button-trash');
         if (deleteByIndexButton) {
             deleteByIndexButton.addEventListener('click', () => {
                 removeParagraphsFromTwoTexts();
-            });
-        }
-
-        const deleteParagraphButtons = document.querySelectorAll('.delete-paragraph-button');
-        if (deleteParagraphButtons) {
-            deleteParagraphButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    removeParagraphByButton(button);
-                });
-            });
-        }
-
-        const addParagraphButtons = document.querySelectorAll('.add-paragraph-button');
-        if (addParagraphButtons) {
-            addParagraphButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    addParagraphByButton(button);
-                });
             });
         }
     }
@@ -1797,28 +1717,36 @@
     }
 
 
-    function makeParagraphIndexesFunctional () {
-
+    function makeParagraphIndexesFunctional (novel = false) {
         const mode = getMode();
 
         if (mode === 2) {
-            document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
-                const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
-                const paragraphIndex = paragraphNumber.innerText;
+            const paragraphNumberClass = 'paragraph-number' + (novel ? '-new' : '');
 
+            document.querySelectorAll('.' + paragraphNumberClass).forEach((paragraphNumber) => {
                 paragraphNumber.addEventListener('click', () => {
+                    const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
+                    const paragraphIndex = paragraphNumber.innerText;
                     setParagraphIndex(paragraphIndex, side);
                 });
-
+                
                 paragraphNumber.addEventListener('dblclick', () => {
+                    const paragraphIndex = paragraphNumber.innerText;
                     if (paragraphNumber.classList.contains('paragraph-number-bookmark')){
                         unsetBookmark();
                     } else {
                         setBookmark(paragraphIndex);
                     }
                 });
+
+                if (novel) {
+                    paragraphNumber.classList.remove(paragraphNumberClass);
+                }
             });
-            
+
+            if (novel) {
+                return;
+            }
 
             ['left', 'right'].forEach((side) => {
                 if (sessionStorage[side + 'ParagraphIndex']) {

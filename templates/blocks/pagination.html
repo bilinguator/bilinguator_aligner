@@ -17,7 +17,11 @@
 
     <input class="page-number" type="text" page="{{ current_page }}" rows="1" placeholder="№" value="{{ current_page }}">
     
-    <p class="total-count">/{{ pages_count }}</p>
+    <p class="slash">
+        /
+    </p>
+
+    <p class="pages-count">{{ pages_count }}</p>
 
     <button class="panel-button panel-button-pagination-arrow"
      page="{{ current_page+1 if current_page < pages_count else 'stop'}}">

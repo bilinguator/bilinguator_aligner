@@ -413,7 +413,7 @@ input::-moz-placeholder{
 	filter: brightness(70%);
 }
 
-.total-count {
+.paragraphs-count, .pages-count {
 	cursor: default;
 	color: var(--orange);
 }

@@ -149,7 +149,7 @@ function recoverApostrophesByLang (text, lang) {
 function updateParagraphsCount () {
     const paragraph = document.getElementById('monolingual-paragraph');
     const paragraphsCount = countSubstrings(paragraph.value, '\n', false) + 1;
-    document.querySelector('.total-count').innerText = paragraphsCount;
+    document.querySelector('.paragraphs-count').innerText = paragraphsCount;
 }
 
 
@@ -515,7 +515,7 @@ function updateSearchFromSelection () {
     if (document.activeElement.id === 'monolingual-paragraph') {
         const paragraph = document.activeElement;
         const selectedText = paragraph.value.slice(paragraph.selectionStart, paragraph.selectionEnd);
-        document.querySelector('#search-input').value = selectedText;
+        document.getElementById('search-input').value = selectedText;
         updateSearchCount();
     }
 }
@@ -575,7 +575,7 @@ function search (searchString, isRegex) {
                 matchLength = match[0].length;
             }
         } catch (e) {
-            console.error('Incorrect regular expression!', e);
+            showMessage('Invalid regular expression!');
             return;
         }
     } else {
@@ -643,7 +643,7 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
                 return;
             }
         } catch (e) {
-            console.log('Wrong regular expression!');
+            showMessage('Invalid regular expression!');
             return;
         }
     } else {
@@ -693,7 +693,7 @@ function replace (searchString, replacementString, isRegex, afterSearch = true, 
 
 function replaceAll (searchString, replacementString, isRegex, withConfirmation = true) {
     if (searchString === undefined) {
-        searchString = document.querySelector('#search-input').value;
+        searchString = document.getElementById('search-input').value;
 
         if (!searchString) {
             return;
@@ -710,12 +710,19 @@ function replaceAll (searchString, replacementString, isRegex, withConfirmation 
         isRegex = document.getElementById('regex-checkbox').checked;
     }
 
-    searchString = isRegex ? new RegExp(searchString, 'gm') : searchString;
+    try {
+        searchString = isRegex ? new RegExp(searchString, 'gm') : searchString;
+    } catch (error) {
+        showMessage('Invalid regular expression!');
+        return; 
+    }
     
     const paragraph = document.getElementById('monolingual-paragraph');
     const text = paragraph.value;
 
-    if (!text.match(searchString)) {
+    const hasMatch = isRegex ? text.match(searchString) : text.includes(searchString);
+
+    if (!hasMatch) {
         return;
     }
     
@@ -2079,6 +2086,35 @@ function makeMonolingualPanelButtonsFunctional () {
 }
 
 makeMonolingualPanelButtonsFunctional();
+
+
+function syncSearchReplaceWithSession () {
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            sessionStorage.searchInput = searchInput.value;
+        });
+
+        if (sessionStorage.searchInput) {
+            searchInput.value = sessionStorage.searchInput;
+            updateSearchCount();
+        }
+    }
+    
+    const replaceInput = document.getElementById('replace-input');
+    if (replaceInput) {
+        replaceInput.addEventListener('input', () => {
+            sessionStorage.replaceInput = replaceInput.value;
+        });
+
+        if (sessionStorage.replaceInput) {
+            replaceInput.value = sessionStorage.replaceInput;
+            updateSearchCount();
+        }
+    }
+}
+
+syncSearchReplaceWithSession();
 
 
 if (!window.isKeydownHandlerAttached) {

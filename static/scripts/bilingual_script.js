@@ -1,3 +1,295 @@
+function getPageByParagraph(paragraph) {
+    let page = Math.floor(paragraph / paragraphsPerPage);
+    page += (paragraph % paragraphsPerPage) ? 1 : 0;
+    return page;
+}
+
+
+function getParagraphsCount (text1, text2) {
+    return Math.max(
+        text1.split('\n').length,
+        text2.split('\n').length
+    );
+}
+
+function getPagesCount (text1, text2) {
+    if (text1 == null || text2 == null) {
+        return null;
+    }
+
+    const maxParagraphsCount = getParagraphsCount(text1, text2);
+    const pagesCount = getPageByParagraph(maxParagraphsCount);
+    return pagesCount;
+}
+
+
+function getExistingPage (text1, text2, page) {
+    if (text1 == null || text2 == null) {
+        return page;
+    }
+
+    const pageStr = String(page);
+    if (!/^\d+$/.test(pageStr)) {
+        return 1;
+    }
+
+    let pageNum = parseInt(pageStr, 10);
+
+    if (pageNum < 1) {
+        return 1;
+    }
+
+    const maxPage = getPagesCount(text1, text2);
+
+    if (pageNum > maxPage) {
+        return maxPage;
+    }
+
+    return pageNum;
+}
+
+
+function getFirstLastParagraphs (text1, text2, page) {
+    const maxPage = getExistingPage(text1, text2, page);
+
+    if (page > maxPage) {
+        return getFirstLastParagraphs(text1, text2, maxPage);
+    }
+
+    const firstParagraph = page * paragraphsPerPage - paragraphsPerPage;
+    const endParagraph = page * paragraphsPerPage;
+
+    const paragraphs1 = text1 != null ? text1.split('\n').slice(firstParagraph, endParagraph) : [];
+    const paragraphs2 = text2 != null ? text2.split('\n').slice(firstParagraph, endParagraph) : [];
+
+    const maxNumberOfParagraphs = Math.max(
+        paragraphs1.length,
+        paragraphs2.length
+    );
+
+    const lastParagraph = firstParagraph + maxNumberOfParagraphs;
+
+    return [firstParagraph, lastParagraph];
+}
+
+
+function addNewParagraph (index, paragraphTextLeft, paragraphTextRight, lang1, lang2) {
+    const container = document.querySelector('.paragraphs');
+    const template = document.getElementById('paragraph-couple-template');
+
+    const clone = template.content.cloneNode(true);
+
+    clone.querySelectorAll('.paragraph-number').forEach(p => {
+        p.textContent = index;
+        p.classList.add('paragraph-number-new');
+    });
+
+    const buttonClasses = [
+        'paragraph-buttons',
+        'delete-paragraph-button',
+        'add-paragraph-button',
+        'shift-paragraph-button',
+        'swap-paragraph-button'
+    ]
+
+    buttonClasses.forEach((buttonClass) => {
+        clone.querySelectorAll('.' + buttonClass).forEach(p => {
+            p.classList.add(buttonClass + '-new');
+        });
+    });
+
+    const textareaLeft = clone.querySelector('.paragraph-left');
+    if (textareaLeft) {
+        textareaLeft.value = paragraphTextLeft;
+        textareaLeft.lang = lang1;
+        textareaLeft.id = `paragraph${index}`;
+        textareaLeft.dataset.paragraph = index;
+        textareaLeft.classList.add('paragraph-new');
+    }
+
+    const textareaRight = clone.querySelector('.paragraph-right');
+    if (textareaRight) {
+        textareaRight.value = paragraphTextRight;
+        textareaRight.lang = lang2;
+        textareaRight.dataset.paragraph = index;
+        textareaRight.classList.add('paragraph-new');
+    }
+
+    container.appendChild(clone);
+}
+
+
+function rerenderPercent (page, text1, text2) {
+    const str1 = String(text1);
+    const str2 = String(text2);
+
+    const [startParagraph, endParagraph] = getFirstLastParagraphs(text1, text2, page);
+
+    let totalTextsLength = str1.length + str2.length;
+    totalTextsLength = totalTextsLength || 1;
+
+    let minPercent = str1.split('\n').slice(0, startParagraph).join('\n').length +
+                    str2.split('\n').slice(0, startParagraph).join('\n').length;
+    minPercent = Math.round((minPercent / totalTextsLength) * 100);
+
+    let maxPercent = str1.split('\n').slice(0, endParagraph).join('\n').length +
+                    str2.split('\n').slice(0, endParagraph).join('\n').length;
+    maxPercent = Math.round((maxPercent / totalTextsLength) * 100);
+
+    const percent = document.querySelector('.percent');
+    percent.setAttribute('min', minPercent);
+    percent.setAttribute('max', maxPercent);
+    setProgressPercent();
+}
+
+
+function rerenderPagination (page, text1, text2) {
+    const pagesCount = getPagesCount(text1, text2);
+
+    const currentPage = getExistingPage(text1, text2, page);
+
+    const paginationContainer = document.querySelector('.pagination');
+    if (!paginationContainer) return;
+
+    const buttons = paginationContainer.querySelectorAll('.panel-button-pagination-arrow');
+    const pageInput = paginationContainer.querySelector('.page-number');
+    const totalCountEl = paginationContainer.querySelector('.pages-count');
+
+    if (totalCountEl) {
+        totalCountEl.textContent = pagesCount;
+    }
+
+    const firstPageAttr = (currentPage === 1) ? 'stop' : 1;
+    const prevPageAttr = (currentPage > 1) ? currentPage - 1 : 'stop';
+    const nextPageAttr = (currentPage < pagesCount) ? currentPage + 1 : 'stop';
+    const lastPageAttr = (currentPage === pagesCount) ? 'stop' : pagesCount;
+
+    const pageAttrs = [firstPageAttr, prevPageAttr, nextPageAttr, lastPageAttr];
+
+    const isFirst = currentPage === 1;
+    const isLast = currentPage === pagesCount;
+
+    buttons.forEach((button, index) => {
+        button.setAttribute('page', pageAttrs[index]);
+
+        const img = button.querySelector('img');
+        if (!img) return;
+
+        if (index < 2) {
+            if (isFirst) {
+                img.classList.add('pagination-arrow-img-disabled');
+            } else {
+                img.classList.remove('pagination-arrow-img-disabled');
+            }
+        } else {
+            if (isLast) {
+                img.classList.add('pagination-arrow-img-disabled');
+            } else {
+                img.classList.remove('pagination-arrow-img-disabled');
+            }
+        }
+    });
+
+    if (pageInput) {
+        pageInput.setAttribute('page', currentPage);
+        pageInput.value = currentPage;
+    }
+}
+
+
+function rerenderProgress (page, text1, text2) {
+    rerenderPercent(page, text1, text2);
+    rerenderPagination(page, text1, text2);
+    setURLParameter('page', page);
+}
+
+
+function rerenderAllByTexts (paragraph = null, page = null, focus = false) {
+    const text1 = sessionStorage['text1'] || '';
+    const text2 = sessionStorage['text2'] || '';
+
+    if (paragraph !== null) {
+        page = getPageByParagraph(paragraph);
+    } else if (page === null) {
+        page = getCurrentPage();
+    }
+
+    page = getExistingPage(text1, text2, page);
+
+    const [startParagraph, endParagraph] = getFirstLastParagraphs(text1, text2, page);
+    const targetCount = endParagraph - startParagraph;
+
+    let paragraphCouples = document.querySelectorAll('.paragraph-couple');
+
+    const splittedText1 = text1.split('\n');
+    const splittedText2 = text2.split('\n');
+
+    const lang1 = document.querySelector('#languages-dropdown-list-left')?.value || '';
+    const lang2 = document.querySelector('#languages-dropdown-list-right')?.value || '';
+
+    if (paragraphCouples.length < targetCount) {
+        const needed = targetCount - paragraphCouples.length;
+        for (let i = 0; i < needed; i++) {
+            addNewParagraph(0, '', '', lang1, lang2);
+        }
+        paragraphCouples = document.querySelectorAll('.paragraph-couple');
+    } else if (paragraphCouples.length > targetCount) {
+        const excess = paragraphCouples.length - targetCount;
+        for (let i = 0; i < excess; i++) {
+            paragraphCouples[paragraphCouples.length - 1 - i].remove();
+        }
+        paragraphCouples = document.querySelectorAll('.paragraph-couple');
+    }
+
+    let paragraphCouplesCounter = 0;
+
+    for (let i = startParagraph; i < endParagraph; i++) {
+        let oneBasedNumber = i + 1;
+        let currentparagraphCouple = paragraphCouples[paragraphCouplesCounter];
+
+        const leftParagraph = currentparagraphCouple.querySelector('.paragraph-left');
+        const rightParagraph = currentparagraphCouple.querySelector('.paragraph-right');
+
+        leftParagraph.id = 'paragraph' + oneBasedNumber;
+
+        leftParagraph.lang = lang1;
+        rightParagraph.lang = lang2;
+
+        leftParagraph.dataset.paragraph = oneBasedNumber;
+        rightParagraph.dataset.paragraph = oneBasedNumber;
+
+        leftParagraph.value = splittedText1[i] !== undefined ? splittedText1[i] : '';
+        rightParagraph.value = splittedText2[i] !== undefined ? splittedText2[i] : '';
+
+        currentparagraphCouple.querySelector('.paragraph-number-left').innerText = oneBasedNumber;
+        currentparagraphCouple.querySelector('.paragraph-number-right').innerText = oneBasedNumber;
+
+        paragraphCouplesCounter++;
+    }
+
+    fixTextAreas();
+    rerenderProgress(page, text1, text2);
+    makeParagraphsFunctional(novel = true);
+    makeParagraphIndexesFunctional(novel = true);
+    makeParagraphButtonsFunctional(novel = true);
+    updateIllustrationPreviews();
+    makeParagraphsPastingFunctional(novel = true);
+    document.querySelector('.paragraphs-count').innerText = getParagraphsCount(text1, text2);
+
+    const bookmark = document.querySelector('.bookmark-number').innerText;
+    updateBookmarkOnScreen(bookmark);
+
+    if (focus === true) {
+        const bookmarkParagraph = document.getElementById('paragraph' + bookmark);
+        if (bookmarkParagraph) {
+            bookmarkParagraph.focus();
+        } else {
+            document.querySelector('.paragraph').focus();
+        }
+    }
+}
+
+
 function fixTextAreas(targetParagraph) {
     function fixTextareaSize(textarea) {
         textarea.style.height = '0px';
@@ -75,15 +367,13 @@ function goToPage (page) {
         page: page,
     }
 
-    rerenderAllByTexts(queryParameters);
-    setURLParameter('page', page);
-    setURLParameter('focus', 'true');
+    rerenderAllByTexts(paragraph = null, page = page, focus = true);
 }
 
 
 function makePaginationArrowsFunctional () {
     let paginationArrows = document.querySelectorAll('.panel-button-pagination-arrow');
-    
+
     paginationArrows.forEach((paginationArrow) => {
         paginationArrow.addEventListener('click', () => {
             page = paginationArrow.getAttribute('page')
@@ -126,11 +416,11 @@ function getFullTextFromBilingualMode (side) {
 
     const startIndex = indexOfNthSubstring(text, '\n', paragraphStartIndex);
     const endIndex = indexOfNthSubstring(text, '\n', paragraphEndIndex);
-    
+
     const firstPart = text.slice(0, startIndex + 1);
     const secondPart = getCurrentTextFromBilingualMode(side);
     const thirdPart = endIndex === -1 ? '' : text.slice(endIndex);
-    
+
     return firstPart + secondPart + thirdPart;
 }
 
@@ -205,6 +495,7 @@ function splitParagraph () {
     equalizeParagraphCountsInTexts();
 
     rerenderAllByTexts();
+    updateIllustrations('illustration-preview');
     enableSaveButtons(side);
 }
 
@@ -213,6 +504,7 @@ function updateAndReloadTexts () {
     updateTextsInSessionStorage('both');
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
+    updateIllustrations('illustration-preview');
 }
 
 
@@ -228,7 +520,7 @@ function concatenateParagraphs (separator = '') {
     let text = sessionStorage['text' + textNumber].split('\n');
 
     const currentParagraphNumber = getCurrentParagraphNumber() - 1;
-    
+
     text[currentParagraphNumber] += separator + text[currentParagraphNumber + 1];
     text.splice(currentParagraphNumber + 1, 1);
 
@@ -236,6 +528,7 @@ function concatenateParagraphs (separator = '') {
 
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
+    updateIllustrations('illustration-preview');
     enableSaveButtons(side);
 }
 
@@ -264,7 +557,7 @@ function getParagraphNumberByParagraphButton (paragraphButton) {
     const paragraphButtonPanel = paragraphButton.parentElement.parentElement;
     let paragraphNumber = findChildByClass(paragraphButtonPanel, 'paragraph-number').innerText;
     paragraphNumber = parseInt(paragraphNumber);
-    
+
     return paragraphNumber;
 }
 
@@ -308,7 +601,7 @@ function removeParagraphByButton (button) {
     sessionStorage.text2 = sessionStorage.text2.trimRight();
 
     sessionStorage[side + 'FileChanged'] = 'true';
-    
+
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
     enableSaveButtons(side);
@@ -328,7 +621,7 @@ function swapParagraphsByButton (button, side = 'both') {
         rightParagraph.value = leftParagraphText;
         sessionStorage['rightFileChanged'] = 'true';
     }
-    
+
     if (['both', 'right'].includes(side)) {
         leftParagraph.value = rightParagraphText;
         sessionStorage['leftFileChanged'] = 'true';
@@ -337,7 +630,11 @@ function swapParagraphsByButton (button, side = 'both') {
     const changedSide = {'both': 'both', 'left': 'right', 'right': 'left'}[side];
     updateTextsInSessionStorage(changedSide);
     enableSaveButtons(changedSide);
+
+    insertIllustrationPreview(leftParagraph);
+    insertIllustrationPreview(rightParagraph);
 }
+
 
 function getParagraphIndexes () {
     let paragraphIndexes = [
@@ -349,7 +646,7 @@ function getParagraphIndexes () {
         return paragraphIndex === parseInt(paragraphIndex).toString();
     });
 
-    const paragraphsCount = parseInt(document.querySelector('.total-count').innerText.trim())
+    const paragraphsCount = parseInt(document.querySelector('.paragraphs-count').innerText.trim())
 
     const isInsideParagraphsRange = paragraphIndexes.every((paragraphIndex) => {
         return parseInt(paragraphIndex) > 0 && paragraphIndex <= paragraphsCount;
@@ -385,7 +682,7 @@ function removeParagraphsFromTwoTexts () {
 
     sessionStorage['leftFileChanged'] = 'true';
     sessionStorage['rightFileChanged'] = 'true';
-    
+
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
     enableSaveButtons('both');
@@ -402,7 +699,7 @@ function addParagraphToText (text, paragraphNumber) {
 
     text = text.slice(0, lineBreakIndex) + '\n' + text.slice(lineBreakIndex);
     text = text.replace(/^\n/, '');
-    
+
     return text;
 }
 
@@ -418,7 +715,7 @@ function addParagraphByButton (button) {
     );
 
     sessionStorage[side + 'FileChanged'] = 'true';
-    
+
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
     enableSaveButtons(side);
@@ -473,7 +770,7 @@ function shiftParagraphs () {
     sessionStorage['text2'] = sessionStorage['text2'].trimRight();
 
     const side = textNumber === '1' ? 'left' : 'right';
-    
+
     sessionStorage[side + 'FileChanged'] = 'true';
     equalizeParagraphCountsInTexts();
     rerenderAllByTexts();
@@ -481,8 +778,8 @@ function shiftParagraphs () {
 }
 
 
-function mojify () {
-    demojify(withMessage = false);
+async function mojify () {
+    await demojify(withMessage = false);
 
     showLoading(enable = true, message = 'Mojification in progress…');
     enableSaveButtons('both');
@@ -537,7 +834,7 @@ function mojify () {
 
 
 function demojify (withMessage = false) {
-    $.ajax({
+    return $.ajax({
         url: '/demojify',
         type: 'POST',
         dataType: 'json',
@@ -754,7 +1051,6 @@ function uploadIllustrations () {
     formData.append('text1_path', bookAddressLeft);
     formData.append('text2_path', bookAddressRight);
 
-
     $.ajax({
         url: '/upload_illustrations',
         type: 'POST',
@@ -970,25 +1266,38 @@ function updateIllustrations (illustrationClass) {
 
 function updateCover () {
     let coverPreview = document.querySelector('.cover-preview');
-    
-    if (!coverPreview) {
+
+    const page = document.querySelector('.page-number').getAttribute('page').trim();
+
+    if (coverPreview && (page !== '1')) {
+        coverPreview.remove();
+        return;
+    }
+
+    if (!coverPreview && (page === '1')) {
         const coverPreviewPath = `${illustrationsFolder}/cover.png`;
         const coverPreviewElement = document.createElement('img');
         coverPreviewElement.className = 'cover-preview';
         coverPreviewElement.src = coverPreviewPath;
         document.querySelector('.main-area').insertAdjacentElement('beforebegin', coverPreviewElement);
-        
+
         coverPreview = document.querySelector('.cover-preview');
+        reloadIllustration(coverPreview, errorAction = 'remove');
     }
-    
-    reloadIllustration(coverPreview, errorAction = 'remove');
 }
+
+
+function updateIllustrationPreviews () {
+    document.querySelectorAll('.paragraph').forEach((paragraph) => {
+        insertIllustrationPreview(paragraph);
+    });
+}
+
+updateIllustrationPreviews();
 
 
 function makeIllustrationPreviewsFunctional () {
     document.querySelectorAll('.paragraph').forEach((paragraph) => {
-        insertIllustrationPreview(paragraph);
-
         paragraph.addEventListener('input', () => {
             insertIllustrationPreview(paragraph);
         });
@@ -997,6 +1306,120 @@ function makeIllustrationPreviewsFunctional () {
 
 makeIllustrationPreviewsFunctional();
 
+
+function makeParagraphButtonsFunctional (novel = false) {
+    const paragraphButtonsPanelsClass = 'paragraph-buttons' + (novel ? '-new' : '');
+    const paragraphButtonsPanels = document.querySelectorAll('.' + paragraphButtonsPanelsClass);
+    if (paragraphButtonsPanels) {
+        paragraphButtonsPanels.forEach((panel) => {
+            panel.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+
+                const siblingPanel = panel.classList.contains('main-paragraph-buttons') ? panel.nextElementSibling : panel.previousElementSibling;
+                siblingPanel.hidden = false;
+                panel.hidden = true;
+            });
+
+            if (novel) {
+                panel.classList.remove(paragraphButtonsPanelsClass);
+            }
+        });
+    }
+
+    const deleteParagraphButtonsClass = 'delete-paragraph-button' + (novel ? '-new' : '');
+    const deleteParagraphButtons = document.querySelectorAll('.' + deleteParagraphButtonsClass);
+    if (deleteParagraphButtons) {
+        deleteParagraphButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                removeParagraphByButton(button);
+            });
+
+            if (novel) {
+                button.classList.remove(deleteParagraphButtonsClass);
+            }
+        });
+    }
+
+    const addParagraphButtonsClass = 'add-paragraph-button' + (novel ? '-new' : '');
+    const addParagraphButtons = document.querySelectorAll('.' + addParagraphButtonsClass);
+    if (addParagraphButtons) {
+        addParagraphButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                addParagraphByButton(button);
+            });
+
+            if (novel) {
+                button.classList.remove(addParagraphButtonsClass);
+            }
+        });
+    }
+
+    const shiftParagraphButtonsClass = 'shift-paragraph-button' + (novel ? '-new' : '');
+    const shiftParagraphButtons = document.querySelectorAll('.' + shiftParagraphButtonsClass);
+    if (shiftParagraphButtons) {
+        shiftParagraphButtons.forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const side = getSideByParagraphButton(button);
+                swapParagraphsByButton(button, side);
+            });
+
+            if (novel) {
+                button.classList.remove(shiftParagraphButtonsClass);
+            }
+        });
+    }
+
+    const swapParagraphButtonsClass = 'swap-paragraph-button' + (novel ? '-new' : '');
+    const swapParagraphButtons = document.querySelectorAll('.' + swapParagraphButtonsClass);
+    if (swapParagraphButtons) {
+        swapParagraphButtons.forEach((button) => {
+            button.addEventListener('click', (event) => {
+                swapParagraphsByButton(button, 'both');
+            });
+
+            if (novel) {
+                button.classList.remove(swapParagraphButtonsClass);
+            }
+        });
+    }
+}
+
+makeParagraphButtonsFunctional();
+
+
+function makeParagraphsPastingFunctional (novel = false) {
+    const paragraphClass = 'paragraph' + (novel ? '-new' : '');
+    const paragraphs = document.querySelectorAll('.' + paragraphClass);
+
+    if (paragraphs) {
+        paragraphs.forEach(paragraph => {
+            paragraph.addEventListener('paste', function(e) {
+                e.preventDefault();
+
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                const modifiedText = pastedText.replace(/\r?\n/g, delimiter);
+
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+
+                this.value = this.value.substring(0, start) + modifiedText + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + modifiedText.length;
+
+                const side = paragraph.classList.contains('paragraph-left') ? 'left' : 'right';    
+                sessionStorage[side + 'FileChanged'] = 'true';
+                updateTextsInSessionStorage(side);
+                enableSaveButtons(side);
+                fixTextAreas(paragraph);
+            });
+
+            if (novel) {
+                paragraph.classList.remove(paragraphClass);
+            }
+        });
+    }
+}
+
+makeParagraphsPastingFunctional();
 
 equalizeParagraphCountsInTexts();
 window.onresize = () => fixTextAreas();
