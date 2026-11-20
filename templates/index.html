@@ -29,18 +29,22 @@
 
     paragraphsPerPage = {{ paragraphs_per_page | tojson }};
 
-    {% if mode == '0' %}
+    MODE = getMode();
+
+    if (MODE === 0) {
         sessionStorage.clear();
         clearURLParameters();
         document.querySelector('.languages-dropdown-list-left').value = '--';
         document.querySelector('.languages-dropdown-list-right').value = '--';
         sessionStorage.leftFileFound = 'false';
         sessionStorage.rightFileFound = 'false';
-    {% elif mode == '2' %}
+    } else if (MODE === 2) {
         sessionStorage.leftFileFound = 'true';
         sessionStorage.rightFileFound = 'true';
-    {% endif %}
+    }
 
+    sessionStorage.leftFileChanged = 'false';
+    sessionStorage.rightFileChanged = 'false';
 
     function clearURLParameters () {
         const url = new URL(window.location.href);
@@ -383,11 +387,8 @@
                         
                         sessionStorage[side + 'FileFound'] = 'false';
         
-                        const leftFileFound = side === 'left' ? 'false' : sessionStorage['leftFileFound'];
-                        const rightFileFound = side === 'right' ? 'false' : sessionStorage['rightFileFound'];
-
-                        console.log(leftFileFound);
-                        console.log(rightFileFound);
+                        const leftFileFound = side === 'left' ? 'false' : sessionStorage.leftFileFound;
+                        const rightFileFound = side === 'right' ? 'false' : sessionStorage.rightFileFound;
         
                         rerenderAllByPaths(leftFileFound, rightFileFound, null);
                         reviveScripts();
@@ -537,9 +538,7 @@
                 if (rightFileFound === 'true') {
                     sessionStorage.rightFileFound = rightFileFound;
                 }
-                
-                sessionStorage.leftFileChanged = 'false';
-                sessionStorage.rightFileChanged = 'false';
+
                 reviveScripts();
                 setProgressPercent();
             },
@@ -731,7 +730,7 @@
 
         const footerSaveButton = document.querySelector('#panel-button-save');
 
-        const isNoAnyChangedFile = sessionStorage['leftFileChanged'] !== 'true' && sessionStorage['rightFileChanged'] !== 'true'
+        const isNoAnyChangedFile = !isAnyFileChanged();
         const isFooterSaveButtonEnabled = footerSaveButton && !footerSaveButton.classList.contains('panel-button-disabled')
 
         if (isNoAnyChangedFile && isFooterSaveButtonEnabled) {
