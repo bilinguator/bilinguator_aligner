@@ -87,10 +87,22 @@
     }
 
 
+    function updateMonolingualPosition () {
+        const paragraph = document.getElementById('monolingual-paragraph');
+
+        const position = paragraph.selectionEnd;
+        const previousText = paragraph.value.substring(0, position);
+        const lineIndex = countSubstrings(previousText, '\n', false) + 1;
+
+        document.querySelector('.bookmark-number').innerText = lineIndex;
+    }
+
+
     function makeProgressFunctional () {
         const percentProgress = document.querySelector('.percent');
-    
-        {% if mode == '1' %}
+        const mode = getMode();
+
+        if (mode === 1) {
             const paragraph = document.getElementById('monolingual-paragraph');
             
             paragraph.addEventListener('scroll', () => {
@@ -107,17 +119,13 @@
                 enableMonolingualChangeStatus();
             });
             
-            paragraph.addEventListener('selectionchange', () => {
-                const position = paragraph.selectionEnd;
-                const previousText = paragraph.value.substring(0, position);
-                const lineIndex = countSubstrings(previousText, '\n', false) + 1;
 
-                document.querySelector('.bookmark-number').innerText = lineIndex;
+            ['keyup', 'click', 'select', 'input'].forEach((eventName) => {
+                paragraph.addEventListener(eventName, updateMonolingualPosition);
             });
-
-        {% elif mode == '2' %}
+        } else if (mode === 2) {
             document.addEventListener('scroll', setProgressPercent);
-        {% endif %}
+        }
     }
 
     makeProgressFunctional();
