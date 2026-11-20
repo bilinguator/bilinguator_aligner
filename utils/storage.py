@@ -178,8 +178,9 @@ def remove_empty_project_folders():
 def remove_downloads():
     downloads_folder = f'{SCRIPT_DIRECTORY}/../static/downloads'
     
-    for file_name in os.listdir(downloads_folder):
-        os.remove(f'{downloads_folder}/{file_name}')
+    if os.path.isdir(downloads_folder):
+        for file_name in os.listdir(downloads_folder):
+            os.remove(f'{downloads_folder}/{file_name}')
 
 
 

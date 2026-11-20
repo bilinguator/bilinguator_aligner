@@ -27,7 +27,10 @@ if (ROOT_DIRECTORY == 'default') or (not os.path.isdir(ROOT_DIRECTORY)):
 
 PARAGRAPHS_PER_PAGE = int(CONFIG.get('paragraphs_per_page', 100))
 DARK_MODE = CONFIG.get('dark_mode', 'no')
-# DARK_MODE = True if DARK_MODE == 'yes' else False
+
+DOWNLOADS_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/downloads'
+if not os.path.isdir(DOWNLOADS_DIRECTORY):
+    os.mkdir(DOWNLOADS_DIRECTORY)
 
 STORAGE_DIRECTORY = f'{SCRIPT_DIRECTORY}/static/storage'
 
@@ -603,7 +606,7 @@ def save_assets():
     meta_data = f'lang1: {lang1}\nlang2: {lang2}'
     meta_data += f'\nbookmark: {bookmark}' if bookmark else ''
 
-    zip_path = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+    zip_path = f'{DOWNLOADS_DIRECTORY}/{file_name}'
 
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(text1_path, arcname=os.path.basename(text1_path))
@@ -626,7 +629,7 @@ def save_txt():
     text1 = request.json.get('text1')
     text2 = request.json.get('text2')
     file_name = request.json.get('file_name')
-    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+    book_address = f'{DOWNLOADS_DIRECTORY}/{file_name}'
 
     bilingual_formats.save_bilingual_txt(text1, text2, book_address)
     
@@ -643,7 +646,7 @@ def save_fb2():
     text2_path = request.json.get('text2_path')
     file_name = request.json.get('file_name')
 
-    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+    book_address = f'{DOWNLOADS_DIRECTORY}/{file_name}'
 
     hash = storage.project_hash(text1_path, text2_path)
     cover_path = storage.get_cover_path(hash)
@@ -676,7 +679,7 @@ def save_epub():
     text2_path = request.json.get('text2_path')
     file_name = request.json.get('file_name')
 
-    book_address = f'{SCRIPT_DIRECTORY}/static/downloads/{file_name}'
+    book_address = f'{DOWNLOADS_DIRECTORY}/{file_name}'
 
     hash = storage.project_hash(text1_path, text2_path)
     cover_path = storage.get_cover_path(hash)
