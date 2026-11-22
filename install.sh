@@ -25,7 +25,7 @@ uv venv "$VENV_DIR" --python 3.10 --seed --clear
 
 echo "[3/5] Downloading repository from GitHub..."
 rm -f "$TMP_ZIP"
-curl -fL --progress-bar -A "bilinguator-setup" "$REPO_API_URL" -o "$TMP_ZIP"
+curl -fL --progress-bar -A "bilinguator-install" "$REPO_API_URL" -o "$TMP_ZIP"
 
 "$VENV_DIR/bin/python" -c "
 import zipfile, shutil, os, tempfile
@@ -55,6 +55,37 @@ mkdir -p "$BIN_DIR"
 
 cat << EOF > "$LAUNCHER"
 #!/usr/bin/env bash
+
+# Support both 'bilinguator_aligner <flag>' and 'bilinguator aligner <flag>'
+if [[ "\$1" == "aligner" ]]; then
+    shift
+fi
+
+if [[ "\$1" == "--help" || "\$1" == "-h" ]]; then
+    APP_VER="1.0"
+    if [ -f "$APP_DIR/VERSION" ]; then
+        APP_VER=\$(tr -d '[:space:]' < "$APP_DIR/VERSION")
+    fi
+    if [ -f "$APP_DIR/HELP" ]; then
+        sed "s/{{VERSION}}/\$APP_VER/g" "$APP_DIR/HELP"
+        echo ""
+    else
+        echo "Bilinguator Aligner v\$APP_VER"
+        echo "Usage: bilinguator_aligner [--version | --help | --uninstall]"
+    fi
+    exit 0
+fi
+
+if [[ "\$1" == "--version" || "\$1" == "-v" ]]; then
+    if [ -f "$APP_DIR/VERSION" ]; then
+        tr -d '[:space:]' < "$APP_DIR/VERSION"
+        echo ""
+    else
+        echo "1.0"
+    fi
+    exit 0
+fi
+
 if [[ "\$1" == "--uninstall" ]]; then
     read -p "Are you sure you want to uninstall bilinguator_aligner? [y/N] " confirm
     if [[ "\$confirm" =~ ^[Yy]$ ]]; then
@@ -67,6 +98,7 @@ if [[ "\$1" == "--uninstall" ]]; then
         for RC_FILE in "\$HOME/.bashrc" "\$HOME/.zshrc"; do
             if [ -f "\$RC_FILE" ]; then
                 sed -i.bak '/alias bilinguator_aligner=/d' "\$RC_FILE" && rm -f "\${RC_FILE}.bak"
+                sed -i.bak '/alias bilinguator=/d' "\$RC_FILE" && rm -f "\${RC_FILE}.bak"
             fi
         done
         echo "bilinguator_aligner has been uninstalled."
@@ -92,7 +124,7 @@ elif command -v sudo &> /dev/null && sudo -n true 2>/dev/null; then
     sudo ln -sf "$LAUNCHER" /usr/local/bin/bilinguator_aligner
 fi
 
-# Unconditionally register PATH and alias in bash and zsh configs
+# Unconditionally register PATH and aliases in bash and zsh configs
 for RC_FILE in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
     touch "$RC_FILE"
     if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$RC_FILE"; then
@@ -100,13 +132,17 @@ for RC_FILE in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
     fi
     if [[ "$RC_FILE" != "$HOME/.profile" ]]; then
         sed -i.bak '/alias bilinguator_aligner=/d' "$RC_FILE" && rm -f "${RC_FILE}.bak"
+        sed -i.bak '/alias bilinguator=/d' "$RC_FILE" && rm -f "${RC_FILE}.bak"
         echo "alias bilinguator_aligner='$LAUNCHER'" >> "$RC_FILE"
+        echo "alias bilinguator='$LAUNCHER'" >> "$RC_FILE"
     fi
 done
 
 echo ""
 echo "Installation complete! Installed to: $APP_DIR"
 echo "To start the app, run: bilinguator_aligner"
+echo "To view help, run: bilinguator_aligner --help"
+echo "To check version, run: bilinguator_aligner --version"
 echo "To uninstall the app, run: bilinguator_aligner --uninstall"
 
 # Reload current shell so alias and PATH work immediately
