@@ -1,0 +1,30 @@
+<div id="illustrations-renaming-panel" class="overlaying-panel">
+    <button class="explorer-close-button explorer-close-button-{{ side }}" onclick="closePanel('illustrations-renaming-panel')">×</button>
+    <h2 class="overlaying-panel-heading">Set names for illustrations</h2>
+    <p class="overlaying-panel-message">Name the illustration assigned to be a cover as “cover”. The rest of illustrations should be named as numerals starting from one: “1”, “2”, etc.</p>
+    <div class="illustration-names-list">
+    {% for illustration_name in illustration_names %}
+        <div class="overlaying-panel-item illustration-item">
+            <img src="{{ url_for('static', filename='storage/' + project + '/illustrations/' + illustration_name +'.png') }}"
+              class="illustration"
+              alt="{{ illustration_name }}"
+              title="{{ illustration_name }}">
+            
+            
+            <div class="illustration-name-panel">
+                <input class="illustration-name" type="text" value="{{ illustration_name }}" data-original-name="{{ illustration_name }}">
+                <p class="illustration-extension">.png</p>
+            </div>
+
+            <img src="{{ url_for('static', filename='img/trash.svg') }}"
+              class="illustrations-delete-button"    
+              alt="Remove"
+              title="Remove"
+              onclick="this.parentElement.remove();removeIllustration(`{{ url_for('static', filename='storage/' + project + '/illustrations/' + illustration_name +'.png') }}`)">
+        </div>
+    {% endfor %}
+    </div>
+    <button class="book-panel-button illustrations-renaming-button" onclick="renameIllustrations()">
+        Rename illustrations
+    </button>
+</div>

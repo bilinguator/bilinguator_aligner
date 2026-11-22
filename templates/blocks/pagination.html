@@ -1,0 +1,48 @@
+<div class="pagination subpanel">
+    <button class="panel-button panel-button-pagination-arrow"
+     page="{{ 'stop' if current_page == 1 else 1 }}">
+        <img src="{{ url_for('static', filename='img/pagination_arrow_beginning.svg') }}"
+         alt="To the beginning"
+         title="To the beginning"
+         class="panel-button-img pagination-arrow-img{{ ' pagination-arrow-img-disabled' if current_page == 1 else ''}}">
+    </button>
+
+    <button class="panel-button panel-button-pagination-arrow"
+     page="{{ current_page-1 if current_page > 1 else 'stop'}}">
+        <img src="{{ url_for('static', filename='img/pagination_arrow_left.svg') }}"
+         alt="Previous page"
+         title="Previous page"
+         class="panel-button-img pagination-arrow-img{{ ' pagination-arrow-img-disabled' if current_page == 1 else ''}}">
+    </button>
+
+    <input class="page-number" type="text" page="{{ current_page }}" rows="1" placeholder="№" value="{{ current_page }}">
+    
+    <p class="slash">
+        /
+    </p>
+
+    <p class="pages-count">{{ pages_count }}</p>
+
+    <button class="panel-button panel-button-pagination-arrow"
+     page="{{ current_page+1 if current_page < pages_count else 'stop'}}">
+        <img src="{{ url_for('static', filename='img/pagination_arrow_right.svg') }}"
+         alt="Next page"
+         title="Next page"
+         class="panel-button-img pagination-arrow-img{{ ' pagination-arrow-img-disabled' if current_page == pages_count else ''}}">
+    </button>
+
+    <button class="panel-button panel-button-pagination-arrow"
+     page="{{ 'stop' if current_page == pages_count else pages_count }}">
+        <img src="{{ url_for('static', filename='img/pagination_arrow_end.svg') }}"
+         alt="To the end"
+         title="To the end"
+         class="panel-button-img pagination-arrow-img{{ ' pagination-arrow-img-disabled' if current_page == pages_count else ''}}">
+    </button>
+</div>
+<script type="text/javascript">    
+    document.querySelector('.page-number').addEventListener('keydown', (event) => {
+        if (event.code === 'Enter') {
+            goToPage(parseInt(event.target.value));
+        }
+    });
+</script>

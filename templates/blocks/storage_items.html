@@ -1,0 +1,21 @@
+<div class="storage-items storage-items-{{ value_key }}">
+    <h2 class="storage-item-heading">{{ heading }}</h2>
+    {% for item in storage_items %}
+        <div class="storage-item storage-item-{{ value_key }}">
+            <div class="storage-item-paths">
+                <p class="storage-item-path">{{ item['path1'] }}</p>
+                <p class="storage-item-path">{{ item['path2'] }}</p>
+            </div>
+            <div class="storage-item-value storage-item-langs">
+                <p class="storage-item-lang" data-lang="{{ item['lang1'] }}">{{ languages[item['lang1']] }}</p>
+                <p class="storage-item-lang" data-lang="{{ item['lang2'] }}">{{ languages[item['lang2']] }}</p>
+            </div>
+            <p class="storage-item-value storage-item-value-{{ value_key }}">{{ item[value_key] }}</p>
+            <p class="storage-item-value storage-item-value-date">{{ item[value_key+'_date'] }}</p>
+            <img src="{{ url_for('static', filename='img/trash.svg') }}"
+              class="storage-item-delete-button storage-item-delete-button-{{ value_key }}"    
+              alt="Remove"
+              title="Remove">
+        </div>
+    {% endfor %}
+</div>

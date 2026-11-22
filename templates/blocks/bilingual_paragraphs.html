@@ -1,0 +1,79 @@
+<div class="paragraphs">
+    {% for i in range(first_paragraph, last_paragraph) %}
+        <div class="paragraph-couple">
+            <div class="left">
+                <div class="paragraph-panel panel-left">
+                    <p class="paragraph-number paragraph-number-left {{ 'paragraph-number-bookmark' if i+1 == bookmark else '' }}">{{ i+1 }}</p>
+                    <div class="paragraph-buttons main-paragraph-buttons">
+                        <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.svg') }}">
+                        <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.svg') }}">
+                    </div>
+                    <div class="paragraph-buttons additional-paragraph-buttons" hidden>
+                        <img class="paragraph-button shift-paragraph-button shift-right-paragraph-button" src="{{ url_for('static', filename='img/shift_right_arrow.svg') }}">
+                        <img class="paragraph-button swap-paragraph-button" src="{{ url_for('static', filename='img/swap_paragraphs_arrows.svg') }}">
+                    </div>
+                </div>
+                <div class="paragraph-container">
+                    <textarea lang="{{ lang1 }}" class="paragraph paragraph-left" id="paragraph{{ i+1 }}" data-paragraph="{{ i+1 }}">{{ paragraphs1[i] }}</textarea>
+                </div>
+            </div>
+                
+            <div class="right">
+                <div class="paragraph-container">
+                    <textarea lang="{{ lang2 }}" class="paragraph paragraph-right" data-paragraph="{{ i+1 }}">{{ paragraphs2[i] }}</textarea>
+                </div>
+                
+                <div class="paragraph-panel paragraph-panel-right">
+                    <p class="paragraph-number paragraph-number-right {{ 'paragraph-number-bookmark' if i+1 == bookmark else '' }}">{{ i+1 }}</p>
+                    <div class="paragraph-buttons main-paragraph-buttons">
+                        <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.svg') }}">
+                        <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.svg') }}">
+                    </div>
+                    <div class="paragraph-buttons additional-paragraph-buttons" hidden>
+                        <img class="paragraph-button shift-paragraph-button shift-left-paragraph-button" src="{{ url_for('static', filename='img/shift_left_arrow.svg') }}">
+                        <img class="paragraph-button swap-paragraph-button" src="{{ url_for('static', filename='img/swap_paragraphs_arrows.svg') }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<template id="paragraph-couple-template">
+    <div class="paragraph-couple">
+        <div class="left">
+            <div class="paragraph-panel panel-left">
+                <p class="paragraph-number paragraph-number-left">__INDEX__</p>
+                <div class="paragraph-buttons main-paragraph-buttons">
+                    <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.svg') }}">
+                    <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.svg') }}">
+                </div>
+                <div class="paragraph-buttons additional-paragraph-buttons" hidden>
+                    <img class="paragraph-button shift-paragraph-button shift-right-paragraph-button" src="{{ url_for('static', filename='img/shift_right_arrow.svg') }}">
+                    <img class="paragraph-button swap-paragraph-button" src="{{ url_for('static', filename='img/swap_paragraphs_arrows.svg') }}">
+                </div>
+            </div>
+            <div class="paragraph-container">
+                <textarea lang="__LANG1__" class="paragraph paragraph-left" id="paragraph__INDEX__" data-paragraph="__INDEX__"></textarea>
+            </div>
+        </div>
+            
+        <div class="right">
+            <div class="paragraph-container">
+                <textarea lang="__LANG2__" class="paragraph paragraph-right" data-paragraph="__INDEX__"></textarea>
+            </div>
+            
+            <div class="paragraph-panel paragraph-panel-right">
+                <p class="paragraph-number paragraph-number-right">__INDEX__</p>
+                <div class="paragraph-buttons main-paragraph-buttons">
+                    <img class="paragraph-button add-paragraph-button" src="{{ url_for('static', filename='img/add.svg') }}">
+                    <img class="paragraph-button delete-paragraph-button" src="{{ url_for('static', filename='img/delete.svg') }}">
+                </div>
+                <div class="paragraph-buttons additional-paragraph-buttons" hidden>
+                    <img class="paragraph-button shift-paragraph-button shift-left-paragraph-button" src="{{ url_for('static', filename='img/shift_left_arrow.svg') }}">
+                    <img class="paragraph-button swap-paragraph-button" src="{{ url_for('static', filename='img/swap_paragraphs_arrows.svg') }}">
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

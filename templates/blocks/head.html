@@ -1,0 +1,12 @@
+<head>
+    <title>Bilinguator Aligner</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="author" content="Bilinguator.com">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/icon.png') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fonts.css') }}" />
+    {% if dark_mode == 'yes' %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dark.css') }}" />
+    {% endif %}
+    <script defer src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
+</head>

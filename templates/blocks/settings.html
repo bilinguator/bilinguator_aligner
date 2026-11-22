@@ -1,0 +1,25 @@
+<div id="settings-panel" class="overlaying-panel">
+    <button class="explorer-close-button explorer-close-button-{{ side }}" onclick="closePanel('settings-panel')">×</button>
+    <h2 class="overlaying-panel-heading">Settings</h2>
+    <p class="overlaying-panel-message">Reload the program after saving changes.</p>
+    <div id="settings-list">
+        <div class="overlaying-panel-item settings-item">
+            <label for="root-directory" class="setting-name">Root directory</label>
+            <textarea id="root-directory" name="root-directory" class="setting-value">{{ config.root_directory }}</textarea>
+        </div>
+        <div class="overlaying-panel-item settings-item">
+            <label for="paragraphs-per-page" class="setting-name">Paragraphs per page</label>
+            <textarea id="paragraphs-per-page" name="paragraphs-per-page" class="setting-value">{{ config.paragraphs_per_page }}</textarea>
+        </div>
+        <div class="overlaying-panel-item settings-item">
+            <label for="dark-mode" class="setting-name">Dark mode</label>
+            <select id="dark-mode" name="dark-mode" class="setting-value">
+                <option value="no" {{ 'selected' if config.dark_mode == 'no' else '' }}>No</option>
+                <option value="yes" {{ 'selected' if config.dark_mode == 'yes' else '' }}>Yes</option>
+            </select>
+        </div>
+    </div>
+    <button class="book-panel-button illustrations-renaming-button" onclick="updateSettings(event)">
+        Save changes and reload
+    </button>
+</div>

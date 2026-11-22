@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html>
+    {% include 'blocks/head.html' %}
+    <body>
+        <input type="file" id="illustrations-picker" multiple accept=".png" hidden>
+        {% include 'blocks/header.html' %}
+        {{ cover_HTML | safe }}
+        <div class="main-area {{ 'main-area-dark' if mode == '0' else '' }} {{ 'main-area-monolingual' if mode == '1' else '' }}">
+            {{ home_screen }}
+            {{ paragraphs }}
+            {{ footer | safe }}
+        </div>
+        {{ sidebar_templates }}
+        {% include 'blocks/screen_block.html' %}
+    </body>
+</html>
+<script type="text/javascript">
+    // Put this script to file to avoid errors!
+    delimiter = '<delimiter>';
+    changesNotSavedMessage = 'Changes you made may not be saved! Are you sure to procede?';
+
+    sessionStorage.text1 = {{ text1 | tojson }};
+    sessionStorage.text2 = {{ text2 | tojson }};
+
+    rootFolder = {{ root_folder | tojson }};
+
+    hash = {{ hash | tojson }};
+    illustrationsFolder = hash !== '' ? `/static/storage/${hash}/illustrations` : '';
+
+    paragraphsPerPage = {{ paragraphs_per_page | tojson }};
+
+    MODE = getMode();
+
+    if (MODE === 0) {
+        sessionStorage.clear();
+        clearURLParameters();
+        document.querySelector('.languages-dropdown-list-left').value = '--';
+        document.querySelector('.languages-dropdown-list-right').value = '--';
+        sessionStorage.leftFileFound = 'false';
+        sessionStorage.rightFileFound = 'false';
+    } else if (MODE === 2) {
+        sessionStorage.leftFileFound = 'true';
+        sessionStorage.rightFileFound = 'true';
+    }
+
+    sessionStorage.leftFileChanged = 'false';
+    sessionStorage.rightFileChanged = 'false';
+
+    function clearURLParameters () {
+        const url = new URL(window.location.href);
+        url.search = '';
+        history.replaceState(null, '', url.toString());
+    }
+
+
+    function countSubstrings (string, substring, isRegex = false) {
+        substring = isRegex ? substring : substring.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        try {
+            const regex = new RegExp(substring, 'gmu'); 
+            const matches = string.match(regex) || []; 
+            return matches.length;
+        } catch {
+            return 0;
+        }
+    }
+
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+    }
+
+
+    function setProgressPercent () {
+        if (getMode() !== 2) {
+            return;
+        }
+
+        const percentProgress = document.querySelector('.percent');
+
+        const minPercent = parseFloat(percentProgress.getAttribute('min'));
+        const maxPercent = parseFloat(percentProgress.getAttribute('max'));
+
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+        const value = minPercent + (maxPercent - minPercent) * progress;
+
+        percentProgress.textContent = Math.round(value) + '%';
+    }
+
+
+    function updateMonolingualPosition () {
+        const paragraph = document.getElementById('monolingual-paragraph');
+
+        const position = paragraph.selectionEnd;
+        const previousText = paragraph.value.substring(0, position);
+        const lineIndex = countSubstrings(previousText, '\n', false) + 1;
+
+        document.querySelector('.bookmark-number').innerText = lineIndex;
+    }
+
+
+    function makeProgressFunctional () {
+        const percentProgress = document.querySelector('.percent');
+        const mode = getMode();
+
+        if (mode === 1) {
+            const paragraph = document.getElementById('monolingual-paragraph');
+            
+            paragraph.addEventListener('scroll', () => {
+                const scrollTop = paragraph.scrollTop;
+                const scrollHeight = paragraph.scrollHeight - paragraph.clientHeight;
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+                const value = 100 * progress;
+    
+                percentProgress.innerText = Math.round(value) + '%';
+            });
+
+            paragraph.addEventListener('input', () => {
+                updateParagraphsCount();
+                enableMonolingualChangeStatus();
+            });
+            
+
+            ['keyup', 'click', 'select', 'input'].forEach((eventName) => {
+                paragraph.addEventListener(eventName, updateMonolingualPosition);
+            });
+        } else if (mode === 2) {
+            document.addEventListener('scroll', setProgressPercent);
+        }
+    }
+
+    makeProgressFunctional();
+
+    
+    function rerenderByDictionary(dictionary) {
+        for (key in dictionary) {
+            let rerenderedElement = document.querySelector('.'+key);
+            rerenderedElement.outerHTML = dictionary[key];
+        }
+    }
+
+
+    function makeScrollToTopArrowFunctional () {
+        let scrollToTopArrow = document.querySelector('#panel-button-scroll_to_top_arrow');
+    
+        if (scrollToTopArrow) {
+            document.querySelector('#panel-button-scroll_to_top_arrow').addEventListener('click', () => {
+                const mode = getMode();
+                if (mode === 2) {
+                    window.scrollTo(0, 0)
+                } else if (mode === 1) {
+                    document.getElementById('monolingual-paragraph').scrollTop = 0;
+                }
+            });
+        }
+    }
+
+    makeScrollToTopArrowFunctional();
+
+
+    function getFolderByAbsolutePath (path) {
+        let pathWithReplacedSlashes = path.replaceAll('\\', '/');
+        const sameSlashes = path === pathWithReplacedSlashes;
+        pathWithReplacedSlashes = pathWithReplacedSlashes.slice(0, pathWithReplacedSlashes.lastIndexOf('/'))
+
+        return sameSlashes ? pathWithReplacedSlashes : pathWithReplacedSlashes.replaceAll('/', '\\');
+    }
+
+
+    function closeExplorer (side='both') {
+        
+        const explorerClass = side == 'both' ? '.explorer' : '.explorer-' + side;
+        
+        document.querySelectorAll(explorerClass).forEach((element) => {
+            element.remove();
+        });
+    }
+
+
+    function openExplorer (path = null, side='left') {
+
+        if (document.querySelector('.explorer')) {
+            closeExplorer('both');
+        }
+
+        const bookAddress = document.querySelector('#book-address-' + side);
+
+        const isWindows = window.navigator.userAgent.includes('Windows');
+        const pathSep = isWindows ? '\\' : '/';
+        
+        if (path === null) {
+            path = bookAddress.value
+
+            if (sessionStorage[side + 'FileFound'] === 'true') {
+                path = path.split(pathSep).slice(0, -1).join(pathSep);
+            }
+        }
+
+
+        const originalPath = sessionStorage[side + 'FileFound'] === 'true' ? bookAddress.value : path;
+
+        $.ajax({
+            url: '/open_explorer',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                path: path,
+                side: side,
+                original_path: originalPath,
+            }),
+            success: function (response) {
+                const mainArea = document.querySelector('.main-area');
+                mainArea.insertAdjacentHTML('afterbegin', response['template']);
+                makeHorizontalFieldScrollable('.file-path-field');
+
+                if (getMode() == 0) {
+                    document.querySelector('.explorer').classList.add('full-height-explorer');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function setBookmark (bookmark = '') {
+
+        if (getMode() !== 2) {
+            return;
+        }
+
+        if (!bookmark) {
+            bookmark = document.querySelector('#paragraph-index-left').value;
+        }
+
+        if (bookmark.toString() !== parseInt(bookmark).toString()) {
+            return;
+        }
+
+        const paragraphsCount = parseInt(
+            document.querySelector('.paragraphs-count').innerText
+        );
+
+        if (bookmark < 0 || bookmark > paragraphsCount) {
+            return;
+        }
+
+        const bookAddressLeft = document.querySelector('#book-address-left').value;
+        const bookAddressRight = document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/set_bookmark',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+                lang1: document.querySelector('#languages-dropdown-list-left').value,
+                lang2: document.querySelector('#languages-dropdown-list-right').value,
+                bookmark: bookmark,
+            }),
+            success: function (response) {
+                document.querySelector('.bookmark-number').innerText = bookmark;
+                updateBookmarkOnScreen(bookmark);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function unsetBookmark (bookAddressLeft = null, bookAddressRight = null) {
+        bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
+        bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/unset_bookmark',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+            }),
+            success: function (response) {
+                document.querySelector('.bookmark-number').innerText = '∅';
+                updateBookmarkOnScreen();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function removeIllustrations (bookAddressLeft = null, bookAddressRight = null) {
+        bookAddressLeft = bookAddressLeft ? bookAddressLeft : document.querySelector('#book-address-left').value;
+        bookAddressRight = bookAddressRight ? bookAddressRight : document.querySelector('#book-address-right').value;
+
+        $.ajax({
+            url: '/remove_illustrations',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                text1_path: bookAddressLeft,
+                text2_path: bookAddressRight,
+            }),
+            success: function (response) {
+                console.log('Illustrations successfully removed!');
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function openBook (path, side) {
+        const hasFileChanged = isAnyFileChanged();
+        
+        if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+            const bookAddress = document.querySelector('#book-address-' + side);
+            bookAddress.value = path;
+    
+            const leftFileFound = side === 'left' ? 'true' : sessionStorage['leftFileFound'];
+            const rightFileFound = side === 'right' ? 'true' : sessionStorage['rightFileFound'];
+    
+            setURLParameter('focus', 'true');
+            setParagraphIndex('', 'left');
+            setParagraphIndex('', 'right');
+            rerenderAllByPaths(leftFileFound, rightFileFound, null);
+        }
+    }
+
+
+    browseButtons = document.querySelectorAll('.browse-button');
+    browseButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const side = button.classList.contains('browse-button-left') ? 'left' : 'right';
+
+            if (document.querySelector('.explorer')) {
+                closeExplorer('both');
+            } else {
+                openExplorer(null, side);
+            }
+        });
+    });
+
+    
+    function makeCloseBookButtonsFunctional () {
+        
+        const closeBookButtons = document.querySelectorAll('.close-book-button');
+
+        closeBookButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                closeExplorer('both');
+
+                const hasFileChanged = isAnyFileChanged();
+        
+                if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+                    const side = button.id.endsWith('left') ? 'left' : 'right';
+                    
+                    if (sessionStorage[side + 'FileFound'] !== 'false') {
+                        const bookAddressOld = document.querySelector('#book-address-' + side);
+        
+                        bookAddressOld.value = rootFolder;
+                        
+                        sessionStorage[side + 'FileFound'] = 'false';
+        
+                        const leftFileFound = side === 'left' ? 'false' : sessionStorage.leftFileFound;
+                        const rightFileFound = side === 'right' ? 'false' : sessionStorage.rightFileFound;
+        
+                        rerenderAllByPaths(leftFileFound, rightFileFound, null);
+                        reviveScripts();
+                    }
+                }
+            });
+        });
+    }
+
+    makeCloseBookButtonsFunctional();
+
+
+    function fillEmptyFileAddresses() {
+        const bookAddresses = document.querySelectorAll('.book-address');
+        
+        bookAddresses.forEach((bookAddress) => {
+            if (!bookAddress.value) {
+                bookAddress.value = rootFolder;
+            }
+        });
+    }
+
+    fillEmptyFileAddresses();
+
+    function setURLParameter (paramName, paramValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(paramName, paramValue);
+        window.history.replaceState({}, '', url);
+    }
+
+
+    function unsetURLParameter (paramName) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(paramName);
+        window.history.replaceState(null, '', url.toString());
+    }
+
+
+    function getURLParameter (paramName) {
+        const urlParams = new URLSearchParams(window.location.search); 
+        return urlParams.get(paramName);
+    }
+
+
+    function makeHorizontalFieldScrollable (fieldClass) {
+        const filePathFields = document.querySelectorAll(fieldClass);
+
+        filePathFields.forEach((element) => {
+            let isDragging = false;
+            let startX;
+            let scrollLeft;
+
+            element.addEventListener('mousedown', (e) => {
+                const isInput = e.target.closest('textarea, input, [contenteditable="true"]');
+                if (isInput) return;
+
+                isDragging = true;
+                element.classList.add('dragging');
+                startX = e.pageX - element.offsetLeft;
+                scrollLeft = element.scrollLeft;
+            });
+
+            element.addEventListener('mouseleave', () => {
+                isDragging = false;
+                element.classList.remove('dragging');
+            });
+
+            element.addEventListener('mouseup', () => {
+                isDragging = false;
+                element.classList.remove('dragging');
+            });
+
+            element.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - element.offsetLeft;
+                const walkX = (x - startX);
+                element.scrollLeft = scrollLeft - walkX;
+            });
+        });
+    }
+
+    makeHorizontalFieldScrollable('.header-container');
+    makeHorizontalFieldScrollable('.upper-panel');
+    makeHorizontalFieldScrollable('.footer');
+    
+
+    function reviveScripts (selector = 'script') {
+        const scripts = document.querySelectorAll(selector);
+
+        scripts.forEach(oldScript => {
+            if (oldScript.dataset.revived === '1' || oldScript.getAttribute('data-no-revive') === 'true') {
+                return;
+            }
+
+            const newScript = document.createElement('script');
+
+            if (oldScript.src) {
+                newScript.src = oldScript.src;
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
+
+            for (let attr of oldScript.attributes) {
+                newScript.setAttribute(attr.name, attr.value);
+            }
+
+            newScript.setAttribute('data-revived', '1');
+            oldScript.replaceWith(newScript);
+        });
+    }
+
+
+    function rerenderAllByPaths (leftFileFound = 'false', rightFileFound = 'false', queryParameters = null) {
+
+        if (!queryParameters) {
+            queryParameters = {
+                text1_path: document.querySelector('#book-address-left').value,
+                text2_path: document.querySelector('#book-address-right').value,
+                lang1: document.querySelector('#languages-dropdown-list-left').value,
+                lang2: document.querySelector('#languages-dropdown-list-right').value,
+           }
+        }
+
+        for (const paramName in queryParameters) {
+            setURLParameter(paramName, queryParameters[paramName]);
+        }
+
+        queryParameters = $.param(queryParameters);
+
+        url = `/?${queryParameters}`;
+
+        $.ajax({
+            url: url,
+            type: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            success: function (response) {
+                document.documentElement.innerHTML = response;
+
+                if (leftFileFound === 'true') {
+                    sessionStorage.leftFileFound = leftFileFound;
+                }
+
+                if (rightFileFound === 'true') {
+                    sessionStorage.rightFileFound = rightFileFound;
+                }
+
+                reviveScripts();
+                setProgressPercent();
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+    
+    function getTextBySide (side = 'left') {
+        let text = '';
+        const mode = getMode();
+
+        if (mode === 1) {
+            return document.getElementById('monolingual-paragraph').value;
+        } else if (mode === 2) {
+            return getFullTextFromBilingualMode(side);
+        } else {
+            return;
+        }
+    }
+
+
+    function saveBook (side) {
+        
+        if (side === 'both') {
+            saveBook('left');
+            saveBook('right');
+            return;
+        }
+
+        if (sessionStorage[side + 'FileFound'] !== 'true') {
+            return;
+        }
+
+        const text = getTextBySide(side);
+
+        if (text === undefined) {
+            return;
+        }
+
+        const bookAddress = document.querySelector('#book-address-' + side).value;
+
+        $.ajax({
+            url: '/save_book',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify({
+                bookAddress: bookAddress,
+                text: text,
+            }),
+            success: function (response) {
+                console.log('Book has been successfully saved to the file:\n' + bookAddress);
+                sessionStorage[side + 'FileChanged'] = 'false';
+                disableSaveButtons(side);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function backup () {
+        data = {};
+
+        ['1', '2'].forEach((index) => {
+            if (sessionStorage['text'+index]  && sessionStorage['text'+index] !== 'null') {
+                data['text'+index] = sessionStorage['text'+index]
+
+                const side = index === '1' ? 'left' : 'right';
+                data['text'+index+'_path'] = document.querySelector('#book-address-' + side).value;
+            }
+        });
+
+        $.ajax({
+            url: '/backup',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            data: JSON.stringify(data),
+            success: function (response) {
+                showMessage('Backup successfully saved!');
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function isAnyFileChanged () {
+        return sessionStorage.leftFileChanged === 'true' || sessionStorage.rightFileChanged === 'true';
+    }
+
+
+    function getCurrentPage () {
+        const pageNumberTextarea = document.querySelector('.page-number');
+        
+        if (pageNumberTextarea) {
+            return parseInt(pageNumberTextarea.attributes.page.value);
+        } else {
+            return 1;
+        }
+    }
+
+
+    function swapTexts () {
+        const hasFileChanged = isAnyFileChanged();
+        
+        if (!hasFileChanged || (hasFileChanged && confirm(changesNotSavedMessage))) {
+            const bookAddressLeft = document.querySelector('#book-address-left');
+            const bookAddressRight = document.querySelector('#book-address-right');
+    
+            queryParameters = {
+                text1_path: bookAddressRight.value,
+                text2_path: bookAddressLeft.value,
+                lang1: document.querySelector('#languages-dropdown-list-right').value,
+                lang2: document.querySelector('#languages-dropdown-list-left').value,
+                page: getCurrentPage(),
+            }
+
+            setParagraphIndex('', 'left');
+            setParagraphIndex('', 'right');
+            setURLParameter('focus', 'true');
+            rerenderAllByPaths(sessionStorage.rightFileFound, sessionStorage.leftFileFound, queryParameters = queryParameters);
+
+            const rightFileFound = sessionStorage.rightFileFound;
+            sessionStorage.rightFileFound = sessionStorage.leftFileFound;
+            sessionStorage.leftFileFound = rightFileFound;
+
+            setSaveBookButtonsStates();
+        }
+    }
+
+
+    if (document.querySelector('.paragraph')) {
+        function activateSwapButton () {
+            const swapButton = document.querySelector('#panel-button-swap');
+            swapButton.addEventListener('click', swapTexts);
+        }
+    
+        activateSwapButton();
+    }
+
+
+    function enableSaveButtons (side = 'both') {
+        if (side === 'both') {
+            enableSaveButtons('left');
+            enableSaveButtons('right');
+            return;
+        }
+
+        const bookPanelSaveButton = document.querySelector('#save-book-panel-button-' + side);
+        
+        if (bookPanelSaveButton.classList.contains('book-panel-button-disabled')) {
+            bookPanelSaveButton.classList.remove('book-panel-button-disabled')
+        }
+
+        const footerSaveButton = document.querySelector('#panel-button-save');
+
+        if (footerSaveButton && footerSaveButton.classList.contains('panel-button-disabled')) {
+            footerSaveButton.classList.remove('panel-button-disabled');
+        }
+    }
+
+
+    function disableSaveButtons (side = 'both') {
+        if (side === 'both') {
+            disableSaveButtons('left');
+            disableSaveButtons('right');
+            return;
+        }
+
+        const bookPanelSaveButton = document.querySelector('#save-book-panel-button-' + side);
+        
+        if (!bookPanelSaveButton.classList.contains('book-panel-button-disabled')) {
+            bookPanelSaveButton.classList.add('book-panel-button-disabled')
+        }
+
+        const footerSaveButton = document.querySelector('#panel-button-save');
+
+        const isNoAnyChangedFile = !isAnyFileChanged();
+        const isFooterSaveButtonEnabled = footerSaveButton && !footerSaveButton.classList.contains('panel-button-disabled')
+
+        if (isNoAnyChangedFile && isFooterSaveButtonEnabled) {
+            footerSaveButton.classList.add('panel-button-disabled');
+        }
+    }
+
+
+    function makeSessionStorageFunctional () {
+        ['left', 'right'].forEach((side) => {
+            if (!sessionStorage[side + 'FileChanged']) {
+                sessionStorage[side + 'FileChanged'] = 'false';
+            }
+            
+            if (sessionStorage[side + 'FileChanged'] === 'false') {
+                disableSaveButtons('both');
+            }
+        });
+    }
+
+    makeSessionStorageFunctional();
+
+
+    function makeParagraphsFunctional (novel = false) {
+        const paragraphClass = 'paragraph' + (novel ? '-new' : '');
+
+        document.querySelectorAll('.' + paragraphClass).forEach((paragraph) => {
+            paragraph.addEventListener('input', () => {
+                if (paragraph.id == 'monolingual-paragraph') {
+                    const side = sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
+                    sessionStorage[side + 'FileChanged'] = 'true';
+                    updateTextsInSessionStorage(side);
+                    enableSaveButtons(side);
+                    updateSearchCount();
+                } else {
+                    const side = paragraph.classList.contains('paragraph-left') ? 'left' : 'right';    
+                    sessionStorage[side + 'FileChanged'] = 'true';
+                    updateTextsInSessionStorage(side);
+                    enableSaveButtons(side);
+                    fixTextAreas(paragraph);
+
+                    if (novel) {
+                        paragraph.classList.remove(paragraphClass);
+                    }
+                }
+            });
+        });
+    }
+
+    makeParagraphsFunctional();
+
+
+    function makeSaveBookButtonsFunctional () {
+        document.querySelectorAll('.save-book-panel-button').forEach((button) => {
+            button.addEventListener('click', () => {
+                if (!button.classList.contains('book-panel-button-disabled')) {
+                    const side = button.id == 'save-book-panel-button-left' ? 'left' : 'right';
+                    saveBook(side);
+                }
+            });
+        });
+        
+        if (document.querySelector('#panel-button-save')) {
+            document.querySelector('#panel-button-save').addEventListener('click', () => {
+                saveBook('both');
+            });
+
+            if (getMode() === 2) {
+                document.querySelector('#panel-button-save').addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    saveAssets();
+                });
+            }
+        }
+    
+        ['left', 'right'].forEach((side) => {
+            if (sessionStorage[side + 'FileChanged'] === 'true') {
+                enableSaveButtons(side);
+            }
+        });
+    }
+
+    makeSaveBookButtonsFunctional();
+
+
+    function setSaveBookButtonsStates () {
+        ['left', 'right'].forEach((side) => {
+            if (sessionStorage[side + 'FileFound'] !== 'true') {
+                let closeBookButton = document.querySelector('#close-book-button-' + side);
+
+                if (!closeBookButton.classList.contains('book-panel-button-disabled')) {
+                    closeBookButton.classList.add('book-panel-button-disabled');
+                }
+            }
+        });
+    }
+
+    setSaveBookButtonsStates();
+
+
+    window.addEventListener('beforeunload', function (e) {
+        const hasFileChanged = isAnyFileChanged();
+
+        if (!hasFileChanged) return;
+
+        e.preventDefault();
+        e.returnValue = changesNotSavedMessage;
+
+        return changesNotSavedMessage;
+    });
+
+
+    function setLanguageForParagraphs (side, lang = null) {
+        const paragraphs = document.querySelectorAll('.paragraph-' + side);
+        const monolingualParagraph = document.getElementById('monolingual-paragraph');
+
+        if (!lang) {
+            lang = document.querySelector('#languages-dropdown-list-' + side).value;
+        }
+
+        if (paragraphs.length !== 0) {
+            paragraphs.forEach((paragraph) => {
+                paragraph.lang = lang;
+            });
+        } else if (monolingualParagraph) {
+            if (sessionStorage[side + 'FileFound'] === 'true') {
+                monolingualParagraph.lang = lang;
+            }
+        }
+    }
+
+    setLanguageForParagraphs('left');
+    setLanguageForParagraphs('right');
+
+
+    function getMode () {
+        if (document.querySelector('.paragraph-left')) {
+            return 2;
+        } else if (document.getElementById('monolingual-paragraph')) {
+            return 1;
+        }
+        
+        return 0
+    }
+
+
+    function makeLanguagesDropdownListsFunctional () {
+        ['left', 'right'].forEach((side) => {
+            const languagesDropdownList = document.querySelector('#languages-dropdown-list-' + side);
+            languagesDropdownList.addEventListener('change', () => {
+                setLanguageForParagraphs(side);
+                const langParamName = 'lang' + (side === 'left' ? '1' : '2');
+                setURLParameter(langParamName, languagesDropdownList.value);
+
+                const mode = getMode();
+
+                if (mode === 2) {
+                    fixTextAreas();
+                } else if (mode === 1) {
+                    if (sessionStorage.sidebarTemplate === 'statistics') {
+                        updateLanguageNamesInSidebar();
+                        updateLanguageAlphabet();
+                    }
+
+                    if (sessionStorage.sidebarTemplate === 'quotation_marks') {
+                        updateLanguageNamesInSidebar();
+                        updateLanguageQuotationMarks();
+                    }
+                }
+            });
+        });
+    }
+
+    makeLanguagesDropdownListsFunctional();
+
+
+    function getSideByParagraph (paragraph) {
+        const mode = getMode();
+
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
+        if (mode === 1) {
+            return sessionStorage['leftFileFound'] === 'true' ? 'left' : 'right';
+        } else if (mode === 2) {
+            return paragraph.classList.contains('paragraph-left') ? 'left' : 'right';
+        }
+    }
+    
+    
+    function addTagsToParagraph (tag1, tag2, paragraph) {
+        const isParagraph = paragraph.classList.contains('paragraph')
+        const isSearchReplaceInput = paragraph.classList.contains('search-replace-input');
+
+        if (!(isParagraph || isSearchReplaceInput)) {
+            return;
+        }
+
+        const start = paragraph.selectionStart;
+        const end = paragraph.selectionEnd;
+
+        const paragraphValue = paragraph.value;
+        let taggedParagraphValue = paragraphValue.substring(0, start) + tag1;
+        taggedParagraphValue += paragraphValue.substring(start, end) + tag2;
+        taggedParagraphValue += paragraphValue.substring(end);
+        paragraph.value = taggedParagraphValue;
+        
+        paragraph.selectionStart = end + tag1.length + tag2.length;
+        paragraph.selectionEnd = end + tag1.length + tag2.length;
+        paragraph.focus();
+
+        if (isSearchReplaceInput) {
+            updateSearchCount();
+            return;
+        }
+
+        const side = getSideByParagraph(paragraph);
+        
+        sessionStorage[side + 'FileChanged'] = 'true'
+        updateTextsInSessionStorage(side);
+        enableSaveButtons(side);
+
+        const mode = getMode();
+
+        if (mode === 2) {
+            fixTextAreas();
+            insertIllustrationPreview(paragraph);
+        }
+    }
+
+
+    function insertTextToParagraph (text, paragraph, isSubstituted = true) {
+        const isParagraph = paragraph.classList.contains('paragraph')
+        const isSearchReplaceInput = paragraph.classList.contains('search-replace-input');
+
+        if (!(isParagraph || isSearchReplaceInput) ||  text === '') {
+            return;
+        }
+
+        if (!isSubstituted && (paragraph.selectionStart !== paragraph.selectionEnd)) {
+            return;
+        }
+
+        const start = paragraph.selectionStart;
+        const end = isSubstituted ? paragraph.selectionEnd : start;
+        
+        const paragraphValue = paragraph.value;
+
+        const part1 = paragraphValue.substring(0, start);
+        const part3 = paragraphValue.substring(end);
+        
+        paragraph.value = part1 + text + part3;
+
+        paragraph.selectionStart = isSubstituted ? start : end + text.length;
+        paragraph.selectionEnd = isSubstituted ? end : end + text.length;
+        paragraph.focus();
+
+        if (isSearchReplaceInput) {
+            return;
+        }
+
+        const side = getSideByParagraph(paragraph);
+            
+        sessionStorage[side + 'FileChanged'] = 'true'
+        updateTextsInSessionStorage(side);
+        enableSaveButtons(side);
+
+        const mode = getMode();
+
+        if (mode === 2) {
+            fixTextAreas();
+            insertIllustrationPreview(paragraph);
+        } else if (mode === 1) {
+            updateSearchCount();
+        }
+    }
+
+
+    function updateTextsInSessionStorage (side = 'both') {
+        if (side === 'both') {
+            updateTextsInSessionStorage('left');
+            updateTextsInSessionStorage('right');
+            return;
+        }
+        
+        const text = getTextBySide(side); 
+        
+        if (text === undefined) {
+            return;
+        }
+
+        const textNumber = side === 'left' ? '1' : '2';
+        sessionStorage['text' + textNumber] = text;
+    }
+
+
+    function switchCase (text) {
+        const textUppered = text.toUpperCase();
+
+        if (text === textUppered) {
+            return text.toLowerCase();
+        } else {
+            return textUppered;
+        }
+    }
+
+
+    function getSelectedText () {
+        const isParagraph = document.activeElement.classList.contains('paragraph')
+        const isSearchReplaceInput = document.activeElement.classList.contains('search-replace-input');
+
+        if (isParagraph || isSearchReplaceInput) {
+            let paragraph = document.activeElement;
+            let start = paragraph.selectionStart;
+            let end = paragraph.selectionEnd;
+            let paragraphContent = paragraph.value;
+            return paragraphContent.substring(start, end);
+        } else {
+            return '';
+        }
+    }
+
+
+    function indexOfNthSubstring(text, substring, n) {
+        let index = -1;
+        let fromIndex = 0;
+
+        for (let i = 0; i < n; i++) {
+            index = text.indexOf(substring, fromIndex);
+            
+            if (index === -1) {
+                return -1;
+            }
+
+            fromIndex = index + substring.length;
+        }
+
+        return index;
+    }
+
+
+    function getCurretPosition () {
+        let currentPosition = document.querySelector('.bookmark-number').innerText;
+
+        if (currentPosition.match(/^\d+$/)) {
+            return parseInt(currentPosition);
+        }
+
+        return 1;
+    }
+    
+
+    function toCurrentPosition (targetParagraphIndex = null) {
+        const mode = getMode();
+
+        if (mode === 1) {
+            const paragraph = document.getElementById('monolingual-paragraph');
+
+            targetParagraphIndex = targetParagraphIndex ? targetParagraphIndex : document.querySelector('.bookmark-number').innerText;
+            targetParagraphIndex = parseInt(targetParagraphIndex);
+
+            const position = targetParagraphIndex === 1 ? 0 : indexOfNthSubstring(paragraph.value, '\n', targetParagraphIndex - 1) + 1;
+            
+            paragraph.setSelectionRange(position, position);
+            paragraph.blur();
+            paragraph.focus();
+        } else if (mode === 2) {
+
+            const paragraphsCount = parseInt(
+                document.querySelector('.paragraphs-count').innerText
+            );
+
+            if (!targetParagraphIndex) {
+                targetParagraphIndex = document.querySelector('#paragraph-index-left').value;
+            }
+            
+            if (targetParagraphIndex.toString() !== parseInt(targetParagraphIndex).toString()) {
+                return;
+            }
+
+            targetParagraphIndex = parseInt(targetParagraphIndex);
+
+            if (targetParagraphIndex < 1 || targetParagraphIndex > paragraphsCount) {
+                return;
+            }
+
+            const targetPage = Math.ceil(targetParagraphIndex / paragraphsPerPage);
+            const currentPage = parseInt(
+                document.querySelector('.page-number').attributes.page.value
+            );
+
+            if (targetPage !== currentPage) {
+                goToPage(targetPage);
+            }
+
+            const focusedElement = document.getElementById('paragraph' + targetParagraphIndex);
+            if (focusedElement) {
+                focusedElement.focus();
+            }
+        }
+    }
+
+
+    function getPositionInText () {
+        const paragraph = document.activeElement;
+
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
+        const localPosition = document.activeElement.selectionStart;
+        const mode = getMode();
+
+        if (mode === 1) {
+            return localPosition;
+        } else if (mode === 2) {
+            const paragraphNumber = getCurrentParagraphNumber();
+            
+            const side = getCurrentParagraphSide();
+            let text = getTextBySide(side);
+    
+            return indexOfNthSubstring(text, '\n', paragraphNumber-1) + localPosition + 1;
+        }
+    }
+
+
+    function getImageNumberByPosition (text, position) {
+        const previousText = text.slice(0, position);
+        const matchesCount = previousText.match(/<img\d+>/g);
+
+        return matchesCount ? matchesCount.length + 1 : 1;
+    }
+
+
+    function insertImage () {
+        const paragraph = document.activeElement;
+
+        if (!paragraph.classList.contains('paragraph')) {
+            return;
+        }
+
+        const side = getSideByParagraph(document.activeElement);
+        const text = getTextBySide(side);
+        const position = getPositionInText();
+        const imageNumber = getImageNumberByPosition(text, position);
+        const imageTag = `<img${imageNumber}>`;
+
+        insertTextToParagraph(imageTag, document.activeElement, isSubstituted = false);
+    }
+
+
+    function openSettings (open = true) {
+        $.ajax({
+            url: '/open_settings',
+            type: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            contentType: 'application/json;charset=UTF-8',
+            success: function (response) {
+                closePanel('settings-panel');
+
+                if (!response['template']) {
+                    return;
+                }
+
+                const mainArea = document.querySelector('.main-area');
+                mainArea.insertAdjacentHTML('afterbegin', response['template']);
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+                console.error('XHR object:', xhr);
+            },
+        });
+    }
+
+
+    function waitForServer() {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const interval = setInterval(async () => {
+                    try {
+                        const res = await fetch('/?t=' + Date.now(), { 
+                            cache: 'no-store',
+                            headers: { 'Cache-Control': 'no-cache' }
+                        });
+                        
+                        if (res.ok) {
+                            clearInterval(interval);
+                            setTimeout(resolve, 300);
+                        }
+                    } catch (e) {
+                    }
+                }, 700);
+            }, 1500);
+        });
+    }
+
+
+    async function updateSettings(event) {
+        if (event) event.preventDefault();
+
+        if (!document.getElementById('settings-list')) return;
+
+        const confirmation = confirm('Update settings? Program will be reloaded. All unsaved work in other browser tabs can be lost!');
+        if (!confirmation) return;
+
+        showLoading(true, 'Saving settings and restarting… Please wait.\nIf loading persists, try refreshing manually.', false);
+
+        try {
+            const response = await fetch('/update_settings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    root_directory: document.getElementById('root-directory').value,
+                    paragraphs_per_page: document.getElementById('paragraphs-per-page').value,
+                    dark_mode: document.getElementById('dark-mode').value
+                })
+            });
+
+            if (response.ok) {
+                await waitForServer();
+                window.location.href = '/';
+            } else {
+                alert('Error saving settings.');
+                showLoading(false);
+            }
+        } catch (error) {
+            console.error('Network error:', error);
+            await waitForServer();
+            window.location.href = '/?nocache=' + Date.now();
+        }
+    }
+
+
+    function closePanel (panelID) {
+        const panel = document.getElementById(panelID);
+        if (panel) {
+            panel.remove();
+        }
+
+        if (panelID === 'illustrations-renaming-panel') {
+            document.querySelectorAll('.paragraph').forEach((paragraph) => {
+                insertIllustrationPreview(paragraph);
+            });
+
+            updateCover();
+            updateIllustrations('illustration-preview');
+        }
+    }
+
+
+    function makePanelButtonsFunctional () {
+        const logo = document.getElementById('logo');
+        if (logo) {
+            logo.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+        }
+
+        const panelButtonSettings = document.querySelector('#panel-button-settings');
+        if (panelButtonSettings) {
+            panelButtonSettings.addEventListener('click', () => {
+                openSettings(true);
+            });
+        }
+
+
+        const mojificationButton = document.querySelector('#panel-button-mojification');
+        if (mojificationButton) {
+            mojificationButton.addEventListener('click', () => {
+                mojify();
+            });
+            mojificationButton.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+                demojify(withMessage = true);
+            });
+        }
+        
+        const bookmarkItems = document.querySelectorAll('.storage-item-bookmark');
+        if (bookmarkItems) {
+            bookmarkItems.forEach((item) => {
+                item.addEventListener('dblclick', () => {
+                    const storageItemPaths = item.querySelectorAll('.storage-item-path');
+                    const bookAddressLeft = storageItemPaths[0].innerText;
+                    const bookAddressRight = storageItemPaths[1].innerText;
+                    const bookmark = parseInt(item.querySelector('.storage-item-value-bookmark').innerText);
+                    const page = Math.ceil(bookmark / paragraphsPerPage);
+                    const langs = item.querySelectorAll('.storage-item-lang');
+
+                    queryParameters = {
+                        text1_path: bookAddressLeft,
+                        text2_path: bookAddressRight,
+                        lang1: langs[0].dataset.lang,
+                        lang2: langs[1].dataset.lang,
+                        page: page,
+                    }
+                    
+                    rerenderAllByPaths(leftFileFound = 'true', rightFileFound = 'true', queryParameters = queryParameters);
+                    setURLParameter('focus', 'true');
+                });
+            });
+        }
+        
+        const bookmarkDeleteButtons = document.querySelectorAll('.storage-item-delete-button-bookmark');
+        if (bookmarkDeleteButtons) {
+            bookmarkDeleteButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const storageItemPaths = button.parentElement.querySelectorAll('.storage-item-path')
+                    const bookAddressLeft = storageItemPaths[0].innerText;
+                    const bookAddressRight = storageItemPaths[1].innerText;
+                    unsetBookmark(bookAddressLeft, bookAddressRight);
+                    button.parentElement.remove();
+
+                    const bookmarkStorageItems = document.querySelector('.storage-item-bookmark');
+                    if (!bookmarkStorageItems) {
+                        document.querySelector('.storage-items-bookmark').remove();
+                    }
+                });
+            });
+        }
+        
+        const illustrationsDeleteButtons = document.querySelectorAll('.storage-item-delete-button-illustrations');
+        if (illustrationsDeleteButtons) {
+            illustrationsDeleteButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const storageItemPaths = button.parentElement.querySelectorAll('.storage-item-path')
+                    const bookAddressLeft = storageItemPaths[0].innerText;
+                    const bookAddressRight = storageItemPaths[1].innerText;
+                    removeIllustrations(bookAddressLeft, bookAddressRight);
+                    button.parentElement.remove();
+
+                    const illustrationsStorageItems = document.querySelector('.storage-item-illustrations');
+                    if (!illustrationsStorageItems) {
+                        document.querySelector('.storage-items-illustrations').remove();
+                    }
+                });
+            });
+        }
+
+        const panelButtonSaveDump = document.querySelector('#panel-button-backup');
+        if (panelButtonSaveDump) {
+            panelButtonSaveDump.addEventListener('click', () => {
+                backup();
+            });
+        }
+
+        const panelButtonSaveTxt = document.querySelector('#panel-button-save_txt');
+        if (panelButtonSaveTxt) {
+            panelButtonSaveTxt.addEventListener('click', () => {
+                saveTxt();
+            });
+        }
+
+        const panelButtonSaveFb2 = document.querySelector('#panel-button-save_fb2');
+        if (panelButtonSaveFb2) {
+            panelButtonSaveFb2.addEventListener('click', () => {
+                saveFb2();
+            });
+        }
+
+        const panelButtonSaveEpub = document.querySelector('#panel-button-save_epub');
+        if (panelButtonSaveEpub) {
+            panelButtonSaveEpub.addEventListener('click', () => {
+                saveEpub();
+            });
+        }
+
+        const panelButtonH = document.querySelector('#panel-button-h');
+        if (panelButtonH) {
+            panelButtonH.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+                }
+            });
+        }
+        
+        const panelButtonB = document.querySelector('#panel-button-b');
+        if (panelButtonB) {
+            panelButtonB.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<b>', '</b>', document.activeElement);
+                }
+            });
+        }
+        
+        const panelButtonI = document.querySelector('#panel-button-i');
+        if (panelButtonI) {
+            panelButtonI.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    addTagsToParagraph('<i>', '</i>', document.activeElement);
+                }
+            });
+        }
+
+        const panelButtonDelimiter = document.querySelector('#panel-button-delimiter');
+        if (panelButtonDelimiter) {
+            panelButtonDelimiter.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertTextToParagraph(delimiter, document.activeElement, false);
+                }
+            });
+        }
+
+        const panelButtonSwithCase = document.querySelector('#panel-button-switch_case');
+        if (panelButtonSwithCase) {
+            panelButtonSwithCase.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+                }
+            });
+        }
+
+        const panelButtonInsertImage = document.querySelector('#panel-button-img');
+        if (panelButtonInsertImage) {
+            panelButtonInsertImage.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    insertImage();
+                }
+            });
+
+            if (getMode() === 2) {
+                panelButtonInsertImage.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    const illustrationsPicker = document.querySelector('#illustrations-picker');
+                    illustrationsPicker.click();
+                });
+            }
+        }
+
+        const illustrationsPicker = document.querySelector('#illustrations-picker');
+        if (illustrationsPicker) {
+            illustrationsPicker.addEventListener('change', () => {
+                uploadIllustrations();
+            });
+            illustrationsPicker.addEventListener('click', () => {
+                openIllustrationsRenamingPanel();
+            });
+        }
+
+        const panelButtonDivision = document.querySelector('#panel-button-division');
+        if (panelButtonDivision) {
+            panelButtonDivision.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    splitParagraph();
+                }
+            });
+        }
+
+        const panelButtonDivisionByDelimiter = document.querySelector('#panel-button-division_by_delimiter');
+        if (panelButtonDivisionByDelimiter) {
+            panelButtonDivisionByDelimiter.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+                    applyToSelection(divideByDelimiter);
+                }
+            });
+        }
+
+        const panelButtonConcatenation = document.querySelector('#panel-button-concatenation');
+        if (panelButtonConcatenation) {
+            panelButtonConcatenation.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, '');
+                    } else if (mode === 2) {
+                        const paragraphNumber = document.activeElement.dataset.paragraph;
+                        concatenateParagraphs('');
+                    }
+                }
+            });
+        }
+
+        const panelButtonConcatenationSpace = document.querySelector('#panel-button-concatenation_space');
+        if (panelButtonConcatenationSpace) {
+            panelButtonConcatenationSpace.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, ' ');
+                    } else if (mode === 2) {
+                        concatenateParagraphs(' ');
+                    }
+                }
+            });
+        }
+
+        const panelButtonConcatenationDelimiter = document.querySelector('#panel-button-concatenation_delimiter');
+        if (panelButtonConcatenationDelimiter) {
+            panelButtonConcatenationDelimiter.addEventListener('mousedown', (event) => {
+                if (event.buttons === 1) {
+                    event.preventDefault();
+
+                    const mode = getMode();
+                    
+                    if (mode === 1) {
+                        applyToSelection(concatenateSelection, delimiter);
+                    } else if (mode === 2) {
+                        concatenateParagraphs(delimiter);
+                    }
+                }
+            });
+        }
+
+        const focusButton = document.querySelector('#panel-button-focus');
+        if (focusButton) {
+            focusButton.addEventListener('click', () => {
+                toCurrentPosition();
+            });
+        }
+
+        const bookmarkButton = document.querySelector('#panel-button-bookmark');
+        if (bookmarkButton) {
+            bookmarkButton.addEventListener('click', () => {
+                setBookmark();
+            });
+        }
+
+        const bookmarkNumberClass = '.bookmark-number';
+        const bookmarkNumber = document.querySelector(bookmarkNumberClass);
+        if (bookmarkNumber) {
+            bookmarkNumber.addEventListener('click', () => {
+                const bookmark = document.querySelector(bookmarkNumberClass).innerText;
+                setParagraphIndex(bookmark, 'left');
+                toCurrentPosition(bookmark);
+            });
+        }
+
+        ['cols', 'rows'].forEach((mode) => {
+            const printColsButton = document.querySelector('#panel-button-' + mode);
+
+            if (printColsButton) {
+                printColsButton.addEventListener('click', () => {
+                    updateTextsInSessionStorage('both');
+
+                    const lang1 = document.querySelector('#languages-dropdown-list-left').value;
+                    const lang2 = document.querySelector('#languages-dropdown-list-right').value;
+
+                    printBilingualPDF(
+                        sessionStorage.text1,
+                        sessionStorage.text2,
+                        lang1,
+                        lang2,
+                        mode = mode,
+                        cover = `${illustrationsFolder}/cover.png`,
+                        fileName = 'bilingual_book',
+                        illustrationsFolder = illustrationsFolder
+                    );
+                });
+            }
+        });
+
+        const shiftButton = document.querySelector('#panel-button-shift');
+        if (shiftButton) {
+            shiftButton.addEventListener('click', () => {
+                shiftParagraphs();
+            });
+        }
+
+        const deleteByIndexButton = document.querySelector('#panel-button-trash');
+        if (deleteByIndexButton) {
+            deleteByIndexButton.addEventListener('click', () => {
+                removeParagraphsFromTwoTexts();
+            });
+        }
+    }
+
+    makePanelButtonsFunctional();
+
+
+    var hotKeysFunction;
+    if (typeof hotKeysFunction === 'undefined') {
+        hotKeysFunction = (event) => {
+
+            if (event.ctrlKey && event.code === 'KeyS' && !event.repeat) {
+                event.preventDefault();
+                saveBook('both');
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyH' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<h1>', '</h1>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyB' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<b>', '</b>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyI' && !event.repeat) {
+                event.preventDefault();
+                addTagsToParagraph('<i>', '</i>', document.activeElement);
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyD' && !event.repeat) {
+                event.preventDefault();
+                insertTextToParagraph(delimiter, document.activeElement, false);
+            }
+            
+            if (event.ctrlKey && event.shiftKey && event.code === 'KeyF' && !event.repeat) {
+                if (getMode() === 1) {
+                    updateSearchFromSelection();
+                    document.querySelector('#search-input').focus();
+                }
+            }
+            
+            if (event.ctrlKey && event.code === 'KeyQ' && !event.repeat) {
+                event.preventDefault();
+                insertTextToParagraph(switchCase(getSelectedText()), document.activeElement, true);
+            }
+            
+            if (event.code === 'Enter' && !event.repeat) {
+                if (getMode() === 2) {
+                    event.preventDefault();
+                    splitParagraph();
+                }
+            }
+            
+            if (event.ctrlKey && event.code === 'Space' && !event.repeat) {
+                event.preventDefault();
+
+                const mode = getMode();
+
+                if (mode === 2) {
+                    concatenateParagraphs(' ');
+                } else if (mode === 1) {
+                    applyToSelection(concatenateSelection, ' ');
+                }
+            }
+            
+            if (event.shiftKey && event.code === 'Space' && !event.repeat) {
+                event.preventDefault();
+
+                if (getMode() === 2) {
+                    concatenateParagraphs(delimiter);
+                }
+            }
+        };
+    }
+
+    document.removeEventListener('keydown', hotKeysFunction);
+    document.addEventListener('keydown', hotKeysFunction);
+
+
+    function setParagraphIndex (paragraphIndex, side = 'left') {
+        const mode = getMode();
+        if (mode === 2) {
+            document.querySelector('#paragraph-index-' + side).value = paragraphIndex;
+            sessionStorage[side + 'ParagraphIndex'] = paragraphIndex;
+        }
+    }
+
+
+    function showLoading (enable = true, message = '', withButton = true) {
+        document.querySelector('.screen-block').hidden = !enable;
+        document.querySelector('.loading-img').hidden = !enable;
+        document.querySelector('.screen-block-abort-button').hidden = !enable || !withButton;
+
+        if (message) {
+            document.querySelector('.screen-block-message').innerText = message;
+        }
+    }
+
+
+    function showMessage (message = '') {
+        document.querySelector('.screen-block').hidden = false;
+        document.querySelector('.message-img').hidden = false;
+        document.querySelector('.screen-block-message').innerText = message;
+        
+        setTimeout( () => {
+            document.querySelector('.screen-block').hidden = true;
+            document.querySelector('.message-img').hidden = true;
+        }, 1500);
+    }
+
+
+    function makeParagraphIndexesFunctional (novel = false) {
+        const mode = getMode();
+
+        if (mode === 2) {
+            const paragraphNumberClass = 'paragraph-number' + (novel ? '-new' : '');
+
+            document.querySelectorAll('.' + paragraphNumberClass).forEach((paragraphNumber) => {
+                paragraphNumber.addEventListener('click', () => {
+                    const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
+                    const paragraphIndex = paragraphNumber.innerText;
+                    setParagraphIndex(paragraphIndex, side);
+                });
+                
+                paragraphNumber.addEventListener('dblclick', () => {
+                    const paragraphIndex = paragraphNumber.innerText;
+                    if (paragraphNumber.classList.contains('paragraph-number-bookmark')){
+                        unsetBookmark();
+                    } else {
+                        setBookmark(paragraphIndex);
+                    }
+                });
+
+                if (novel) {
+                    paragraphNumber.classList.remove(paragraphNumberClass);
+                }
+            });
+
+            if (novel) {
+                return;
+            }
+
+            ['left', 'right'].forEach((side) => {
+                if (sessionStorage[side + 'ParagraphIndex']) {
+                    setParagraphIndex(sessionStorage[side + 'ParagraphIndex'], side);
+                }
+
+                const paragraphIndex = document.querySelector('#paragraph-index-' + side);
+                paragraphIndex.addEventListener('input', () => {
+                    sessionStorage[side + 'ParagraphIndex'] = paragraphIndex.value;
+                });
+            });
+
+            const bookmark = document.querySelector('.bookmark-number').innerText;
+            if (!sessionStorage.leftParagraphIndex & (bookmark !== '∅')) {
+                sessionStorage.leftParagraphIndex = bookmark;
+            }
+        }
+    }
+
+    makeParagraphIndexesFunctional();
+
+
+    function updateBookmarkOnScreen (bookmark = '∅') {
+        document.querySelectorAll('.paragraph-number').forEach((paragraphNumber) => {
+            // const side = paragraphNumber.classList.contains('paragraph-number-left') ? 'left' : 'right';
+            const paragraphIndex = paragraphNumber.innerText;
+
+            if (paragraphIndex === bookmark.toString()) {
+                paragraphNumber.classList.add('paragraph-number-bookmark');
+            } else {
+                paragraphNumber.classList.remove('paragraph-number-bookmark');
+            }
+        });
+    }
+</script>
+
+{% if mode == '2' %}
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/bilingual_script.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='scripts/print-bilingual-pdf/scripts/print_bilingual_pdf.js') }}"></script>
+{% elif mode == '1' %}
+    <script src="{{ url_for('static', filename='scripts/monolingual_script.js') }}"></script>
+{% endif %}

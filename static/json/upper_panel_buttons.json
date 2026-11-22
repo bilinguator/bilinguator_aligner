@@ -1,0 +1,31 @@
+{
+    "0": [],
+    "1": [
+        [
+            "remove_html_entities",
+            "trim_tailing_characters",
+            "remove_page_numbers",
+            "remove_notes",
+            "remove_repeated_lines",
+            "remove_linebreaks"
+        ],
+        [
+            "quotation_marks",
+            "apostroph",
+            "dashes",
+            "ellipsis",
+            "tag_headings"
+        ],
+        [
+            "merge_strophes_by_delimiter",
+            "tag_characters_in_the_play",
+            "yoditor"
+        ],
+        [
+            "template:search_replace_inputs",
+            "replace",
+            "search"
+        ]
+    ],
+    "2": []
+}

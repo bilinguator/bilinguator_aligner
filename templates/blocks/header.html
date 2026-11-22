@@ -1,0 +1,12 @@
+{% from 'blocks/book_panel.html' import book_panel %}
+<header>
+    <div class="header-container">
+        <!-- <a href="." class="logo-link"> -->
+            <img id="logo" src="{{ url_for('static', filename='img/logo.svg') }}" alt="Bilinguator Aligner logo" />
+        <!-- </a> -->
+        {{ book_panel('left', text1_path, lang1, text1, languages) }}
+        {{ central_panel | safe }}
+        {{ book_panel('right', text2_path, lang2, text2, languages) }}
+    </div>
+    {{ upper_panel | safe }}
+</header>

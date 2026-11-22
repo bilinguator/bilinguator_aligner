@@ -1,0 +1,348 @@
+<template id="remove_page_numbers">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_page_numbers.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Page numbers detected:</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="page-numbers-textarea" onclick="searchLineFromTextarea(fullLineMatch = true);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectPageNumbers()">Detect</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removePageNumbers()">Remove</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="remove_notes">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_notes.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Note numberings detected:</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="note-numberings-textarea" onclick="searchLineFromTextarea(fullLineMatch = false);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectNotes()">Detect</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeNotes()">Remove</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="remove_repeated_lines">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/remove_repeated_lines.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Repeated lines detected:</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="repeated-lines-textarea" onclick="searchLineFromTextarea(fullLineMatch = true);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectRepeatedLines()">Detect</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeRepeatedLines()">Remove</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeEmptyLines()">Remove empty lines</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="quotation_marks">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/quotation_marks.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Quotation marks found in the text:</p>
+        <div class="sidebar-vertical-container sidebar-margin-top" id="text-quotation-marks"></div>
+        <p class="sidebar-p sidebar-margin-top">Quotation marks of the <span class="language-name"></span> language:</p>
+        <div class="sidebar-horizontal-container sidebar-margin-top" id="language-quotation-marks"></div>
+
+        <div class="sidebar-vertical-container sidebar-align-start sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-vertical-container sidebar-align-start">
+                <p class="sidebar-p sidebar-margin-top">Search</p>
+                <div class="sidebar-horizontal-container">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="opening-quote-search-textarea" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">"</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="closing-quote-search-textarea" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">"</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                </div>
+            </div>
+            <div class="sidebar-vertical-container sidebar-align-start">
+                <p class="sidebar-p sidebar-margin-top">Replace</p>
+                <div class="sidebar-horizontal-container">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="opening-quote-replace-textarea" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">“</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top quote-textarea" id="closing-quote-replace-textarea" rows="1" oninput="updateSidebarTextareasCounts('quote-textarea');">”</textarea>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="next-quote-button" title="Replace all" onclick="replaceQuotationMarksAutomatically();">All</button>
+                </div>
+                <div class="sidebar-horizontal-container sidebar-align-start">
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="opening-quote-button" onclick="replaceQuote('opening');">⟳</button>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="closing-quote-button" onclick="replaceQuote('closing');">⟳</button>
+                    <p class="sidebar-p sidebar-count sidebar-margin-top"></p>
+                    <button class="sidebar-button book-panel-button sidebar-margin-top sidebar-inline-button" id="next-quote-button" onclick="searchQuote();">→</button>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="findQuoteAlternationMismatch();">Find mismatch</button>
+            <p class="sidebar-message sidebar-margin-top"></p>
+        </div>
+    </div>
+</template>
+
+
+<template id="apostroph">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/apostroph.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top sidebar-space-between">
+            <p class="sidebar-p sidebar-margin-top">Typewriter apostrophes</p>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count" id="typewriter-apostrophes-count"></p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" readonly>'</textarea>
+            </div>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top sidebar-space-between">
+            <p class="sidebar-p sidebar-margin-top">Punctuation apostrophes</p>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count" id="punctuation-apostrophes-count"></p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly" readonly>’</textarea>
+            </div>
+        </div>
+        
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = 'en');">Replace English apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = 'fr');">Replace French apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceApostrophesAutomatically(lang = null);">Replace in-word apostrophes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllApostrophes();">Replace all</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toManualReplacement('\'', '’', false)">Replace manually</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="dashes">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/dashes.svg') }}" class="panel-button-img">
+        <h2 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="updateDashesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateDashesTextatea(this.value, 'replace');" title="Hyphen" readonly>-</textarea>
+            <p class="sidebar-p sidebar-count" id="minus-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="updateDashesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateDashesTextatea(this.value, 'replace');" title="Minus" readonly>−</textarea>
+            <p class="sidebar-p sidebar-count" id="en-dash-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="updateDashesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateDashesTextatea(this.value, 'replace');" title="En dash" readonly>–</textarea>
+            <p class="sidebar-p sidebar-count" id="em-dash-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly dash-textarea" onclick="updateDashesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateDashesTextatea(this.value, 'replace');" title="Em dash" readonly>—</textarea>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Search</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="dash-search-textarea" rows="1">-</textarea>
+            </div>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Replace</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="dash-replace-textarea" rows="1">—</textarea>
+            </div>
+        </div>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllDashes()">Replace all</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement()">Replace manually</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '^[-−–]', dashReplacement = '—')">Leading dialogue dashes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '[-−–]$', dashReplacement = '—')">Tailing dashes</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=\\d)[-−—](?=\\d)', dashReplacement = '–')">Number intervals</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=[^\\S\\r\\n])[-−–—](?=[^\\S\\r\\n])')">Dashes surrounded by spaces</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=[ \\t])[-−–—](?=[^\\s])|(?<=[^\\s])[-−–—](?=[ \\t])')">Dashes with a space on one side</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toDashesManualReplacement(regex = '(?<=\\p{L})[-−–—](?=\\p{L})', dashReplacement = '-')">Dashes surrounded by letters</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="ellipsis">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/ellipsis.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-horizontal-container sidebar-margin-top">
+            <p class="sidebar-p sidebar-count" id="three-dots-with-spaces-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="updateEllipsesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateEllipsesTextatea(this.value, 'replace');" title="Three dots with spaces" readonly>. . .</textarea>
+            <p class="sidebar-p sidebar-count" id="three-dots-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="updateEllipsesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateEllipsesTextatea(this.value, 'replace');" title="Three dots" readonly>...</textarea>
+            <p class="sidebar-p sidebar-count" id="midline-ellipses-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="updateEllipsesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateEllipsesTextatea(this.value, 'replace');" title="Midline ellipsis" readonly>⋯</textarea>
+            <p class="sidebar-p sidebar-count" id="ellipses-count"></p>
+            <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-textarea-readonly ellipsis-textarea" onclick="updateEllipsesTextatea(this.value, 'search');" oncontextmenu="event.preventDefault();updateEllipsesTextatea(this.value, 'replace');" title="Ellipsis" readonly>…</textarea>
+        </div>
+        <div class="sidebar-horizontal-container sidebar-margin-top" style="justify-content: space-evenly!important;">
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Search</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="ellipses-search-textarea" rows="1">...</textarea>
+            </div>
+            <div class="sidebar-horizontal-container">
+                <p class="sidebar-p sidebar-count sidebar-margin-top">Replace</p>
+                <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-mini-textarea sidebar-margin-top" id="ellipses-replace-textarea" rows="1">…</textarea>
+            </div>
+        </div>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="replaceAllEllipses()">Replace all</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="toEllipsisManualReplacement()">Replace manually</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="tag_headings">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/tag_headings.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Chapter word</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="chapter-word-textarea" rows="1" oninput="updateHeadingExample()"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Numbering</p>
+        <select class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="numbering-select" onchange="updateHeadingExample()">
+            <option value="arabic">Arabic: 0123456789</option>
+            <option value="abjad">Abjad: أبجدﻩوﺯﺡﻁﻱﻙﻝﻡﻥﺱﻉﻑصﻕﺭﺵﺕﺙﺥﺫﺽﻅﻍ</option>
+            <option value="adlam">Adlam: 𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙</option>
+            <option value="amharic">Amharic: ፩፪፫፬፭፮፯፰፱፲፳፴፵፶፷፸፹፺፻፼</option>
+            <option value="bengali">Bengali: ০১২৩৪৫৬৭৮৯</option>
+            <option value="burmese">Burmese: ၀၁၂၃၄၅၆၇၈၉</option>
+            <option value="chinese">Chinese: 一二三四五六七八九十</option>
+            <option value="devanagari">Devanagari: ०१२३४५६७८९</option>
+            <option value="eastern-arabic">Eastern Arabic: ۱۲۳٤۴٥۵</option>
+            <option value="kannada">Kannada: ೦೧೨೩೪೫೬೭೮೯</option>
+            <option value="khmer">Khmer: ០១២៣៤៥៦៧៨៩</option>
+            <option value="lao">Lao: ໐໑໒໓໔໕໖໗໘໙</option>
+            <option value="malayalam">Malayalam: ൦൧൨൩൪൫൬൭൮൯൰൱൲</option>
+            <option value="mongolian">Mongolian: ᠐᠑᠒᠓᠔᠕᠖᠗᠘᠙</option>
+            <option value="nko">N'Ko: ߀߁߂߃߄߅߆߇߈߉</option>
+            <option value="odia">Odia: ୦୧୨୩୪୫୬୭୮୯</option>
+            <option value="odia">Osmanya: 𐒠𐒡𐒢𐒣𐒤𐒥𐒦𐒧𐒨𐒩</option>
+            <option value="roman">Roman: IVXLCDM</option>
+            <option value="tamil">Tamil: ௦௧௨௩௪௫௬௭௮௯</option>
+            <option value="telugu">Telugu: ౦౧౨౩౪౫౬౭౮౯</option>
+            <option value="text">Text: one, two, three, four, five, six, seven, eight, nine</option>
+            <option value="tibetan">Tibetan: ༠༡༢༣༤༥༦༧༨༩</option>
+            <option value="thai">Thai: ๐๑๒๓๔๕๖๗๘๙</option>
+            <option value="limbu">Limbu: ᥆᥇᥈᥉᥊᥋᥌᥍᥎᥏</option>
+        </select>
+        <p class="sidebar-p sidebar-margin-top">Delimiter between numbering and title</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="numbering-delimiter-textarea" rows="1" oninput="updateHeadingExample()"></textarea>
+        
+        <input type="checkbox" class="sidebar-margin-top" id="with-title-checkbox" name="with-title-checkbox" onchange="updateHeadingExample()">
+        <label for="with-title-checkbox" class="sidebar-p" id="with-title-checkbox-label">With title</label>
+        
+        <input type="checkbox" class="sidebar-margin-top" id="numbering-first-checkbox" name="numbering-first-checkbox" onchange="updateHeadingExample()">
+        <label for="numbering-first-checkbox" class="sidebar-p" id="numbering-first-checkbox-label">Numbering first</label>
+        
+        <p class="sidebar-p sidebar-margin-top">Example: <span class="sidebar-message" id="heading-example"></span></p>
+        
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="detectHeadingsByParameters()">Search by parameters</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="searchUpperCaseHeadings()">Search uppercase headings</button>
+        </div>
+
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="headings-textarea" onclick="searchLineFromTextarea(fullLineMatch = true);this.focus();"></textarea>
+        <p class="sidebar-message sidebar-margin-top" id="headings-count-message"></p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="tagHeadings()">Tag headings</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="merge_strophes_by_delimiter">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/merge_strophes_by_delimiter.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Delimiter</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="delimiter-textarea" rows="1"><delimiter></textarea>
+        <p class="sidebar-p sidebar-margin-top">Minimum line breaks among strophes</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="minimum-line-breaks-textarea" oninput="mergeStrophesByDelimiter(test = true);" rows="1">2</textarea>
+        <p class="sidebar-p sidebar-margin-top">Start line</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="start-line-textarea" oninput="mergeStrophesByDelimiter(test = true);" rows="1">3</textarea>
+        
+        <p class="sidebar-p sidebar-margin-top">Paragraphs number before: <span class="sidebar-message" id="paragraphs-number-before"></span></p>
+        <p class="sidebar-p sidebar-margin-top">Paragraphs number after: <span class="sidebar-message" id="paragraphs-number-after"></span></p>
+
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeStrophesByDelimiter(test = false);">Apply</button>
+        </div>
+        
+        <p class="sidebar-p sidebar-margin-top">Other functions</p>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="removeEmptyLines();">Remove empty lines</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="mergeLinesWithoutOpeningTags();">Merge lines without opening tags</button>
+        </div>
+    </div>
+</template>
+
+
+<template id="tag_characters_in_the_play">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/tag_characters_in_the_play.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Character names, each on a new line:</p>
+        <textarea class="sidebar-textarea sidebar-multiline-textarea sidebar-margin-top" id="characters-textarea" onclick="searchLineFromTextarea(fullLineMatch = false);this.focus();"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Dialogue delimiter:</p>
+        <textarea class="sidebar-textarea sidebar-oneline-textarea sidebar-margin-top" id="characters-delimiter-textarea" onclick=""></textarea>
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="showCharactersCounts();">Search</button>
+        </div>
+    </div>
+    <div class="sidebar-main-area sidebar-search-area" id="characters-search-results"></div>
+</template>
+
+
+<template id="yoditor">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/yoditor.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <div class="sidebar-vertical-container sidebar-margin-top">
+            <button class="sidebar-button book-panel-button sidebar-margin-top" onclick="dotUnambiguousYos();">Dot unambiguous Ё’s</button>
+            <button class="sidebar-button book-panel-button sidebar-margin-top" id="dot-unambiguous-yos-button" onclick="dotAmbiguousYos(true);">Dot ambiguous Ё’s</button>
+        </div>
+        <p class="sidebar-message sidebar-margin-top"></p>
+    </div>
+</template>
+
+
+<template id="statistics">
+    <div class="sidebar-header">
+        <img src="{{ url_for('static', filename='img/statistics.svg') }}" class="panel-button-img">
+        <h1 class="sidebar-heading"></h1>
+    </div>
+    <div class="sidebar-main-area">
+        <p class="sidebar-p sidebar-margin-top">Unique characters of the text</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="unique-characters-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top"><span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="alphabet-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Characters of the text subtracted by the <span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="characters-without-alphabet-textarea"></textarea>
+        <p class="sidebar-p sidebar-margin-top">Unused characters of the <span class="language-name"></span> alphabet</p>
+        <textarea class="sidebar-textarea sidebar-small-multiline-textarea sidebar-margin-top sidebar-textarea-nobreaks" id="unused-characters-textarea"></textarea>
+        <p class="sidebar-message sidebar-margin-top">All characters changed to uppercase.</p>
+    </div>
+</template>
