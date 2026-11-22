@@ -9,7 +9,9 @@ APP_DIR="$HOME/bilinguator_aligner"
 VENV_DIR="$APP_DIR/bilinguator_aligner"
 BIN_DIR="$HOME/.local/bin"
 LAUNCHER="$BIN_DIR/bilinguator_aligner"
+ICON_PATH="$APP_DIR/static/icon.png"
 TMP_ZIP="/tmp/bilinguator_aligner.zip"
+OS_TYPE="$(uname -s)"
 
 echo "[1/5] Checking for uv..."
 if ! command -v uv &> /dev/null; then
@@ -50,7 +52,7 @@ rm -f "$TMP_ZIP"
 echo "[4/5] Installing dependencies from requirements.txt..."
 uv pip install --python "$VENV_DIR/bin/python" -r "$APP_DIR/requirements.txt"
 
-echo "[5/5] Setting up global command, alias, and uninstaller..."
+echo "[5/5] Setting up global command, desktop shortcut, and uninstaller..."
 mkdir -p "$BIN_DIR"
 
 cat << EOF > "$LAUNCHER"
@@ -89,9 +91,19 @@ fi
 if [[ "\$1" == "--uninstall" ]]; then
     read -p "Are you sure you want to uninstall bilinguator_aligner? [y/N] " confirm
     if [[ "\$confirm" =~ ^[Yy]$ ]]; then
-        echo "Removing application files and virtual environment..."
+        echo "Removing application files, icon, and virtual environment..."
         rm -rf "$APP_DIR"
         rm -f "$LAUNCHER"
+
+        # Remove Linux desktop entry
+        rm -f "\$HOME/.local/share/applications/bilinguator_aligner.desktop"
+        if command -v update-desktop-database &> /dev/null; then
+            update-desktop-database "\$HOME/.local/share/applications" 2>/dev/null || true
+        fi
+
+        # Remove macOS .app bundle (including AppIcon.icns)
+        rm -rf "\$HOME/Applications/Bilinguator Aligner.app"
+
         if [ -L "/usr/local/bin/bilinguator_aligner" ]; then
             rm -f /usr/local/bin/bilinguator_aligner 2>/dev/null || sudo rm -f /usr/local/bin/bilinguator_aligner
         fi
@@ -138,12 +150,87 @@ for RC_FILE in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
     fi
 done
 
+# Create application menu entry depending on OS
+if [[ "$OS_TYPE" == "Linux" ]]; then
+    DESKTOP_DIR="$HOME/.local/share/applications"
+    DESKTOP_FILE="$DESKTOP_DIR/bilinguator_aligner.desktop"
+    mkdir -p "$DESKTOP_DIR"
+
+    cat << EOF > "$DESKTOP_FILE"
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Bilinguator Aligner
+Comment=Parallel text alignment and bilingual ebook creator
+Exec=$LAUNCHER
+Icon=$ICON_PATH
+Terminal=true
+Categories=Office;Education;Utility;
+StartupNotify=true
+EOF
+
+    chmod +x "$DESKTOP_FILE"
+    if command -v update-desktop-database &> /dev/null; then
+        update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
+    fi
+
+elif [[ "$OS_TYPE" == "Darwin" ]]; then
+    MAC_APP_DIR="$HOME/Applications/Bilinguator Aligner.app"
+    MAC_CONTENTS="$MAC_APP_DIR/Contents"
+    mkdir -p "$MAC_CONTENTS/MacOS" "$MAC_CONTENTS/Resources"
+
+    cat << EOF > "$MAC_CONTENTS/Info.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>Bilinguator Aligner</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.bilinguator.aligner</string>
+    <key>CFBundleName</key>
+    <string>Bilinguator Aligner</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+</dict>
+</plist>
+EOF
+
+    cat << EOF > "$MAC_CONTENTS/MacOS/Bilinguator Aligner"
+#!/usr/bin/env bash
+osascript -e 'tell application "Terminal" to activate' -e 'tell application "Terminal" to do script "$LAUNCHER"'
+EOF
+    chmod +x "$MAC_CONTENTS/MacOS/Bilinguator Aligner"
+
+    # Convert static/icon.png to native macOS .icns
+    if [ -f "$ICON_PATH" ] && command -v sips &> /dev/null && command -v iconutil &> /dev/null; then
+        ICONSET_DIR="/tmp/BilinguatorAligner.iconset"
+        rm -rf "$ICONSET_DIR"
+        mkdir -p "$ICONSET_DIR"
+        sips -z 16 16     "$ICON_PATH" --out "$ICONSET_DIR/icon_16x16.png"      >/dev/null 2>&1 || true
+        sips -z 32 32     "$ICON_PATH" --out "$ICONSET_DIR/icon_16x16@2x.png"   >/dev/null 2>&1 || true
+        sips -z 32 32     "$ICON_PATH" --out "$ICONSET_DIR/icon_32x32.png"      >/dev/null 2>&1 || true
+        sips -z 64 64     "$ICON_PATH" --out "$ICONSET_DIR/icon_32x32@2x.png"   >/dev/null 2>&1 || true
+        sips -z 128 128   "$ICON_PATH" --out "$ICONSET_DIR/icon_128x128.png"    >/dev/null 2>&1 || true
+        sips -z 256 256   "$ICON_PATH" --out "$ICONSET_DIR/icon_128x128@2x.png" >/dev/null 2>&1 || true
+        sips -z 256 256   "$ICON_PATH" --out "$ICONSET_DIR/icon_256x256.png"    >/dev/null 2>&1 || true
+        sips -z 512 512   "$ICON_PATH" --out "$ICONSET_DIR/icon_256x256@2x.png" >/dev/null 2>&1 || true
+        iconutil -c icns "$ICONSET_DIR" -o "$MAC_CONTENTS/Resources/AppIcon.icns" >/dev/null 2>&1 || true
+        rm -rf "$ICONSET_DIR"
+    fi
+fi
+
 echo ""
 echo "Installation complete! Installed to: $APP_DIR"
-echo "To start the app, run: bilinguator_aligner"
-echo "To view help, run: bilinguator_aligner --help"
-echo "To check version, run: bilinguator_aligner --version"
-echo "To uninstall the app, run: bilinguator_aligner --uninstall"
+echo "You can launch 'Bilinguator Aligner' from your Applications menu or run:"
+echo "  bilinguator_aligner             - Start the application"
+echo "  bilinguator_aligner --help      - View help"
+echo "  bilinguator_aligner --version   - Check version"
+echo "  bilinguator_aligner --uninstall - Uninstall the application"
 
 # Reload current shell so alias and PATH work immediately
 if [ -t 1 ] && [ -n "$SHELL" ]; then
