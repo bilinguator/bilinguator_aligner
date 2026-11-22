@@ -14,5 +14,5 @@ curl -fsSL https://raw.githubusercontent.com/bilinguator/bilinguator_aligner/ref
 CMD:
 
 ```bash
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$f = Join-Path $env:TEMP 'install.bat'; irm 'https://raw.githubusercontent.com/bilinguator/bilinguator_aligner/main/install.bat' -OutFile $f; Start-Process cmd -ArgumentList '/c', $f -Wait; Remove-Item $f -Force"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$f = [IO.Path]::Combine($env:TEMP, 'install.bat'); irm 'https://raw.githubusercontent.com/bilinguator/bilinguator_aligner/main/install.bat' -OutFile $f; & $f; Remove-Item $f -Force"
 ```
