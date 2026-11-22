@@ -110,7 +110,6 @@ if [[ "\$1" == "--uninstall" ]]; then
         for RC_FILE in "\$HOME/.bashrc" "\$HOME/.zshrc"; do
             if [ -f "\$RC_FILE" ]; then
                 sed -i.bak '/alias bilinguator_aligner=/d' "\$RC_FILE" && rm -f "\${RC_FILE}.bak"
-                sed -i.bak '/alias bilinguator=/d' "\$RC_FILE" && rm -f "\${RC_FILE}.bak"
             fi
         done
         echo "bilinguator_aligner has been uninstalled."
@@ -144,9 +143,7 @@ for RC_FILE in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
     fi
     if [[ "$RC_FILE" != "$HOME/.profile" ]]; then
         sed -i.bak '/alias bilinguator_aligner=/d' "$RC_FILE" && rm -f "${RC_FILE}.bak"
-        sed -i.bak '/alias bilinguator=/d' "$RC_FILE" && rm -f "${RC_FILE}.bak"
         echo "alias bilinguator_aligner='$LAUNCHER'" >> "$RC_FILE"
-        echo "alias bilinguator='$LAUNCHER'" >> "$RC_FILE"
     fi
 done
 
