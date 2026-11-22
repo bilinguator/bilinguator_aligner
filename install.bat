@@ -140,4 +140,6 @@ echo   bilinguator_aligner             - Start the application
 echo   bilinguator_aligner --help      - View help
 echo   bilinguator_aligner --version   - Check version
 echo   bilinguator_aligner --uninstall - Uninstall the application
-pause
+
+echo %cmdcmdline% | find /i "/c" >nul
+if not errorlevel 1 pause
