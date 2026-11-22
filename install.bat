@@ -44,6 +44,7 @@ if %errorlevel% neq 0 (
 )
 
 echo [3/5] Downloading Python 3.10 and creating virtual environment 'bilinguator_aligner'...
+if exist "%VENV_DIR%" rmdir /s /q "%VENV_DIR%"
 uv venv "%VENV_DIR%" --python 3.10 --seed --clear
 
 echo [4/5] Installing dependencies from requirements.txt...
