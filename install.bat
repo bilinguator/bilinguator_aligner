@@ -20,10 +20,10 @@ powershell -NoProfile -ExecutionPolicy ByPass -Command ^
     "Invoke-WebRequest -Uri '%REPO_API_URL%' -Headers @{'User-Agent'='bilinguator-install'} -OutFile '%TMP_ZIP%';" ^
     "if (Test-Path '%TMP_EXTRACT%') { Remove-Item -Recurse -Force '%TMP_EXTRACT%' };" ^
     "Expand-Archive -Path '%TMP_ZIP%' -DestinationPath '%TMP_EXTRACT%' -Force;" ^
-    "$reqFile = Get-ChildItem -Path '%TMP_EXTRACT%' -Filter 'requirements.txt' -Recurse | Select-Object -First 1;" ^
-    "if (-not $reqFile) { throw 'requirements.txt not found inside downloaded archive.' }" ^
+    "$tomlFile = Get-ChildItem -Path '%TMP_EXTRACT%' -Filter 'pyproject.toml' -Recurse | Select-Object -First 1;" ^
+    "if (-not $tomlFile) { throw 'pyproject.toml not found inside downloaded archive.' }" ^
     "if (!(Test-Path '%APP_DIR%')) { New-Item -ItemType Directory -Path '%APP_DIR%' | Out-Null };" ^
-    "Copy-Item -Path \"$($reqFile.DirectoryName)\*\" -Destination '%APP_DIR%' -Recurse -Force;" ^
+    "Copy-Item -Path \"$($tomlFile.DirectoryName)\*\" -Destination '%APP_DIR%' -Recurse -Force;" ^
     "Remove-Item -Force '%TMP_ZIP%';" ^
     "Remove-Item -Recurse -Force '%TMP_EXTRACT%'"
 
@@ -47,8 +47,8 @@ echo [3/5] Downloading Python 3.10 and creating virtual environment 'bilinguator
 if exist "%VENV_DIR%" rmdir /s /q "%VENV_DIR%"
 uv venv "%VENV_DIR%" --python 3.10 --seed --clear
 
-echo [4/5] Installing dependencies from requirements.txt...
-uv pip install --python "%VENV_DIR%\Scripts\python.exe" -r "%APP_DIR%\requirements.txt"
+echo [4/5] Installing dependencies from pyproject.toml...
+uv pip install --python "%VENV_DIR%\Scripts\python.exe" -r "%APP_DIR%\pyproject.toml"
 
 echo [5/5] Creating global command, Start Menu shortcut, and uninstaller...
 if not exist "%BIN_DIR%" mkdir "%BIN_DIR%"
