@@ -40,17 +40,17 @@ with tempfile.TemporaryDirectory() as tmpdir:
         zf.extractall(tmpdir)
     src_dir = None
     for root, dirs, files in os.walk(tmpdir):
-        if 'requirements.txt' in files:
+        if 'pyproject.toml' in files:
             src_dir = root
             break
     if not src_dir:
-        raise FileNotFoundError('requirements.txt not found in downloaded archive')
+        raise FileNotFoundError('pyproject.toml not found in downloaded archive')
     shutil.copytree(src_dir, '$APP_DIR', dirs_exist_ok=True)
 "
 rm -f "$TMP_ZIP"
 
-echo "[4/5] Installing dependencies from requirements.txt..."
-uv pip install --python "$VENV_DIR/bin/python" -r "$APP_DIR/requirements.txt"
+echo "[4/5] Installing dependencies from pyproject.toml..."
+uv pip install --python "$VENV_DIR/bin/python" -r "$APP_DIR/pyproject.toml"
 
 echo "[5/5] Setting up global command, desktop shortcut, and uninstaller..."
 mkdir -p "$BIN_DIR"
